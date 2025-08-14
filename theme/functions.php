@@ -6,6 +6,8 @@
  *
  * @package Visitor_Management_System
  */
+// Exit if accessed directly
+defined( 'ABSPATH' ) || exit;
 
 if ( ! defined( 'CLUBVMS_VERSION' ) ) {
 	/*
@@ -76,14 +78,7 @@ if ( ! function_exists( 'clubvms_setup' ) ) :
 		 * @link https://developer.wordpress.org/themes/functionality/featured-images-post-thumbnails/
 		 */
 		add_theme_support( 'post-thumbnails' );
-
-		// This theme uses wp_nav_menu() in two locations.
-		register_nav_menus(
-			array(
-				'menu-1' => __( 'Primary', 'vms' ),
-				'menu-2' => __( 'Footer Menu', 'vms' ),
-			)
-		);
+		
 
 		/*
 		 * Switch default core markup for search form, comment form, and comments
@@ -122,31 +117,32 @@ endif;
 add_action( 'after_setup_theme', 'clubvms_setup' );
 
 /**
- * Register widget area.
- *
- * @link https://developer.wordpress.org/themes/functionality/sidebars/#registering-a-sidebar
- */
-function clubvms_widgets_init() {
-	register_sidebar(
-		array(
-			'name'          => __( 'Footer', 'vms' ),
-			'id'            => 'sidebar-1',
-			'description'   => __( 'Add widgets here to appear in your footer.', 'vms' ),
-			'before_widget' => '<section id="%1$s" class="widget %2$s">',
-			'after_widget'  => '</section>',
-			'before_title'  => '<h2 class="widget-title">',
-			'after_title'   => '</h2>',
-		)
-	);
-}
-add_action( 'widgets_init', 'clubvms_widgets_init' );
-
-/**
  * Enqueue scripts and styles.
  */
 function clubvms_scripts() {
+	// Load WordPress' built-in jQuery
+    wp_enqueue_script('jquery');
 	wp_enqueue_style( 'vms-style', get_stylesheet_uri(), array(), CLUBVMS_VERSION );
 	wp_enqueue_script( 'vms-script', get_template_directory_uri() . '/js/script.min.js', array(), CLUBVMS_VERSION, true );
+	wp_enqueue_script( 'vms-script-ajax', get_template_directory_uri() . '/js/jqscript.min.js', array('jquery'), CLUBVMS_VERSION, true );
+
+	
+	// Localize script to make AJAX URL available
+    wp_localize_script(
+        'vms-script-ajax',
+        'vms-script-ajax',
+        array(
+            'ajaxurl' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('vms-script-ajax_nonce')
+        )
+    );
+
+	wp_localize_script('vms-script-ajax', 'wpApiSettings', [
+        'root' => esc_url_raw(rest_url()),
+        'nonce' => wp_create_nonce('wp_rest'),
+        'current_user_id' => get_current_user_id()
+    ]);
+
 
 	if ( is_singular() && comments_open() && get_option( 'thread_comments' ) ) {
 		wp_enqueue_script( 'comment-reply' );
@@ -220,3 +216,8 @@ require get_template_directory() . '/inc/template-tags.php';
  * Functions which enhance the theme by hooking into WordPress.
  */
 require get_template_directory() . '/inc/template-functions.php';
+
+/**
+ * Functions which enhance the theme by hooking into WordPress.
+ */
+require get_template_directory() . '/inc/custom-functions.php';

@@ -9,6 +9,8 @@
  *
  * @package Visitor_Management_System
  */
+// Exit if accessed directly
+defined( 'ABSPATH' ) || exit;
 
 /*
  * If the current post is protected by a password and the visitor has not yet
@@ -21,11 +23,11 @@ if ( post_password_required() ) {
 
 <div id="comments">
 
-	<?php
+    <?php
 	if ( have_comments() ) :
 		?>
-		<h2>
-			<?php
+    <h2>
+        <?php
 			$clubvms_comment_count = get_comments_number();
 			if ( '1' === $clubvms_comment_count ) {
 				// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -46,12 +48,12 @@ if ( post_password_required() ) {
 				// phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped
 			}
 			?>
-		</h2>
+    </h2>
 
-		<?php the_comments_navigation(); ?>
+    <?php the_comments_navigation(); ?>
 
-		<ol>
-			<?php
+    <ol>
+        <?php
 			wp_list_comments(
 				array(
 					'style'      => 'ol',
@@ -60,17 +62,17 @@ if ( post_password_required() ) {
 				)
 			);
 			?>
-		</ol>
+    </ol>
 
-		<?php
+    <?php
 		the_comments_navigation();
 
 		// If there are existing comments, but comments are closed, display a
 		// message.
 		if ( ! comments_open() ) :
 			?>
-			<p><?php esc_html_e( 'Comments are closed.', 'vms' ); ?></p>
-			<?php
+    <p><?php esc_html_e( 'Comments are closed.', 'vms' ); ?></p>
+    <?php
 		endif;
 
 	endif;

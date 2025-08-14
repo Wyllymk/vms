@@ -4,7 +4,7 @@
  *
  * @link https://developer.wordpress.org/themes/basics/template-hierarchy/
  *
- * @package Visitor_Management_System
+ * @package Cyber_Wakili
  */
 
 ?>
@@ -23,15 +23,15 @@
 			<?php
 		endif;
 
-		$clubvms_description = get_bloginfo( 'description', 'display' );
-		if ( $clubvms_description || is_customize_preview() ) :
+		$cyber_wakili_description = get_bloginfo( 'description', 'display' );
+		if ( $cyber_wakili_description || is_customize_preview() ) :
 			?>
-			<p><?php echo $clubvms_description; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></p>
+			<p><?php echo $cyber_wakili_description; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></p>
 		<?php endif; ?>
 	</div>
 
-	<nav id="site-navigation" aria-label="<?php esc_attr_e( 'Main Navigation', 'vms' ); ?>">
-		<button aria-controls="primary-menu" aria-expanded="false"><?php esc_html_e( 'Primary Menu', 'vms' ); ?></button>
+	<nav id="site-navigation" aria-label="<?php esc_attr_e( 'Main Navigation', 'cyber-wakili' ); ?>">
+		<button aria-controls="primary-menu" aria-expanded="false"><?php esc_html_e( 'Primary Menu', 'cyber-wakili' ); ?></button>
 
 		<?php
 		wp_nav_menu(

@@ -6,6 +6,10 @@
  * This uses the background and foreground colors declared in the `theme.json`
  * file and is applied both to the front end and in the block editor.
  */
+html {
+	@apply scroll-smooth;
+}
+
 body {
 	@apply bg-background text-foreground font-sans;
 }

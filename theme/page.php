@@ -10,14 +10,16 @@
  *
  * @package Visitor_Management_System
  */
+// Exit if accessed directly
+defined( 'ABSPATH' ) || exit;
 
 get_header();
 ?>
 
-	<section id="primary">
-		<main id="main">
+<section id="primary">
+    <main id="main">
 
-			<?php
+        <?php
 			/* Start the Loop */
 			while ( have_posts() ) :
 				the_post();
@@ -33,8 +35,8 @@ get_header();
 			endwhile; // End of the loop.
 			?>
 
-		</main><!-- #main -->
-	</section><!-- #primary -->
+    </main><!-- #main -->
+</section><!-- #primary -->
 
 <?php
 get_footer();

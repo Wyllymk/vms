@@ -47,5 +47,13 @@
 		"prettier": "^3.5.3",
 		"prettier-plugin-tailwindcss": "^0.6.12",
 		"tailwindcss": "^4.1.8"
+	},
+	"dependencies": {
+		"@alpinejs/persist": "^3.14.9",
+		"alpinejs": "^3.14.9",
+		"apexcharts": "^4.5.0",
+		"dropzone": "^6.0.0-beta.2",
+		"flatpickr": "^4.6.13",
+		"jsvectormap": "^1.6.0"
 	}
 }

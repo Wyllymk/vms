@@ -6,15 +6,17 @@
  *
  * @package Visitor_Management_System
  */
+// Exit if accessed directly
+defined( 'ABSPATH' ) || exit;
 
 ?>
 
 <article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
 
-	<header class="entry-header">
-		<?php
+    <header class="entry-header">
+        <?php
 		if ( is_sticky() && is_home() && ! is_paged() ) {
-			printf( '<span">%s</span>', esc_html_x( 'Featured', 'post', 'vms' ) );
+			printf( '<span">%s</span>', esc_html_x( 'Featured', 'post', 'cyber-wakili' ) );
 		}
 		if ( is_singular() ) :
 			the_title( '<h1 class="entry-title">', '</h1>' );
@@ -22,25 +24,25 @@
 			the_title( sprintf( '<h2 class="entry-title"><a href="%s" rel="bookmark">', esc_url( get_permalink() ) ), '</a></h2>' );
 		endif;
 		?>
-	</header><!-- .entry-header -->
+    </header><!-- .entry-header -->
 
-	<?php clubvms_post_thumbnail(); ?>
+    <?php clubvms_post_thumbnail(); ?>
 
-	<div <?php clubvms_content_class( 'entry-content' ); ?>>
-		<?php
+    <div <?php clubvms_content_class( 'entry-content' ); ?>>
+        <?php
 		the_content();
 
 		wp_link_pages(
 			array(
-				'before' => '<div>' . __( 'Pages:', 'vms' ),
+				'before' => '<div>' . __( 'Pages:', 'cyber-wakili' ),
 				'after'  => '</div>',
 			)
 		);
 		?>
-	</div><!-- .entry-content -->
+    </div><!-- .entry-content -->
 
-	<footer class="entry-footer">
-		<?php clubvms_entry_footer(); ?>
-	</footer><!-- .entry-footer -->
+    <footer class="entry-footer">
+        <?php clubvms_entry_footer(); ?>
+    </footer><!-- .entry-footer -->
 
 </article><!-- #post-${ID} -->

@@ -3,3 +3,39 @@
  *
  * These will be added immediately before Tailwind’s `base` layer.
  */
+
+@font-face {
+	font-family: "Outfit";
+	src: url("assets/fonts/Outfit-VariableFont_wght.ttf") format("truetype");
+	font-weight: 100 900;
+	font-style: normal;
+	font-display: swap;
+}
+@font-face {
+	font-family: "Nico";
+	src: url("assets/fonts/nicomoji/NicoMoji-Regular.ttf") format("truetype");
+	font-weight: normal;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: "Oswald";
+	src: url("assets/fonts/Oswald/Oswald-VariableFont_wght.ttf")
+		format("truetype");
+	font-weight: normal;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: "Manrope";
+	src: url("assets/fonts/manrope/Manrope-Bold.ttf") format("truetype");
+	font-weight: normal;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: "Satisfy";
+	src: url("assets/fonts/satisfy/Satisfy-Regular.ttf") format("truetype");
+	font-weight: normal;
+	font-style: normal;
+}

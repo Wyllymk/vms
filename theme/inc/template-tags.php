@@ -6,6 +6,8 @@
  *
  * @package Visitor_Management_System
  */
+// Exit if accessed directly
+defined( 'ABSPATH' ) || exit;
 
 if ( ! function_exists( 'clubvms_posted_on' ) ) :
 	/**
