@@ -1,6 +1,6 @@
 <?php
 /**
- * The template for displaying the employees page
+ * The template for displaying the members page
  *
  * @package Visitor_Management_System
  */
@@ -9,7 +9,7 @@
 defined( 'ABSPATH' ) || exit;
 
 // Check if the current user is an Administrator or Manager or Advocate
-if ( ! ( current_user_can( 'administrator' ) || current_user_can( 'general_manager' ) ) ) {
+if ( ! ( current_user_can( 'administrator' ) || current_user_can( 'managing_partner' ) || current_user_can( 'senior_partner' ) || current_user_can( 'advocate' ) || current_user_can( 'pupil' ) ) ) {
 	// Redirect unauthorized users to the front page
 	wp_redirect( home_url() );
 	exit;
@@ -19,7 +19,7 @@ get_header();
 
 ?>
 
-<section x-data="{ page: 'employees'}">
+<section x-data="{ page: 'members'}">
     <!-- ===== Page Wrapper Start ===== -->
     <div class="flex h-screen overflow-hidden">
         <!-- ===== Sidebar Start ===== -->
@@ -40,7 +40,7 @@ get_header();
             <main>
                 <div class="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
                     <!-- Breadcrumb Start -->
-                    <div x-data="{ pageName: `Employees`}">
+                    <div x-data="{ pageName: `Members`}">
                         <?php get_template_part( 'template-parts/content/content', 'breadcrumb' ); ?>
                     </div>
                     <!-- Breadcrumb End -->
@@ -50,7 +50,7 @@ get_header();
                             class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
                             <div class="px-5 py-4 sm:px-6 sm:py-5">
                                 <h3 class="text-base font-medium text-gray-800 dark:text-white/90">
-                                    <?php esc_html_e( 'Employees List', 'vms' ); ?>
+                                    <?php esc_html_e( 'Members List', 'vms' ); ?>
                                 </h3>
                             </div>
                             <div class="flex flex-wrap w-full justify-between mb-4 px-5 sm:px-6 ">
@@ -66,7 +66,7 @@ get_header();
                                                         fill="" />
                                                 </svg>
                                             </span>
-                                            <input type="text" placeholder="Filter employees by username..."
+                                            <input type="text" placeholder="Filter members by username..."
                                                 name="user_search"
                                                 class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pr-14 pl-12 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden xl:w-[430px] dark:border-gray-800 dark:bg-gray-900 dark:bg-white/[0.03] dark:text-white/90 dark:placeholder:text-white/30" />
 
@@ -126,7 +126,7 @@ get_header();
                             <?php endif; ?>
                             <div class="p-5 border-t border-gray-100 dark:border-gray-800 sm:p-6">
                                 <!-- ====== Table Six Start -->
-                                <?php get_template_part( 'template-parts/content/content', 'employees-table' ); ?>
+                                <?php get_template_part( 'template-parts/content/content', 'members-table' ); ?>
                                 <!-- ====== Table Six End -->
                             </div>
                         </div>

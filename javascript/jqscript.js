@@ -1,6 +1,6 @@
 jQuery(document).ready(function ($) {
 	// PROFILE FORM
-	$('#your-profile-form').on('submit', function (e) {
+	$('#profile-form').on('submit', function (e) {
 		e.preventDefault();
 
 		// Show loading indicator
@@ -14,7 +14,7 @@ jQuery(document).ready(function ($) {
 		// Collect form data
 		var formData = new FormData(this);
 		formData.append('action', 'update_user_profile');
-		formData.append('nonce', cyber_wakili_ajax.nonce);
+		formData.append('nonce', vms_script_ajax.nonce);
 
 		// Handle file uploads
 		var profilePicture = $('#profile_picture')[0].files[0];
@@ -24,13 +24,14 @@ jQuery(document).ready(function ($) {
 
 		// AJAX request
 		$.ajax({
-			url: cyber_wakili_ajax.ajaxurl,
+			url: vms_script_ajax.ajaxurl,
 			type: 'POST',
 			data: formData,
 			processData: false,
 			contentType: false,
 			dataType: 'json',
 			success: function (response) {
+				console.log('Profile update response:', response);
 				if (response.success && response.data.userData) {
 					console.log(
 						'Updated profile data:',
@@ -45,7 +46,7 @@ jQuery(document).ready(function ($) {
 					// Create and show success animation modal
 					const successModal = `
 					<div id="success-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
-						<div class="bg-white dark:bg-gray-900 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+						<div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
 							<div class="check_mark mx-auto mb-4">
 								<div class="sa-icon sa-success animate">
 									<span class="sa-line sa-tip animateSuccessTip"></span>
@@ -63,7 +64,7 @@ jQuery(document).ready(function ($) {
 					`;
 
 					// Inject modal into body
-					$('#your-profile-form').append(successModal);
+					$('#profile-form').append(successModal);
 
 					// Handle OK button click
 					$(document).on('click', '#ok-success-btn', function (e) {
@@ -139,7 +140,7 @@ jQuery(document).ready(function ($) {
 				} else {
 					// Show error messages
 					response.data.messages.forEach(function (message) {
-						$('#your-profile-form').before(
+						$('#profile-form').before(
 							'<div class="alert-message error-alert">' +
 								message +
 								'</div>'
@@ -148,7 +149,7 @@ jQuery(document).ready(function ($) {
 				}
 			},
 			error: function (xhr, status, error) {
-				$('#your-profile-form').before(
+				$('#profile-form').before(
 					'<div class="alert-message error-alert">An error occurred: ' +
 						error +
 						'</div>'
@@ -170,12 +171,12 @@ jQuery(document).ready(function ($) {
 			},
 		});
 	});
-	// CLIENT FORM
-	$('#client-form').on('submit', function (e) {
+	// Guest FORM
+	$('#guest-form').on('submit', function (e) {
 		e.preventDefault();
 
 		// Show loading indicator
-		$('#submit-client-form')
+		$('#submit-guest-form')
 			.prop('disabled', true)
 			.html('<span class="spinner is-active"></span> Processing...');
 
@@ -184,12 +185,12 @@ jQuery(document).ready(function ($) {
 
 		// Collect form data
 		var formData = new FormData(this);
-		formData.append('action', 'client_registration');
-		formData.append('nonce', cyber_wakili_ajax.nonce);
+		formData.append('action', 'guest_registration');
+		formData.append('nonce', vms_script_ajax.nonce);
 
 		// AJAX request
 		$.ajax({
-			url: cyber_wakili_ajax.ajaxurl,
+			url: vms_script_ajax.ajaxurl,
 			type: 'POST',
 			data: formData,
 			processData: false,
@@ -197,12 +198,12 @@ jQuery(document).ready(function ($) {
 			dataType: 'json',
 			success: function (response) {
 				if (response.success && response.data.userData) {
-					console.log('Created Client data:', response.data.userData);
+					console.log('Created Guest data:', response.data.userData);
 
 					// Show success messages
 					const message =
 						response.data.messages[0] ||
-						'Client created successfully';
+						'Guest created successfully';
 
 					// Create and show success animation modal
 					const successModal = `
@@ -225,7 +226,7 @@ jQuery(document).ready(function ($) {
 					`;
 
 					// Inject modal into body
-					$('#client-form').append(successModal);
+					$('#guest-form').append(successModal);
 
 					// Handle OK button click
 					$(document).on('click', '#ok-success-btn', function (e) {
@@ -240,9 +241,9 @@ jQuery(document).ready(function ($) {
 						window.dispatchEvent(new Event('close-info-modal'));
 
 						// Show loading indicator
-						$('#submit-client-form')
+						$('#submit-guest-form')
 							.prop('disabled', false)
-							.html('Create Client');
+							.html('Create Guest');
 					});
 
 					const user = response.data.userData;
@@ -329,7 +330,7 @@ jQuery(document).ready(function ($) {
 							`;
 
 						// Inject modal into body
-						$('#client-form').append(errorModal);
+						$('#guest-form').append(errorModal);
 
 						// Handle OK button click
 						$(document).on('click', '#ok-error-btn', function (e) {
@@ -342,19 +343,19 @@ jQuery(document).ready(function ($) {
 
 							// Trigger Alpine to close info modal
 							window.dispatchEvent(
-								new Event('close-client-modal')
+								new Event('close-guest-modal')
 							);
 
 							// Show loading indicator
-							$('#submit-client-form')
+							$('#submit-guest-form')
 								.prop('disabled', false)
-								.html('Create Client');
+								.html('Create Guest');
 						});
 					});
 				}
 			},
 			error: function (xhr, status, error) {
-				$('#client-form').before(
+				$('#guest-form').before(
 					'<div class="flex items-center justify-between bg-red-500 border-l-4 border-red-700 text-white p-4 mb-4 rounded alert-message error-alert">An error occurred: ' +
 						error +
 						'</div>'

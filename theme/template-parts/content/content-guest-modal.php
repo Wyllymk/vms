@@ -13,12 +13,12 @@ $receive_messages = 'yes';
 $receive_emails   = 'yes';
 ?>
 
-<div x-show="isClientInfoModal" class="fixed inset-0 flex items-center justify-center p-5 overflow-y-auto z-99999">
+<div x-show="isGuestInfoModal" class="fixed inset-0 flex items-center justify-center p-5 overflow-y-auto z-99999">
     <div class="modal-close-btn fixed inset-0 h-full w-full bg-gray-400/50 backdrop-blur-[32px]"></div>
-    <div @click.outside="isClientInfoModal = false"
+    <div @click.outside="isGuestInfoModal = false"
         class="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
         <!-- close btn -->
-        <a @click="isClientInfoModal = false"
+        <a @click="isGuestInfoModal = false"
             class="cursor-pointer transition-color absolute right-5 top-5 z-999 flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600 dark:bg-gray-700 dark:bg-white/[0.05] dark:text-gray-400 dark:hover:bg-white/[0.07] dark:hover:text-gray-300">
             <svg class="fill-current" width="24" height="24" viewBox="0 0 24 24" fill="none"
                 xmlns="http://www.w3.org/2000/svg">
@@ -29,18 +29,18 @@ $receive_emails   = 'yes';
         </a>
         <div class="px-2 pr-14">
             <h4 class="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
-                <?php esc_html_e( 'Register Client', 'cyber-wakili' ); ?>
+                <?php esc_html_e( 'Register Guest', 'vms' ); ?>
             </h4>
             <p class="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
-                <?php esc_html_e( 'Create a Clients Account.', 'cyber-wakili' ); ?>
+                <?php esc_html_e( 'Create a Guests Account.', 'vms' ); ?>
             </p>
         </div>
-        <form id="client-form" class="flex flex-col" method="post" enctype="multipart/form-data">
+        <form id="guest-form" class="flex flex-col" method="post" enctype="multipart/form-data">
             <?php wp_nonce_field('create_user_data', '_wpnonce_create_user_data'); ?>
-            <input type="hidden" name="register_client" value="1">
+            <input type="hidden" name="register_guest" value="1">
 
             <!-- Display error/success messages at the top -->
-            <?php if ($errors = get_transient('clients_error_' . get_current_user_id())) : ?>
+            <?php if ($errors = get_transient('guests_error_' . get_current_user_id())) : ?>
             <div class="p-4 mb-4 text-red-700 bg-red-100 border-l-4 border-red-500">
                 <?php foreach ($errors as $error) : ?>
                 <p><?php echo esc_html($error); ?></p>
@@ -48,7 +48,7 @@ $receive_emails   = 'yes';
             </div>
             <?php endif; ?>
 
-            <?php if ($success = get_transient('clients_success_' . get_current_user_id())) : ?>
+            <?php if ($success = get_transient('guests_success_' . get_current_user_id())) : ?>
             <div class="p-4 mb-4 text-green-700 bg-green-100 border-l-4 border-green-500">
                 <?php foreach ($success as $msg) : ?>
                 <p><?php echo esc_html($msg); ?></p>
@@ -59,14 +59,14 @@ $receive_emails   = 'yes';
             <div class="custom-scrollbar h-[450px] overflow-y-auto px-2">
                 <div class="mt-7">
                     <h5 class="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
-                        <?php esc_html_e('Personal Information', 'cyber-wakili'); ?>
+                        <?php esc_html_e('Personal Information', 'vms'); ?>
                     </h5>
 
                     <div class="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
                         <!-- First Name -->
                         <div class="col-span-2 lg:col-span-1">
                             <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                <?php esc_html_e('First Name', 'cyber-wakili'); ?>
+                                <?php esc_html_e('First Name', 'vms'); ?>
                                 <span class="text-error-500">*</span>
                             </label>
                             <input type="text" name="first_name"
@@ -78,7 +78,7 @@ $receive_emails   = 'yes';
                         <!-- Last Name -->
                         <div class="col-span-2 lg:col-span-1">
                             <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                <?php esc_html_e('Last Name', 'cyber-wakili'); ?>
+                                <?php esc_html_e('Last Name', 'vms'); ?>
                                 <span class="text-error-500">*</span>
                             </label>
                             <input type="text" name="last_name"
@@ -90,7 +90,7 @@ $receive_emails   = 'yes';
                         <!-- Email -->
                         <div class="col-span-2 lg:col-span-1">
                             <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                <?php esc_html_e('Email address', 'cyber-wakili'); ?>
+                                <?php esc_html_e('Email address', 'vms'); ?>
                                 <span class="text-error-500">*</span>
                             </label>
                             <input type="email" name="email" value="<?php echo esc_attr($_POST['email'] ?? ''); ?>"
@@ -101,7 +101,7 @@ $receive_emails   = 'yes';
                         <!-- Phone -->
                         <div class="col-span-2 lg:col-span-1">
                             <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                <?php esc_html_e('Phone', 'cyber-wakili'); ?>
+                                <?php esc_html_e('Phone', 'vms'); ?>
                                 <span class="text-error-500">*</span>
                             </label>
                             <input type="tel" name="phone_number"
@@ -109,14 +109,14 @@ $receive_emails   = 'yes';
                                 class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
                                 required />
                             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                <?php esc_html_e('Format: +254700123456 or 0700123456', 'cyber-wakili'); ?>
+                                <?php esc_html_e('Format: +254700123456 or 0700123456', 'vms'); ?>
                             </p>
                         </div>
 
                         <!-- Bio -->
                         <div class="col-span-2">
                             <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                <?php esc_html_e('Bio', 'cyber-wakili'); ?>
+                                <?php esc_html_e('Bio', 'vms'); ?>
                             </label>
                             <textarea name="bio"
                                 class="w-full px-3 py-2 text-sm text-gray-800 border border-gray-300 rounded dark:bg-gray-900 dark:text-white/90 dark:border-gray-700"><?php echo esc_textarea($_POST['bio'] ?? ''); ?></textarea>
@@ -129,7 +129,7 @@ $receive_emails   = 'yes';
                                     <?php checked(($_POST['receive_messages'] ?? 'no'), 'yes'); ?>
                                     class="border-gray-300 rounded shadow-sm text-brand-500 focus:border-brand-300 focus:ring focus:ring-brand-200 focus:ring-opacity-50" />
                                 <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                                    <?php esc_html_e('Receive messages', 'cyber-wakili'); ?>
+                                    <?php esc_html_e('Receive messages', 'vms'); ?>
                                 </span>
                             </label>
                         </div>
@@ -140,7 +140,7 @@ $receive_emails   = 'yes';
                                     <?php checked(($_POST['receive_emails'] ?? 'no'), 'yes'); ?>
                                     class="border-gray-300 rounded shadow-sm text-brand-500 focus:border-brand-300 focus:ring focus:ring-brand-200 focus:ring-opacity-50" />
                                 <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                                    <?php esc_html_e('Receive emails', 'cyber-wakili'); ?>
+                                    <?php esc_html_e('Receive emails', 'vms'); ?>
                                 </span>
                             </label>
                         </div>
@@ -151,11 +151,11 @@ $receive_emails   = 'yes';
             <div class="flex items-center gap-3 px-2 mt-6 lg:justify-end">
                 <button type="reset"
                     class="cursor-pointer flex w-full justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] sm:w-auto">
-                    <?php esc_html_e('Reset', 'cyber-wakili'); ?>
+                    <?php esc_html_e('Reset', 'vms'); ?>
                 </button>
-                <button type="submit" id="submit-client-form"
+                <button type="submit" id="submit-guest-form"
                     class="cursor-pointer flex w-full justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 sm:w-auto">
-                    <?php esc_html_e('Create Client', 'cyber-wakili'); ?>
+                    <?php esc_html_e('Create Guest', 'vms'); ?>
                     </a>
             </div>
         </form>

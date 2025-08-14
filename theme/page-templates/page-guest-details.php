@@ -1,12 +1,17 @@
 <?php
 /**
- * The template for displaying the Employee details page
+ * The template for displaying the guest details page
  *
-  * @package Visitor_Management_System
+ * @package Visitor_Management_System
  */
 
 // Exit if accessed directly
 defined('ABSPATH') || exit;
+
+// Start the session if not already started
+if (!session_id()) {
+    session_start();
+}
 
 // Check if the current user is an Administrator or Manager or Advocate
 if ( ! ( current_user_can( 'administrator' ) || current_user_can( 'managing_partner' ) || current_user_can( 'senior_partner' ) || current_user_can( 'advocate' ) || current_user_can( 'pupil' ) ) ) {
@@ -16,9 +21,11 @@ if ( ! ( current_user_can( 'administrator' ) || current_user_can( 'managing_part
 }
 
 // Initialize message arrays
-$lawyer_u_success = [];
-$lawyer_u_error = [];
-$lawyer_d_error = [];
+$guest_u_success = [];
+$guest_u_error = [];
+$guest_d_error = [];
+$guest_p_success = [];
+$guest_p_error = [];
 
 // Process form submissions if user_id is set
 if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
@@ -36,9 +43,9 @@ if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
             $user_data->user_email = $new_email;
             $update_user_result = wp_update_user($user_data);
             if (!is_wp_error($update_user_result)) {
-                $lawyer_u_success[] = 'Email updated successfully.';
+                $guest_u_success[] = 'Email updated successfully.';
             } else {
-                $lawyer_u_error[] = 'User update error: ' . $update_user_result->get_error_message();
+                $guest_u_error[] = 'User update error: ' . $update_user_result->get_error_message();
             }
         }
 
@@ -47,7 +54,7 @@ if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
         if ($new_first_name !== $user_data->first_name) {
             $user_data->first_name = $new_first_name;
             wp_update_user($user_data);
-            $lawyer_u_success[] = 'First name updated successfully.';
+            $guest_u_success[] = 'First name updated successfully.';
         }
 
         // Update last name if changed
@@ -55,7 +62,7 @@ if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
         if ($new_last_name !== $user_data->last_name) {
             $user_data->last_name = $new_last_name;
             wp_update_user($user_data);
-            $lawyer_u_success[] = 'Last name updated successfully.';
+            $guest_u_success[] = 'Last name updated successfully.';
         }
 
         // Update display name if changed
@@ -63,7 +70,7 @@ if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
         if ($new_display_name !== $user_data->display_name) {
             $user_data->display_name = $new_display_name;
             wp_update_user($user_data);
-            $lawyer_u_success[] = 'Display name updated successfully.';
+            $guest_u_success[] = 'Display name updated successfully.';
         }
 
         // Update phone number if changed
@@ -71,7 +78,7 @@ if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
             $new_phone_number = sanitize_text_field($_POST['pnumber']);
             if ($new_phone_number !== get_user_meta($user_id, 'phone_number', true)) {
                 update_user_meta($user_id, 'phone_number', $new_phone_number);
-                $lawyer_u_success[] = 'Phone number updated successfully.';
+                $guest_u_success[] = 'Phone number updated successfully.';
             }
         }
 
@@ -80,9 +87,9 @@ if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
         $current_receive_messages = get_user_meta($user_id, 'receive_messages', true);
         if ($new_receive_messages !== $current_receive_messages) {
             if ($new_receive_messages === 'no' && $current_receive_messages === 'yes') {
-                $lawyer_u_error[] = 'This lawyer will no longer receive messages.';
+                $guest_u_error[] = 'This guest will no longer receive messages.';
             } elseif ($new_receive_messages === 'yes' && $current_receive_messages === 'no') {
-                $lawyer_u_success[] = 'This lawyer will now receive messages.';
+                $guest_u_success[] = 'This guest will now receive messages.';
             }
             update_user_meta($user_id, 'receive_messages', $new_receive_messages);
         }
@@ -92,9 +99,9 @@ if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
         $current_receive_emails = get_user_meta($user_id, 'receive_emails', true);
         if ($new_receive_emails !== $current_receive_emails) {
             if ($new_receive_emails === 'no' && $current_receive_emails === 'yes') {
-                $lawyer_u_error[] = 'This lawyer will no longer receive emails.';
+                $guest_u_error[] = 'This guest will no longer receive emails.';
             } elseif ($new_receive_emails === 'yes' && $current_receive_emails === 'no') {
-                $lawyer_u_success[] = 'This lawyer will now receive emails.';
+                $guest_u_success[] = 'This guest will now receive emails.';
             }
             update_user_meta($user_id, 'receive_emails', $new_receive_emails);
         }
@@ -104,9 +111,9 @@ if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
         $current_registration_status = get_user_meta($user_id, 'registration_status', true);
         if ($new_registration_status !== $current_registration_status) {
             if ($new_registration_status === 'inactive' && $current_registration_status === 'active') {
-                $lawyer_u_error[] = 'This account has been deactivated and the user can no longer login.';
+                $guest_u_error[] = 'This account has been deactivated and the user can no longer login.';
             } elseif ($new_registration_status === 'active' && $current_registration_status === 'inactive') {
-                $lawyer_u_success[] = 'This account has been activated and the user can now login successfully.';
+                $guest_u_success[] = 'This account has been activated and the user can now login successfully.';
             }
             update_user_meta($user_id, 'registration_status', $new_registration_status);
         }
@@ -129,15 +136,15 @@ if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
                 if ($avatar_id) {
                     update_user_meta($user_id, '_wp_attachment_metadata', get_post_meta($avatar_id, '_wp_attachment_metadata', true));
                 }
-                $lawyer_u_success[] = 'User Profile Picture Updated successfully';
+                $guest_u_success[] = 'User Profile Picture Updated successfully';
             }
         }
 
-        // Store messages in transient
-        set_transient('lawyer_u_success_' . get_current_user_id(), $lawyer_u_success, 60);
-        set_transient('lawyer_u_error_' . get_current_user_id(), $lawyer_u_error, 60);
+        // Store messages in session
+        $_SESSION['guest_u_success'] = $guest_u_success;
+        $_SESSION['guest_u_error'] = $guest_u_error;
 
-        wp_safe_redirect(add_query_arg(['user_id' => $user_id], site_url('/employee-details/')));
+        wp_safe_redirect(add_query_arg(['user_id' => $user_id], site_url('/guest-details')));
         exit;
     }
 
@@ -149,24 +156,22 @@ if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
             require_once ABSPATH . 'wp-admin/includes/user.php';
             wp_delete_user($user_id);
 
-            $lawyers_error = [$first_name . "'s account has been deleted permanently"];
-            set_transient('lawyers_error_' . get_current_user_id(), $lawyers_error, 60);
+            $_SESSION['guests_error'] = [$first_name . "'s account has been deleted permanently"];
 
             if ($user_id === get_current_user_id()) {
                 wp_logout();
             }
 
-            wp_safe_redirect(site_url('/employees/'));
+            wp_safe_redirect(site_url('/guests'));
             exit;
         }
     }
 
     // Handle PDF deletion
-    if (isset($_POST['delete_pdf_action']) && check_admin_referer('delete_adm_document', '_wpnonce_delete_adm_document')) {
+    if (isset($_POST['delete_document']) && check_admin_referer('delete_documents', '_wpnonce_delete_documents')) {
         $pdf_id_to_delete = intval($_POST['delete_pdf']);
-        $guest_id = intval($_POST['guest_id']);
 
-        $uploaded_pdfs = get_user_meta($guest_id, 'uploaded_pdfs', true);
+        $uploaded_pdfs = get_user_meta($user_id, 'uploaded_pdfs', true);
         $uploaded_pdfs = maybe_unserialize($uploaded_pdfs);
 
         if (is_array($uploaded_pdfs) && !empty($uploaded_pdfs)) {
@@ -185,51 +190,177 @@ if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
                 if (wp_delete_attachment($pdf_id_to_delete, true)) {
                     unset($uploaded_pdfs[$pdf_entry_key]);
                     $uploaded_pdfs = array_values($uploaded_pdfs);
-                    update_user_meta($guest_id, 'uploaded_pdfs', $uploaded_pdfs);
+                    update_user_meta($user_id, 'uploaded_pdfs', $uploaded_pdfs);
 
                     delete_post_meta($pdf_id_to_delete, 'uploaded_on');
                     delete_post_meta($pdf_id_to_delete, 'uploaded_by');
 
-                    $lawyer_d_error[] = 'Title Document: ' . esc_html($filename) . ' successfully deleted.';
+                    $guest_d_success[] = 'Title Document: ' . esc_html($filename) . ' successfully deleted.';
                 } else {
-                    $lawyer_d_error[] = 'Error: Failed to delete the document attachment.';
+                    $guest_d_error[] = 'Error: Failed to delete the document attachment.';
                 }
             } else {
-                $lawyer_d_error[] = 'Error: Could not find the document to delete.';
+                $guest_d_error[] = 'Error: Could not find the document to delete.';
             }
         } else {
-            $lawyer_d_error[] = 'Error: No uploaded documents found for this guest.';
+            $guest_d_error[] = 'Error: No uploaded documents found for this guest.';
         }
 
-        set_transient('lawyer_d_error_' . get_current_user_id(), $lawyer_d_error, 60);
-        wp_safe_redirect(add_query_arg(['user_id' => $user_id], site_url('/employee-details/')));
+        $_SESSION['guest_d_success'] = $guest_d_success;
+        $_SESSION['guest_d_error'] = $guest_d_error;
+        
+        wp_safe_redirect(add_query_arg(['user_id' => $user_id], site_url('/guest-details')));
         exit;
+    }
+
+    // Handle document uploads
+    if (isset($_POST['upload_documents']) && check_admin_referer('upload_documents', '_wpnonce_upload_documents')) {
+        // Update guest status
+        if (isset($_POST['guest_status'])) {
+            $new_status = sanitize_text_field($_POST['guest_status']);
+            update_user_meta($user_id, 'guest_status', $new_status);
+            $guest_d_success[] = 'Guest status updated successfully.';
+        }
+
+        // Handle PDF uploads
+        if (!empty($_FILES['pdf_files']['name'][0])) {
+            require_once(ABSPATH . 'wp-admin/includes/file.php');
+            require_once(ABSPATH . 'wp-admin/includes/image.php');
+            
+            $uploaded_pdfs = get_user_meta($user_id, 'uploaded_pdfs', true) ?: array();
+            
+            foreach ($_FILES['pdf_files']['name'] as $key => $value) {
+                if ($_FILES['pdf_files']['name'][$key]) {
+                    $file = array(
+                        'name'     => $_FILES['pdf_files']['name'][$key],
+                        'type'     => $_FILES['pdf_files']['type'][$key],
+                        'tmp_name' => $_FILES['pdf_files']['tmp_name'][$key],
+                        'error'    => $_FILES['pdf_files']['error'][$key],
+                        'size'     => $_FILES['pdf_files']['size'][$key]
+                    );
+                    
+                    $upload_overrides = array('test_form' => false);
+                    $movefile = wp_handle_upload($file, $upload_overrides);
+                    
+                    if ($movefile && !isset($movefile['error'])) {
+                        $wp_upload_dir = wp_upload_dir();
+                        $attachment = array(
+                            'guid'           => $wp_upload_dir['url'] . '/' . basename($movefile['file']),
+                            'post_mime_type' => $movefile['type'],
+                            'post_title'     => preg_replace('/\.[^.]+$/', '', basename($movefile['file'])),
+                            'post_content'   => '',
+                            'post_status'    => 'inherit'
+                        );
+                        
+                        $attach_id = wp_insert_attachment($attachment, $movefile['file']);
+                        
+                        if (!is_wp_error($attach_id)) {
+                            $attach_data = wp_generate_attachment_metadata($attach_id, $movefile['file']);
+                            wp_update_attachment_metadata($attach_id, $attach_data);
+                            
+                            $upload_entry = array(
+                                'pdf_id' => $attach_id,
+                                'timestamp' => current_time('mysql'),
+                                'uploaded_by' => get_current_user_id()
+                            );
+                            
+                            array_push($uploaded_pdfs, $upload_entry);
+                            $guest_d_success[] = 'Document ' . esc_html($file['name']) . ' uploaded successfully.';
+                        }
+                    } else {
+                        $guest_d_error[] = 'Error uploading ' . esc_html($file['name']) . ': ' . $movefile['error'];
+                    }
+                }
+            }
+            
+            update_user_meta($user_id, 'uploaded_pdfs', $uploaded_pdfs);
+        }
+        
+        $_SESSION['guest_d_success'] = $guest_d_success;
+        $_SESSION['guest_d_error'] = $guest_d_error;
+        
+        wp_safe_redirect(add_query_arg(['user_id' => $user_id], site_url('/guest-details')));
+        exit;
+    }
+
+    // Handle payment saving
+    if (isset($_POST['save_payment']) && check_admin_referer('mpesa_payment', '_wpnonce_mpesa_payment')) {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'transactions';
+        
+        $amount = sanitize_text_field( $_POST['mpesa_amount'] );
+        $user_phone_number = get_user_meta($user_id, 'phone_number', true);
+
+        
+        if ($amount > 0) {
+            $wpdb->insert(
+                $table_name,
+                array(
+                    'user_id' => $user_id,
+                    'amount' => $amount,
+                    'phone_number' => $user_phone_number,
+                    'created_at' => current_time('mysql')
+                ),
+                array('%d', '%f', '%d', '%s')
+            );
+            
+            if ($wpdb->insert_id) {
+                $guest_p_success[] = 'Payment of ' . number_format($amount, 2) . ' saved successfully.';
+            } else {
+                $guest_p_error[] = 'Error saving payment. Please try again.';
+            }
+        } else {
+            $guest_p_error[] = 'Invalid payment amount. Please enter a positive number.';
+        }
+        
+        $_SESSION['guest_p_success'] = $guest_p_success;
+        $_SESSION['guest_p_error'] = $guest_p_error;
+        
+        wp_safe_redirect(add_query_arg(['user_id' => $user_id], site_url('/guest-details')));
+        exit;
+    }   
+    
+    // Get messages from session if they exist
+    if (isset($_SESSION['guest_u_success'])) {
+        $guest_u_success = $_SESSION['guest_u_success'];
+        unset($_SESSION['guest_u_success']);
+    }
+    if (isset($_SESSION['guest_u_error'])) {
+        $guest_u_error = $_SESSION['guest_u_error'];
+        unset($_SESSION['guest_u_error']);
+    }
+    if (isset($_SESSION['guest_d_success'])) {
+        $guest_d_success = $_SESSION['guest_d_success'];
+        unset($_SESSION['guest_d_success']);
+    }
+    if (isset($_SESSION['guest_d_error'])) {
+        $guest_d_error = $_SESSION['guest_d_error'];
+        unset($_SESSION['guest_d_error']);
+    }
+    if (isset($_SESSION['guest_p_success'])) {
+        $guest_p_success = $_SESSION['guest_p_success'];
+        unset($_SESSION['guest_p_success']);
+    }
+    if (isset($_SESSION['guest_p_error'])) {
+        $guest_p_error = $_SESSION['guest_p_error'];
+        unset($_SESSION['guest_p_error']);
     }
 
     // Get user data
     $user_data = get_userdata($user_id);
     $user_avatar = get_avatar_url($user_id);
     $user_phone_number = get_user_meta($user_id, 'phone_number', true);
-    $member_number = get_user_meta($user_data->ID, 'member_number', true);
+    $guest_status = get_user_meta($user_id, 'guest_status', true);
     $receive_messages = get_user_meta($user_id, 'receive_messages', true);
     $receive_emails = get_user_meta($user_id, 'receive_emails', true);
     $registration_status = get_user_meta($user_id, 'registration_status', true);
-
-    // Get messages from transients
-    $lawyer_u_success = get_transient('lawyer_u_success_' . get_current_user_id()) ?: [];
-    $lawyer_u_error = get_transient('lawyer_u_error_' . get_current_user_id()) ?: [];
-    $lawyer_d_error = get_transient('lawyer_d_error_' . get_current_user_id()) ?: [];
-
-    // Clear the transients after displaying
-    delete_transient('lawyer_u_success_' . get_current_user_id());
-    delete_transient('lawyer_u_error_' . get_current_user_id());
-    delete_transient('lawyer_d_error_' . get_current_user_id());
+    $uploaded_pdfs = get_user_meta($user_id, 'uploaded_pdfs', true) ?: array();
 }
 
 get_header();
 ?>
 
-<section id="primary" x-data="{ page: 'employee-details'}">
+<section id="primary" x-data="{ page: 'guest-details'}">
     <main id="main">
         <!-- ===== Page Wrapper Start ===== -->
         <div class="flex h-screen overflow-hidden">
@@ -249,9 +380,10 @@ get_header();
 
                 <!-- ===== Main Content Start ===== -->
                 <main>
+
                     <div class="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
                         <!-- Breadcrumb Start -->
-                        <div x-data="{ pageName: `Employee-Details`}">
+                        <div x-data="{ pageName: `Guest-details`}">
                             <?php get_template_part( 'template-parts/content/content', 'breadcrumb' ); ?>
                         </div>
                         <!-- Breadcrumb End -->
@@ -260,13 +392,13 @@ get_header();
                                 <div class="w-full lg:w-5/6 xl:4/5 2xl:3/4">
                                     <!-- Personal Information -->
                                     <div x-data="{ open: localStorage.getItem('infoOpen') !== null ? localStorage.getItem('infoOpen') === 'true' : true }"
-                                        class="rounded-2xl shadow-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
+                                        class="rounded-2xl shadow-lg border border-gray-200 bg-white sm:p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
                                         <!-- Header with click toggle functionality -->
                                         <div @click="open = !open; localStorage.setItem('infoOpen', open)"
                                             class="flex items-center justify-between px-6 py-4 cursor-pointer">
                                             <h3
                                                 class="text-lg font-semibold font-oswald text-regal-blue dark:text-white">
-                                                <?php esc_html_e( 'Personal Information', 'vms' ); ?>
+                                                Personal Information
                                             </h3>
                                             <!-- SVG arrow icon -->
                                             <svg :class="{'rotate-180': open}"
@@ -278,66 +410,35 @@ get_header();
                                             </svg>
                                         </div>
                                         <!-- Collapsible content section -->
+                                        <!-- In the Personal Information section -->
                                         <div x-show="open" x-transition
                                             class="p-6 border-t border-gray-200 dark:border-gray-700">
                                             <!-- Success Alert -->
-                                            <?php if (!empty($lawyer_u_success)) : ?>
-                                            <?php foreach ((array)$lawyer_u_success as $message) : ?>
-                                            <div class="flex items-center justify-between p-4 mb-4 text-green-700 bg-green-100 border-l-4 border-green-500 rounded"
+                                            <?php if (!empty($guest_u_success)) : ?>
+                                            <?php foreach ($guest_u_success as $message) : ?>
+                                            <div class="flex items-center justify-between p-4 mb-4 text-white bg-green-500 border-l-4 border-green-700 rounded"
                                                 role="alert">
-                                                <div class="flex items-center">
-                                                    <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fill-rule="evenodd"
-                                                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                                            clip-rule="evenodd"></path>
-                                                    </svg>
-                                                    <div>
-                                                        <p class="font-medium">
-                                                            <?php esc_html_e('Success!', 'easy_manage'); ?></p>
-                                                        <p class="text-sm"><?php echo esc_html($message); ?></p>
-                                                    </div>
+                                                <div>
+                                                    <strong>Success!</strong>
+                                                    <p class="text-sm"><?php echo esc_html($message); ?></p>
                                                 </div>
-                                                <button type="button" class="text-green-700 hover:text-green-900"
-                                                    onclick="this.parentElement.style.display='none';">
-                                                    <span
-                                                        class="sr-only"><?php esc_html_e('Close', 'easy_manage'); ?></span>
-                                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fill-rule="evenodd"
-                                                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                                            clip-rule="evenodd"></path>
-                                                    </svg>
-                                                </button>
+                                                <button type="button" class="float-right text-white hover:text-gray-300"
+                                                    onclick="this.parentElement.style.display='none';">×</button>
                                             </div>
                                             <?php endforeach; ?>
                                             <?php endif; ?>
 
                                             <!-- Error Alert -->
-                                            <?php if (!empty($lawyer_u_error)) : ?>
-                                            <?php foreach ((array)$lawyer_u_error as $message) : ?>
-                                            <div class="flex items-center justify-between p-4 mb-4 text-red-700 bg-red-100 border-l-4 border-red-500 rounded"
+                                            <?php if (!empty($guest_u_error)) : ?>
+                                            <?php foreach ($guest_u_error as $message) : ?>
+                                            <div class="flex items-center justify-between p-4 mb-4 text-white bg-red-500 border-l-4 border-red-700 rounded"
                                                 role="alert">
-                                                <div class="flex items-center">
-                                                    <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fill-rule="evenodd"
-                                                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                                                            clip-rule="evenodd"></path>
-                                                    </svg>
-                                                    <div>
-                                                        <p class="font-medium">
-                                                            <?php esc_html_e('Error!', 'easy_manage'); ?></p>
-                                                        <p class="text-sm"><?php echo esc_html($message); ?></p>
-                                                    </div>
+                                                <div>
+                                                    <strong>Error!</strong>
+                                                    <p class="text-sm"><?php echo esc_html($message); ?></p>
                                                 </div>
-                                                <button type="button" class="text-red-700 hover:text-red-900"
-                                                    onclick="this.parentElement.style.display='none';">
-                                                    <span
-                                                        class="sr-only"><?php esc_html_e('Close', 'easy_manage'); ?></span>
-                                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fill-rule="evenodd"
-                                                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                                            clip-rule="evenodd"></path>
-                                                    </svg>
-                                                </button>
+                                                <button type="button" class="float-right text-white hover:text-gray-300"
+                                                    onclick="this.parentElement.style.display='none';">×</button>
                                             </div>
                                             <?php endforeach; ?>
                                             <?php endif; ?>
@@ -345,13 +446,16 @@ get_header();
                                             <form action="" method="post" enctype="multipart/form-data">
                                                 <div class="flex flex-col items-center mb-4">
                                                     <div class="relative">
+                                                        <!-- Display the uploaded profile picture if available, or fall back to default avatar -->
                                                         <img class="object-cover w-24 h-24 border-2 border-gray-200 rounded-full dark:border-gray-700"
                                                             src="<?php echo esc_url(get_user_meta($user_id, 'profile_picture', true) ?: get_avatar_url($user_id)); ?>"
                                                             alt="Profile Picture">
+                                                        <!-- Positioned at the bottom-right inside the profile picture -->
                                                         <div
                                                             class="absolute flex items-center justify-center p-1 bg-opacity-50 rounded-full cursor-pointer bottom-2 right-2 hover:bg-opacity-75">
                                                             <label for="profile_picture"
                                                                 class="text-black cursor-pointer">
+                                                                <!-- Edit icon (SVG for pencil) -->
                                                                 <svg xmlns="http://www.w3.org/2000/svg"
                                                                     viewBox="0 0 24 24" width="20" height="20"
                                                                     fill="currentColor" class="text-xl">
@@ -369,7 +473,7 @@ get_header();
                                                     <div class="mb-4">
                                                         <label for="uname"
                                                             class="block text-gray-700 dark:text-gray-300">
-                                                            <?php esc_html_e( 'User Name:', 'vms' ); ?>
+                                                            User Name:
                                                         </label>
                                                         <input type="text"
                                                             class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
@@ -377,14 +481,15 @@ get_header();
                                                             value="<?php echo esc_attr($user_data->user_login); ?>"
                                                             name="user_name" disabled>
                                                         <small class="text-sm text-gray-600 dark:text-gray-400">
-                                                            <?php esc_html_e( 'Usernames cannot be changed.', 'vms' ); ?>
+                                                            Usernames cannot be changed.
                                                         </small>
                                                     </div>
+                                                    <!-- End of User Name field -->
                                                     <!-- Email field -->
                                                     <div class="mb-4">
                                                         <label for="email"
                                                             class="block text-gray-700 dark:text-gray-300">
-                                                            <?php esc_html_e( 'Email (required):', 'vms' ); ?>
+                                                            Email (required):
                                                         </label>
                                                         <input type="text"
                                                             class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
@@ -393,14 +498,15 @@ get_header();
                                                             name="email"
                                                             <?php echo !$is_admin_or_manager ? 'disabled' : ''; ?>>
                                                         <small class="text-sm text-gray-600 dark:text-gray-400">
-                                                            <?php esc_html_e( 'If you change this, an email will be sent to confirm it.', 'vms' ); ?>
+                                                            If you change this, an email will be sent to confirm it.
                                                         </small>
                                                     </div>
+                                                    <!-- End of Email field -->
                                                     <!-- First Name field -->
                                                     <div class="mb-4">
                                                         <label for="fname"
                                                             class="block text-gray-700 dark:text-gray-300">
-                                                            <?php esc_html_e( 'First Name:', 'vms' ); ?>
+                                                            First Name:
                                                         </label>
                                                         <input type="text"
                                                             class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
@@ -409,11 +515,12 @@ get_header();
                                                             name="first_name"
                                                             <?php echo !$is_admin_or_manager ? 'disabled' : ''; ?>>
                                                     </div>
+                                                    <!-- End of First Name field -->
                                                     <!-- Last Name field -->
                                                     <div class="mb-4">
                                                         <label for="lname"
                                                             class="block text-gray-700 dark:text-gray-300">
-                                                            <?php esc_html_e( 'Last Name:', 'vms' ); ?>
+                                                            Last Name:
                                                         </label>
                                                         <input type="text"
                                                             class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
@@ -422,24 +529,26 @@ get_header();
                                                             name="last_name"
                                                             <?php echo !$is_admin_or_manager ? 'disabled' : ''; ?>>
                                                     </div>
-                                                    <!-- Member Number -->
+                                                    <!-- End of Last Name field -->
+                                                    <!-- Display name field -->
                                                     <div class="mb-4">
-                                                        <label for="member_number"
+                                                        <label for="display_name"
                                                             class="block text-gray-700 dark:text-gray-300">
-                                                            <?php esc_html_e( 'Member Number', 'vms' ); ?>
+                                                            Display Name (required):
                                                         </label>
                                                         <input type="text"
                                                             class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
-                                                            id="member_number"
-                                                            value="<?php echo esc_attr($member_number); ?>"
-                                                            name="member_number"
+                                                            id="display_name"
+                                                            value="<?php echo esc_attr($user_data->display_name); ?>"
+                                                            name="display_name"
                                                             <?php echo !$is_admin_or_manager ? 'disabled' : ''; ?>>
                                                     </div>
+                                                    <!-- End of Display name field -->
                                                     <!-- Phone Number field -->
                                                     <div class="mb-4">
                                                         <label for="number"
                                                             class="block text-gray-700 dark:text-gray-300">
-                                                            <?php esc_html_e( 'Phone Number:', 'vms' ); ?>
+                                                            Phone Number:
                                                         </label>
                                                         <input type="number"
                                                             class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
@@ -448,13 +557,16 @@ get_header();
                                                             name="pnumber"
                                                             <?php echo !$is_admin_or_manager ? 'disabled' : ''; ?>>
                                                     </div>
+                                                    <!-- End of Phone Number field -->
                                                     <!-- Message Email, Deactivate fields -->
                                                     <div class="col-span-1 md:col-span-2">
+                                                        <!-- Checkbox for receiving communication messages -->
                                                         <hr class="my-4 border-gray-300 dark:border-gray-600">
+                                                        <!-- Horizontal line -->
                                                         <div class="flex items-center justify-between mb-4">
                                                             <label for="message"
                                                                 class="block text-gray-700 dark:text-gray-300">
-                                                                <?php esc_html_e( 'Receive Communication Messages?', 'vms' ); ?>
+                                                                Receive Communication Messages?
                                                             </label>
                                                             <?php
                                                             $receive_messages = get_user_meta($user_id, 'receive_messages', true);
@@ -466,11 +578,15 @@ get_header();
                                                                 id="message" name="receive_messages" value="yes"
                                                                 <?php echo $checked; ?> <?php echo $disabled; ?>>
                                                         </div>
+                                                        <!-- Horizontal line -->
+
+                                                        <!-- Checkbox for receiving communication emails -->
                                                         <hr class="my-4 border-gray-300 dark:border-gray-600">
+                                                        <!-- Horizontal line -->
                                                         <div class="flex items-center justify-between mb-4">
                                                             <label for="email_comm"
                                                                 class="block text-gray-700 dark:text-gray-300">
-                                                                <?php esc_html_e( 'Receive Communication Emails?', 'vms' ); ?>
+                                                                Receive Communication Emails?
                                                             </label>
                                                             <?php
                                                             $receive_emails = get_user_meta($user_id, 'receive_emails', true);
@@ -482,11 +598,15 @@ get_header();
                                                                 id="email_comm" name="receive_emails" value="yes"
                                                                 <?php echo $checked; ?> <?php echo $disabled; ?>>
                                                         </div>
+                                                        <!-- Horizontal line -->
+
+                                                        <!-- Checkbox for Deactivate Guest -->
                                                         <hr class="my-4 border-gray-300 dark:border-gray-600">
+                                                        <!-- Horizontal line -->
                                                         <div class="flex items-center justify-between mb-4">
                                                             <label for="registration_status"
                                                                 class="block text-gray-700 dark:text-gray-300">
-                                                                <?php esc_html_e( 'Deactivate Member Account?', 'vms' ); ?>
+                                                                Deactivate Guest?
                                                             </label>
                                                             <?php
                                                             $registration_status = get_user_meta($user_id, 'registration_status', true);
@@ -500,24 +620,26 @@ get_header();
                                                                 <?php echo $disabled; ?>>
                                                         </div>
                                                         <hr class="my-4 border-gray-300 dark:border-gray-600">
+                                                        <!-- Horizontal line -->
                                                     </div>
+                                                    <!-- End of Message Email, Deactivate fields -->
                                                 </div>
                                                 <?php if ($is_admin_or_manager) : ?>
                                                 <?php wp_nonce_field('update_user_data', '_wpnonce_update_user_data'); ?>
                                                 <?php wp_nonce_field('delete_user', '_wpnonce_delete_user'); ?>
                                                 <div class="flex justify-center mt-4 space-x-2">
                                                     <button type="submit" name="update_user"
-                                                        class="px-4 py-2 font-semibold text-white bg-blue-600 rounded cursor-pointer hover:bg-blue-700">
-                                                        <?php esc_html_e( 'Update Details', 'vms' ); ?>
+                                                        class="px-4 py-2 font-semibold text-white bg-blue-600 rounded hover:bg-blue-700">
+                                                        Update Details
                                                     </button>
                                                     <button type="reset"
-                                                        class="px-4 py-2 font-semibold text-white bg-gray-600 rounded cursor-pointer hover:bg-gray-700">
-                                                        <?php esc_html_e( 'Reset', 'vms' ); ?>
+                                                        class="px-4 py-2 font-semibold text-white bg-gray-600 rounded hover:bg-gray-700">
+                                                        Reset
                                                     </button>
                                                     <button type="submit" name="delete_user"
-                                                        class="px-4 py-2 font-semibold text-white bg-red-600 rounded cursor-pointer hover:bg-red-700"
-                                                        onclick="return confirm('Are you sure you want to delete your account? This action is irreversible.')">
-                                                        <?php esc_html_e( 'Delete Account', 'vms' ); ?>
+                                                        class="px-4 py-2 font-semibold text-white bg-red-600 rounded hover:bg-red-700"
+                                                        onclick="return confirm('Are you sure you want to delete this account? This action is irreversible.')">
+                                                        Delete Account
                                                     </button>
                                                 </div>
                                                 <?php endif; ?>
@@ -529,6 +651,10 @@ get_header();
                             </div>
                         </div>
                     </div>
+
+                    <!-- Footer -->
+                    <?php get_template_part('template-parts/content/content-footer', 'content'); ?>
+
                 </main>
                 <!-- ===== Main Content End ===== -->
             </div>

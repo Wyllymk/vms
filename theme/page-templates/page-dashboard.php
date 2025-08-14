@@ -9,7 +9,7 @@
 defined( 'ABSPATH' ) || exit;
 
 // Check if the current user is an Administrator or Manager or Advocate
-if ( ! ( current_user_can( 'administrator' ) || current_user_can( 'managing_partner' ) || current_user_can( 'senior_partner' ) || current_user_can( 'advocate' ) || current_user_can( 'pupil' ) || current_user_can( 'client' )) ) {
+if ( ! ( current_user_can( 'administrator' ) || current_user_can( 'managing_partner' ) || current_user_can( 'senior_partner' ) || current_user_can( 'advocate' ) || current_user_can( 'pupil' ) || current_user_can( 'guest' )) ) {
 	// Redirect unauthorized users to the front page
 	wp_redirect( home_url() );
 	exit;
@@ -26,7 +26,7 @@ $user_name    = $current_user->display_name; // You can also use $current_user->
 get_header();
 ?>
 
-<section id="primary" x-data="{ page: 'ecommerce'}">
+<section id="primary" x-data="{ page: 'dashboard'}">
     <main id="main">
 
         <!-- ===== Page Wrapper Start ===== -->

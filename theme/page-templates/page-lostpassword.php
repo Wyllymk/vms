@@ -46,7 +46,7 @@ if ( isset( $_POST['lostpassword'] ) ) {
                             <path d="M12.7083 5L7.5 10.2083L12.7083 15.4167" stroke="" stroke-width="1.5"
                                 stroke-linecap="round" stroke-linejoin="round" />
                         </svg>
-                        <?php esc_html_e( 'Back to dashboard', 'cyber-wakili' ); ?>
+                        <?php esc_html_e( 'Back to dashboard', 'vms' ); ?>
                     </a>
                 </div>
                 <!-- Error Alert -->
@@ -89,10 +89,10 @@ if ( isset( $_POST['lostpassword'] ) ) {
                         <div class="mb-5 sm:mb-8">
                             <h1
                                 class="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">
-                                <?php esc_html_e( 'Password Reset', 'cyber-wakili' ); ?>
+                                <?php esc_html_e( 'Password Reset', 'vms' ); ?>
                             </h1>
                             <p class="text-sm text-gray-500 dark:text-gray-400">
-                                <?php esc_html_e( "Enter your username or email address and we'll send you a link to reset your password.", 'cyber-wakili' ); ?>
+                                <?php esc_html_e( "Enter your username or email address and we'll send you a link to reset your password.", 'vms' ); ?>
                             </p>
                         </div>
                         <div>
@@ -102,7 +102,7 @@ if ( isset( $_POST['lostpassword'] ) ) {
                                     <div>
                                         <label
                                             class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                            <?php esc_html_e( 'Email/ Username', 'cyber-wakili' ); ?>
+                                            <?php esc_html_e( 'Email/ Username', 'vms' ); ?>
                                             <span class="text-error-500">*</span>
                                         </label>
                                         <input name="user_login" placeholder="Username or Email" type="text"
@@ -114,7 +114,7 @@ if ( isset( $_POST['lostpassword'] ) ) {
                                     <div>
                                         <button type="submit" name="lostpassword"
                                             class="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600">
-                                            <?php esc_html_e( 'Reset Password', 'cyber-wakili' ); ?>
+                                            <?php esc_html_e( 'Reset Password', 'vms' ); ?>
                                         </button>
                                     </div>
                                 </div>
@@ -122,10 +122,10 @@ if ( isset( $_POST['lostpassword'] ) ) {
                             <div class="mt-5">
                                 <p
                                     class="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
-                                    <?php esc_html_e( ' Already have an account?', 'cyber-wakili' ); ?>
+                                    <?php esc_html_e( ' Already have an account?', 'vms' ); ?>
                                     <a href="<?php echo esc_url( site_url( '/login/' ) ); ?>"
                                         class="text-brand-500 hover:text-brand-600 dark:text-brand-400">
-                                        <?php esc_html_e( 'Sign In', 'cyber-wakili' ); ?>
+                                        <?php esc_html_e( 'Sign In', 'vms' ); ?>
                                     </a>
                                 </p>
                             </div>
@@ -144,7 +144,7 @@ if ( isset( $_POST['lostpassword'] ) ) {
                                 alt="Logo" />
                         </a>
                         <p class="text-center text-gray-400 dark:text-white/60">
-                            <?php esc_html_e( 'Free and Open-Source Tailwind CSS Admin Dashboard Template', 'cyber-wakili' ); ?>
+                            <?php esc_html_e( 'Free and Open-Source Tailwind CSS Admin Dashboard Template', 'vms' ); ?>
                         </p>
                     </div>
                 </div>

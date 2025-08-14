@@ -1,6 +1,6 @@
 <?php
 /**
- * Template part for displaying clients table
+ * Template part for displaying overlay
  *
  * @link https://developer.wordpress.org/themes/basics/template-hierarchy/
  *
@@ -20,49 +20,56 @@ defined( 'ABSPATH' ) || exit;
                     <th class="px-5 py-3 sm:px-6">
                         <div class="flex items-center">
                             <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
-                                <?php esc_html_e( '#', 'cyber-wakili' ); ?>
+                                <?php esc_html_e( '#', 'vms' ); ?>
                             </p>
                         </div>
                     </th>
                     <th class="px-5 py-3 sm:px-6">
                         <div class="flex items-center">
                             <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
-                                <?php esc_html_e( 'User Name', 'cyber-wakili' ); ?>
+                                <?php esc_html_e( 'User Name', 'vms' ); ?>
                             </p>
                         </div>
                     </th>
                     <th class="px-5 py-3 sm:px-6">
                         <div class="flex items-center">
                             <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
-                                <?php esc_html_e( 'First Name', 'cyber-wakili' ); ?>
+                                <?php esc_html_e( 'First Name', 'vms' ); ?>
                             </p>
                         </div>
                     </th>
                     <th class="px-5 py-3 sm:px-6">
                         <div class="flex items-center">
                             <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
-                                <?php esc_html_e( 'Last Name', 'cyber-wakili' ); ?>
+                                <?php esc_html_e( 'Last Name', 'vms' ); ?>
                             </p>
                         </div>
                     </th>
                     <th class="px-5 py-3 sm:px-6">
                         <div class="flex items-center">
                             <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
-                                <?php esc_html_e( 'Email', 'cyber-wakili' ); ?>
+                                <?php esc_html_e( 'Email', 'vms' ); ?>
                             </p>
                         </div>
                     </th>
                     <th class="px-5 py-3 sm:px-6">
                         <div class="flex items-center">
                             <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
-                                <?php esc_html_e( 'Phone Number', 'cyber-wakili' ); ?>
+                                <?php esc_html_e( 'Phone Number', 'vms' ); ?>
                             </p>
                         </div>
                     </th>
                     <th class="px-5 py-3 sm:px-6">
                         <div class="flex items-center">
                             <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
-                                <?php esc_html_e( 'View Details', 'cyber-wakili' ); ?>
+                                <?php esc_html_e( 'Status', 'vms' ); ?>
+                            </p>
+                        </div>
+                    </th>
+                    <th class="px-5 py-3 sm:px-6">
+                        <div class="flex items-center">
+                            <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
+                                <?php esc_html_e( 'View Details', 'vms' ); ?>
                             </p>
                         </div>
                     </th>
@@ -80,10 +87,11 @@ defined( 'ABSPATH' ) || exit;
                         // Handle search
                         $user_search = $_GET['user_search'];
                         $args = array(
-                            'role' => 'client',
+                            'role__in' => array('member', 'chairman'),
                             'search' => '*' . esc_attr($user_search) . '*',
                             'search_columns' => array('user_login', 'user_nicename'),
                         );
+
                         $users = get_users($args);
 
                         if (!empty($users)) {
@@ -95,6 +103,7 @@ defined( 'ABSPATH' ) || exit;
                                 $user_register = $user->user_registered;
                                 $first_name = get_user_meta($user_id, 'first_name', true);
                                 $last_name = get_user_meta($user_id, 'last_name', true);
+                                $registration_status = get_user_meta($user_id, 'registration_status', true);
                                 $user_phone_number = get_user_meta($user_id, 'phone_number', true);
                                 ?>
                 <tr>
@@ -110,9 +119,6 @@ defined( 'ABSPATH' ) || exit;
                                     <span class="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
                                         <?php echo esc_html($username); ?>
                                     </span>
-                                    <span class="block text-gray-500 text-theme-xs dark:text-gray-400">
-                                        Web Designer
-                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -146,11 +152,19 @@ defined( 'ABSPATH' ) || exit;
                         </div>
                     </td>
                     <td class="px-5 py-4 sm:px-6">
-                        <form action="<?php echo esc_url(site_url('/client-details/')); ?>" method="get">
+                        <div class="flex items-center">
+                            <p
+                                class="px-2 py-0.5 text-theme-xs font-medium rounded-full <?php echo $registration_status == 'inactive' ? 'bg-warning-50 dark:bg-warning-500/15 text-warning-700 dark:text-warning-400' : 'bg-success-50 dark:bg-success-500/15 text-success-700 dark:text-success-500'; ?>">
+                                <?php echo esc_html($registration_status); ?>
+                            </p>
+                        </div>
+                    </td>
+                    <td class="px-5 py-4 sm:px-6">
+                        <form action="<?php echo esc_url(site_url('/employee-details')); ?>" method="get">
                             <input type="hidden" name="user_id" value="<?php echo esc_attr($user_id); ?>">
                             <button type="submit"
-                                class="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg cursor-pointer bg-brand-500 shadow-theme-xs hover:bg-brand-60">
-                                <?php esc_html_e( 'View Details', 'cyber-wakili' ); ?>
+                                class="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg whitespace-nowrap bg-brand-500 shadow-theme-xs hover:bg-brand-60">
+                                <?php esc_html_e( 'View Details', 'vms' ); ?>
                             </button>
                         </form>
                     </td>
@@ -158,11 +172,12 @@ defined( 'ABSPATH' ) || exit;
                 <?php
                             }
                         } else {
-                            echo '<tr><td colspan="10" class="px-4 py-4 text-center text-white">No clients found.</td></tr>';
+                            echo '<tr><td colspan="10" class="px-4 py-4 text-center text-gray-500 dark:text-white">No employees found.</td></tr>';
                         }
                     } else {
                         // Display all users if no search
-                        $users = get_users(array('role__in' => array('client')));
+                        $users = get_users(array('role__in' => array('member', 'chairman')));
+
                         if (!empty($users)) {
                             foreach ($users as $user) {
                                 // Same as above
@@ -172,6 +187,7 @@ defined( 'ABSPATH' ) || exit;
                                 $user_register = $user->user_registered;
                                 $first_name = get_user_meta($user_id, 'first_name', true);
                                 $last_name = get_user_meta($user_id, 'last_name', true);
+                                $registration_status = get_user_meta($user_id, 'registration_status', true);
                                 $user_phone_number = get_user_meta($user_id, 'phone_number', true);
                 ?>
                 <tr>
@@ -186,9 +202,6 @@ defined( 'ABSPATH' ) || exit;
                                     <span class="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
                                         <?php echo esc_html($username); ?>
                                     </span>
-                                    <span class="block text-gray-500 text-theme-xs dark:text-gray-400">
-                                        Client
-                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -222,11 +235,19 @@ defined( 'ABSPATH' ) || exit;
                         </div>
                     </td>
                     <td class="px-5 py-4 sm:px-6">
-                        <form action="<?php echo esc_url(site_url('/client-details/')); ?>" method="get">
+                        <div class="flex items-center">
+                            <p
+                                class="px-2 py-0.5 text-theme-xs font-medium rounded-full <?php echo $registration_status == 'inactive' ? 'bg-warning-50 dark:bg-warning-500/15 text-warning-700 dark:text-warning-400' : 'bg-success-50 dark:bg-success-500/15 text-success-700 dark:text-success-500'; ?>">
+                                <?php echo esc_html($registration_status); ?>
+                            </p>
+                        </div>
+                    </td>
+                    <td class="px-5 py-4 sm:px-6">
+                        <form action="<?php echo esc_url(site_url('/employee-details')); ?>" method="get">
                             <input type="hidden" name="user_id" value="<?php echo esc_attr($user_id); ?>">
                             <button type="submit"
-                                class="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg cursor-pointer bg-brand-500 shadow-theme-xs hover:bg-brand-60">
-                                <?php esc_html_e( 'View Details', 'cyber-wakili' ); ?>
+                                class="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg cursor-pointer whitespace-nowrap bg-brand-500 shadow-theme-xs hover:bg-brand-60">
+                                <?php esc_html_e( 'View Details', 'vms' ); ?>
                             </button>
                         </form>
                     </td>
@@ -234,7 +255,7 @@ defined( 'ABSPATH' ) || exit;
                 <?php
                         }
                     } else {
-                        echo '<tr><td colspan="10" class="px-4 py-4 text-center text-gray-600 dark:text-white">No clients found.</td></tr>';
+                        echo '<tr><td colspan="10" class="px-4 py-4 text-center text-gray-500 dark:text-white">No employees found.</td></tr>';
                     }
                 }
                 ?>

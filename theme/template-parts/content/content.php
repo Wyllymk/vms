@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
     <header class="entry-header">
         <?php
 		if ( is_sticky() && is_home() && ! is_paged() ) {
-			printf( '<span">%s</span>', esc_html_x( 'Featured', 'post', 'cyber-wakili' ) );
+			printf( '<span">%s</span>', esc_html_x( 'Featured', 'post', 'vms' ) );
 		}
 		if ( is_singular() ) :
 			the_title( '<h1 class="entry-title">', '</h1>' );
@@ -34,7 +34,7 @@ defined( 'ABSPATH' ) || exit;
 
 		wp_link_pages(
 			array(
-				'before' => '<div>' . __( 'Pages:', 'cyber-wakili' ),
+				'before' => '<div>' . __( 'Pages:', 'vms' ),
 				'after'  => '</div>',
 			)
 		);

@@ -31,7 +31,7 @@ defined( 'ABSPATH' ) || exit;
 			sprintf(
 				wp_kses(
 					/* translators: %s: Name of current post. Only visible to screen readers. */
-					__( 'Continue reading<span class="sr-only"> "%s"</span>', 'cyber-wakili' ),
+					__( 'Continue reading<span class="sr-only"> "%s"</span>', 'vms' ),
 					array(
 						'span' => array(
 							'class' => array(),
@@ -44,7 +44,7 @@ defined( 'ABSPATH' ) || exit;
 
 		wp_link_pages(
 			array(
-				'before' => '<div>' . __( 'Pages:', 'cyber-wakili' ),
+				'before' => '<div>' . __( 'Pages:', 'vms' ),
 				'after'  => '</div>',
 			)
 		);

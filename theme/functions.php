@@ -130,10 +130,10 @@ function clubvms_scripts() {
 	// Localize script to make AJAX URL available
     wp_localize_script(
         'vms-script-ajax',
-        'vms-script-ajax',
+        'vms_script_ajax',
         array(
             'ajaxurl' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('vms-script-ajax_nonce')
+            'nonce' => wp_create_nonce('vms_script_ajax_nonce')
         )
     );
 

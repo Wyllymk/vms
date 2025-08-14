@@ -17,11 +17,11 @@ defined( 'ABSPATH' ) || exit;
     <div :class="sidebarToggle ? 'justify-center' : 'justify-between'"
         class="flex items-center gap-2 pt-8 sidebar-header pb-7">
         <a href="<?php echo esc_url( site_url( ) ); ?>">
-            <span class="flex items-center justify-center gap-4 logo" :class="sidebarToggle ? 'hidden' : ''">
-                <img class="h-12 logo-icon" loading="lazy"
+            <span class="flex items-center justify-center gap-4" :class="sidebarToggle ? 'hidden' : ''">
+                <img class="h-12" loading="lazy"
                     src="<?php echo get_template_directory_uri(); ?>/assets/images/logo/logo.png" alt="Logo" />
-                <h2 class="text-2xl font-bold text-white font-satisfy">
-                    <?php esc_html_e( 'Nyeri Club', 'cyber-wakili' ); ?>
+                <h2 class="text-2xl font-bold text-black dark:text-white font-satisfy">
+                    <?php esc_html_e( 'Nyeri Club', 'vms' ); ?>
                 </h2>
             </span>
 
@@ -38,7 +38,7 @@ defined( 'ABSPATH' ) || exit;
             <div>
                 <h3 class="mb-4 text-xs uppercase leading-[20px] text-gray-400">
                     <span class="menu-group-title" :class="sidebarToggle ? 'lg:hidden' : ''">
-                        <?php esc_html_e( 'MENU', 'cyber-wakili' ); ?>
+                        <?php esc_html_e( 'MENU', 'vms' ); ?>
                     </span>
 
                     <svg :class="sidebarToggle ? 'lg:block hidden' : 'hidden'"
@@ -65,7 +65,7 @@ defined( 'ABSPATH' ) || exit;
                             </svg>
 
                             <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                                <?php esc_html_e( 'Dashboard', 'cyber-wakili' ); ?>
+                                <?php esc_html_e( 'Dashboard', 'vms' ); ?>
                             </span>
                         </a>
                     </li>
@@ -85,16 +85,35 @@ defined( 'ABSPATH' ) || exit;
                             </svg>
 
                             <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                                <?php esc_html_e( 'User Profile', 'cyber-wakili' ); ?>
+                                <?php esc_html_e( 'User Profile', 'vms' ); ?>
                             </span>
                         </a>
                     </li>
                     <!-- Menu Item Profile -->
 
+                    <!-- Menu Item Members -->
+                    <?php if ( ( current_user_can( 'administrator' ) || current_user_can( 'managing_partner' ) || current_user_can( 'senior_partner' ) || current_user_can( 'advocate' ) ) ) : ?>
+                    <li>
+                        <a href="<?php echo esc_url( site_url( '/members' ) ); ?>"
+                            @click="selected = (selected === 'Members' ? '':'Members')"
+                            class="<?php echo ( is_page( 'members' ) ) ? 'menu-item group menu-item-active' : 'menu-item group menu-item-inactive'; ?>">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1"
+                                stroke="currentColor" class="size-6">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
+                            </svg>
+                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                                <?php esc_html_e( 'Members', 'vms' ); ?>
+                            </span>
+                        </a>
+                    </li>
+                    <?php endif; ?>
+                    <!-- Menu Item Members -->
+
                     <!-- Menu Item Employees -->
                     <?php if ( ( current_user_can( 'administrator' ) || current_user_can( 'managing_partner' ) || current_user_can( 'senior_partner' ) || current_user_can( 'advocate' ) ) ) : ?>
                     <li>
-                        <a href="<?php echo esc_url( site_url( '/employees/' ) ); ?>"
+                        <a href="<?php echo esc_url( site_url( '/employees' ) ); ?>"
                             @click="selected = (selected === 'Employees' ? '':'Employees')"
                             class="<?php echo ( is_page( 'employees' ) ) ? 'menu-item group menu-item-active' : 'menu-item group menu-item-inactive'; ?>">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
@@ -106,19 +125,19 @@ defined( 'ABSPATH' ) || exit;
                             </svg>
 
                             <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                                <?php esc_html_e( 'Employees', 'cyber-wakili' ); ?>
+                                <?php esc_html_e( 'Employees', 'vms' ); ?>
                             </span>
                         </a>
                     </li>
                     <?php endif; ?>
-                    <!-- Menu Item Advocates -->
+                    <!-- Menu Item Employees -->
 
-                    <!-- Menu Item Clients -->
-                    <?php if ( ( current_user_can( 'administrator' ) || current_user_can( 'managing_partner' ) || current_user_can( 'senior_partner' ) || current_user_can( 'advocate' ) ) ) : ?>
+                    <!-- Menu Item Guests -->
+                    <?php if ( ( current_user_can( 'administrator' ) || current_user_can( 'general_manager' ) || current_user_can( 'chairman' ) || current_user_can( 'reception' ) || current_user_can( 'gate' ) ) ) : ?>
                     <li>
-                        <a href="<?php echo esc_url( site_url( '/clients/' ) ); ?>"
-                            @click="selected = (selected === 'Clients' ? '':'Clients')"
-                            class="<?php echo ( is_page( 'clients' ) ) ? 'menu-item group menu-item-active' : 'menu-item group menu-item-inactive'; ?>">
+                        <a href="<?php echo esc_url( site_url( '/guests' ) ); ?>"
+                            @click="selected = (selected === 'Guests' ? '':'Guests')"
+                            class="<?php echo ( is_page( 'guests' ) ) ? 'menu-item group menu-item-active' : 'menu-item group menu-item-inactive'; ?>">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"
                                 stroke-linejoin="round">
@@ -129,12 +148,12 @@ defined( 'ABSPATH' ) || exit;
                             </svg>
 
                             <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                                <?php esc_html_e( 'Clients', 'cyber-wakili' ); ?>
+                                <?php esc_html_e( 'Guests', 'vms' ); ?>
                             </span>
                         </a>
                     </li>
                     <?php endif; ?>
-                    <!-- Menu Item Clients -->
+                    <!-- Menu Item Guests -->
                 </ul>
             </div>
             <!-- Support Group -->
@@ -142,7 +161,7 @@ defined( 'ABSPATH' ) || exit;
             <div>
                 <h3 class="mb-4 text-xs uppercase leading-[20px] text-gray-400">
                     <span class="menu-group-title" :class="sidebarToggle ? 'lg:hidden' : ''">
-                        <?php esc_html_e( 'Support', 'cyber-wakili' ); ?>
+                        <?php esc_html_e( 'Support', 'vms' ); ?>
                     </span>
 
                     <svg :class="sidebarToggle ? 'lg:block hidden' : 'hidden'"
@@ -158,7 +177,7 @@ defined( 'ABSPATH' ) || exit;
 
                     <!-- Menu Item Settings -->
                     <li>
-                        <a href="<?php echo esc_url( site_url( '/settings/' ) ); ?>"
+                        <a href="<?php echo esc_url( site_url( '/settings' ) ); ?>"
                             @click="selected = (selected === 'Settings' ? '':'Settings')"
                             class="<?php echo ( is_page( 'settings' ) ) ? 'menu-item group menu-item-active' : 'menu-item group menu-item-inactive'; ?>">
                             <svg class="<?php echo ( is_page( 'profile' ) ) ? 'menu-item-icon-active' : 'menu-item-icon-inactive'; ?>"
@@ -169,7 +188,7 @@ defined( 'ABSPATH' ) || exit;
                                     fill="" />
                             </svg>
                             <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                                <?php esc_html_e( 'Settings', 'cyber-wakili' ); ?>
+                                <?php esc_html_e( 'Settings', 'vms' ); ?>
                             </span>
                         </a>
                     </li>

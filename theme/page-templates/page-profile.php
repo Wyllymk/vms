@@ -71,7 +71,7 @@ $user_role        = !empty($current_user->roles) ? $current_user->roles[0] : 'gu
                     <div
                         class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
                         <h3 class="mb-5 text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-7">
-                            <?php esc_html_e( 'Profile', 'cyber-wakili' ); ?>
+                            <?php esc_html_e( 'Profile', 'vms' ); ?>
                         </h3>
 
                         <!-- Success Alert -->
@@ -81,7 +81,7 @@ $user_role        = !empty($current_user->roles) ? $current_user->roles[0] : 'gu
                             role="alert" x-data="{ show: true }" x-show="show"
                             x-init="setTimeout(() => show = false, 5000)">
                             <div>
-                                <strong><?php esc_html_e('Success!', 'cyber-wakili'); ?></strong>
+                                <strong><?php esc_html_e('Success!', 'vms'); ?></strong>
                                 <p class="text-sm"><?php echo esc_html($success_message); ?></p>
                             </div>
                             <button type="button"
@@ -106,7 +106,7 @@ $user_role        = !empty($current_user->roles) ? $current_user->roles[0] : 'gu
                             role="alert" x-data="{ show: true }" x-show="show"
                             x-init="setTimeout(() => show = false, 5000)">
                             <div>
-                                <strong><?php esc_html_e('Warning!', 'cyber-wakili'); ?></strong>
+                                <strong><?php esc_html_e('Warning!', 'vms'); ?></strong>
                                 <p class="text-sm"><?php echo esc_html($error); ?></p>
                             </div>
                             <button type="button" class="float-right text-white cursor-pointer hover:text-gray-300"
@@ -152,7 +152,7 @@ $user_role        = !empty($current_user->roles) ? $current_user->roles[0] : 'gu
                                         <div
                                             class="flex flex-col items-center gap-1 text-center xl:flex-row xl:gap-3 xl:text-left">
                                             <p class="text-sm text-gray-500 dark:text-gray-400">
-                                                <?php echo esc_html( $user_role ? ucfirst($user_role) : __( 'No Role Provided', 'cyber-wakili' ) ); ?>
+                                                <?php echo esc_html( $user_role ? ucfirst($user_role) : __( 'No Role Provided', 'vms' ) ); ?>
                                             </p>
                                         </div>
                                     </div>
@@ -164,47 +164,47 @@ $user_role        = !empty($current_user->roles) ? $current_user->roles[0] : 'gu
                             <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
                                 <div>
                                     <h4 class="text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-6">
-                                        <?php esc_html_e( 'Personal Information', 'cyber-wakili' ); ?>
+                                        <?php esc_html_e( 'Personal Information', 'vms' ); ?>
                                     </h4>
 
                                     <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
                                         <div>
                                             <p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                                                <?php esc_html_e( 'First Name', 'cyber-wakili' ); ?>
+                                                <?php esc_html_e( 'First Name', 'vms' ); ?>
                                             </p>
                                             <p id="profile-first-name"
                                                 class="text-sm font-medium text-gray-800 dark:text-white/90">
-                                                <?php echo !empty($current_user->first_name) ? esc_html($current_user->first_name) : esc_html__('Not provided', 'cyber-wakili'); ?>
+                                                <?php echo !empty($current_user->first_name) ? esc_html($current_user->first_name) : esc_html__('Not provided', 'vms'); ?>
                                             </p>
                                         </div>
 
                                         <div>
                                             <p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                                                <?php esc_html_e( 'Last Name', 'cyber-wakili' ); ?>
+                                                <?php esc_html_e( 'Last Name', 'vms' ); ?>
                                             </p>
                                             <p id="profile-last-name"
                                                 class="text-sm font-medium text-gray-800 dark:text-white/90">
-                                                <?php echo !empty($current_user->last_name) ? esc_html($current_user->last_name) : esc_html__('Not provided', 'cyber-wakili'); ?>
+                                                <?php echo !empty($current_user->last_name) ? esc_html($current_user->last_name) : esc_html__('Not provided', 'vms'); ?>
                                             </p>
                                         </div>
 
                                         <div>
                                             <p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                                                <?php esc_html_e( 'Email address', 'cyber-wakili' ); ?>
+                                                <?php esc_html_e( 'Email address', 'vms' ); ?>
                                             </p>
                                             <p id="profile-email"
                                                 class="text-sm font-medium text-gray-800 dark:text-white/90">
-                                                <?php echo !empty($current_user->user_email) ? esc_html($current_user->user_email) : esc_html__('Not provided', 'cyber-wakili'); ?>
+                                                <?php echo !empty($current_user->user_email) ? esc_html($current_user->user_email) : esc_html__('Not provided', 'vms'); ?>
                                             </p>
                                         </div>
 
                                         <div>
                                             <p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                                                <?php esc_html_e( 'Phone', 'cyber-wakili' ); ?>
+                                                <?php esc_html_e( 'Phone', 'vms' ); ?>
                                             </p>
                                             <p id="profile-phone"
                                                 class="text-sm font-medium text-gray-800 dark:text-white/90">
-                                                <?php echo !empty($user_phone) ? esc_html($user_phone) : esc_html__('Not provided', 'cyber-wakili'); ?>
+                                                <?php echo !empty($user_phone) ? esc_html($user_phone) : esc_html__('Not provided', 'vms'); ?>
                                             </p>
                                         </div>
 
@@ -229,7 +229,7 @@ $user_role        = !empty($current_user->roles) ? $current_user->roles[0] : 'gu
                                                     <?php endif; ?>
                                                 </span>
                                                 <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                                                    <?php esc_html_e( 'Receive messages', 'cyber-wakili' ); ?>
+                                                    <?php esc_html_e( 'Receive messages', 'vms' ); ?>
                                                 </span>
                                             </label>
                                         </div>
@@ -254,18 +254,18 @@ $user_role        = !empty($current_user->roles) ? $current_user->roles[0] : 'gu
                                                     <?php endif; ?>
                                                 </span>
                                                 <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                                                    <?php esc_html_e( 'Receive emails', 'cyber-wakili' ); ?>
+                                                    <?php esc_html_e( 'Receive emails', 'vms' ); ?>
                                                 </span>
                                             </label>
                                         </div>
 
                                         <div>
                                             <p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                                                <?php esc_html_e( 'Bio', 'cyber-wakili' ); ?>
+                                                <?php esc_html_e( 'Bio', 'vms' ); ?>
                                             </p>
                                             <p id="profile-bio"
                                                 class="text-sm font-medium text-gray-800 dark:text-white/90">
-                                                <?php echo !empty($user_bio) ? esc_html($user_bio) : esc_html__('No bio provided', 'cyber-wakili'); ?>
+                                                <?php echo !empty($user_bio) ? esc_html($user_bio) : esc_html__('No bio provided', 'vms'); ?>
                                             </p>
                                         </div>
                                     </div>
@@ -279,7 +279,7 @@ $user_role        = !empty($current_user->roles) ? $current_user->roles[0] : 'gu
                                             d="M15.0911 2.78206C14.2125 1.90338 12.7878 1.90338 11.9092 2.78206L4.57524 10.116C4.26682 10.4244 4.0547 10.8158 3.96468 11.2426L3.31231 14.3352C3.25997 14.5833 3.33653 14.841 3.51583 15.0203C3.69512 15.1996 3.95286 15.2761 4.20096 15.2238L7.29355 14.5714C7.72031 14.4814 8.11172 14.2693 8.42013 13.9609L15.7541 6.62695C16.6327 5.74827 16.6327 4.32365 15.7541 3.44497L15.0911 2.78206ZM12.9698 3.84272C13.2627 3.54982 13.7376 3.54982 14.0305 3.84272L14.6934 4.50563C14.9863 4.79852 14.9863 5.2734 14.6934 5.56629L14.044 6.21573L12.3204 4.49215L12.9698 3.84272ZM11.2597 5.55281L5.6359 11.1766C5.53309 11.2794 5.46238 11.4099 5.43238 11.5522L5.01758 13.5185L6.98394 13.1037C7.1262 13.0737 7.25666 13.003 7.35947 12.9002L12.9833 7.27639L11.2597 5.55281Z"
                                             fill="" />
                                     </svg>
-                                    <?php esc_html_e( 'Edit', 'cyber-wakili' ); ?>
+                                    <?php esc_html_e( 'Edit', 'vms' ); ?>
                                 </a>
                             </div>
                         </div>

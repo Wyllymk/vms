@@ -1,6 +1,6 @@
 <?php
 /**
- * The template for displaying the clients page
+ * The template for displaying the guests page
  *
  * @package Visitor_Management_System
  */
@@ -18,7 +18,7 @@ if ( ! ( current_user_can( 'administrator' ) || current_user_can( 'managing_part
 get_header();
 ?>
 
-<section x-data="{ page: 'clients', 'isClientInfoModal': false}" @close-client-modal.window="isClientInfoModal = false">
+<section x-data="{ page: 'guests', 'isGuestInfoModal': false}" @close-guest-modal.window="isGuestInfoModal = false">
     <!-- ===== Page Wrapper Start ===== -->
     <div class="flex h-screen overflow-hidden">
         <!-- ===== Sidebar Start ===== -->
@@ -39,7 +39,7 @@ get_header();
             <main>
                 <div class="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
                     <!-- Breadcrumb Start -->
-                    <div x-data="{ pageName: `Clients`}">
+                    <div x-data="{ pageName: `Guests`}">
                         <?php get_template_part( 'template-parts/content/content', 'breadcrumb' ); ?>
                     </div>
                     <!-- Breadcrumb End -->
@@ -49,7 +49,7 @@ get_header();
                             class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
                             <div class="px-5 py-4 sm:px-6 sm:py-5">
                                 <h3 class="text-base font-medium text-gray-800 dark:text-white/90">
-                                    <?php esc_html_e( 'Clients List', 'cyber-wakili' ); ?>
+                                    <?php esc_html_e( 'Guests List', 'vms' ); ?>
                                 </h3>
                             </div>
                             <div class="flex flex-wrap justify-between w-full px-5 mb-4 sm:px-6 ">
@@ -65,7 +65,7 @@ get_header();
                                                         fill="" />
                                                 </svg>
                                             </span>
-                                            <input type="text" placeholder="Filter clients by username..."
+                                            <input type="text" placeholder="Filter guests by username..."
                                                 name="user_search"
                                                 class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pr-14 pl-12 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden xl:w-[430px] dark:border-gray-800 dark:bg-gray-900 dark:bg-white/[0.03] dark:text-white/90 dark:placeholder:text-white/30" />
 
@@ -80,15 +80,15 @@ get_header();
 
                                 <!-- Register Button -->
                                 <div class="flex items-center justify-end w-full md:w-1/2">
-                                    <a @click="isClientInfoModal = true"
+                                    <a @click="isGuestInfoModal = true"
                                         class="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg cursor-pointer bg-brand-500 shadow-theme-xs hover:bg-brand-600">
-                                        <?php esc_html_e( 'Register Client', 'cyber-wakili' ); ?>
+                                        <?php esc_html_e( 'Register Guest', 'vms' ); ?>
                                     </a>
                                 </div>
                             </div>
                             <div class="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
-                                <?php if (!empty($clients_success)) : ?>
-                                <?php foreach ((array)$clients_success as $client_success) : ?>
+                                <?php if (!empty($guests_success)) : ?>
+                                <?php foreach ((array)$guests_success as $guest_success) : ?>
                                 <div class="flex items-center justify-between p-4 mb-4 text-green-700 bg-green-100 border-l-4 border-green-500 rounded"
                                     role="alert">
                                     <div class="flex items-center">
@@ -98,13 +98,13 @@ get_header();
                                                 clip-rule="evenodd"></path>
                                         </svg>
                                         <div>
-                                            <p class="font-medium"><?php esc_html_e('Success!', 'cyber-wakili'); ?></p>
-                                            <p class="text-sm"><?php echo esc_html($client_success); ?></p>
+                                            <p class="font-medium"><?php esc_html_e('Success!', 'vms'); ?></p>
+                                            <p class="text-sm"><?php echo esc_html($guest_success); ?></p>
                                         </div>
                                     </div>
                                     <button type="button" class="text-green-700 hover:text-green-900"
                                         onclick="this.parentElement.style.display='none';">
-                                        <span class="sr-only"><?php esc_html_e('Close', 'cyber-wakili'); ?></span>
+                                        <span class="sr-only"><?php esc_html_e('Close', 'vms'); ?></span>
                                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                             <path fill-rule="evenodd"
                                                 d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
@@ -115,8 +115,8 @@ get_header();
                                 <?php endforeach; ?>
                                 <?php endif; ?>
 
-                                <?php if (!empty($clients_error)) : ?>
-                                <?php foreach ((array)$clients_error as $client_error) : ?>
+                                <?php if (!empty($guests_error)) : ?>
+                                <?php foreach ((array)$guests_error as $guest_error) : ?>
                                 <div class="flex items-center justify-between p-4 mb-4 text-red-700 bg-red-100 border-l-4 border-red-500 rounded"
                                     role="alert">
                                     <div class="flex items-center">
@@ -126,13 +126,13 @@ get_header();
                                                 clip-rule="evenodd"></path>
                                         </svg>
                                         <div>
-                                            <p class="font-medium"><?php esc_html_e('Error!', 'cyber-wakili'); ?></p>
-                                            <p class="text-sm"><?php echo esc_html($client_error); ?></p>
+                                            <p class="font-medium"><?php esc_html_e('Error!', 'vms'); ?></p>
+                                            <p class="text-sm"><?php echo esc_html($guest_error); ?></p>
                                         </div>
                                     </div>
                                     <button type="button" class="text-red-700 hover:text-red-900"
                                         onclick="this.parentElement.style.display='none';">
-                                        <span class="sr-only"><?php esc_html_e('Close', 'cyber-wakili'); ?></span>
+                                        <span class="sr-only"><?php esc_html_e('Close', 'vms'); ?></span>
                                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                             <path fill-rule="evenodd"
                                                 d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
@@ -147,7 +147,7 @@ get_header();
                             </div>
                             <div class="p-5 border-t border-gray-100 dark:border-gray-800 sm:p-6">
                                 <!-- ====== Table Six Start -->
-                                <?php get_template_part( 'template-parts/content/content', 'clients-table' ); ?>
+                                <?php get_template_part( 'template-parts/content/content', 'guests-table' ); ?>
                                 <!-- ====== Table Six End -->
                             </div>
                         </div>
@@ -161,7 +161,7 @@ get_header();
     <!-- ===== Page Wrapper End ===== -->
 
     <!-- BEGIN MODAL -->
-    <?php get_template_part( 'template-parts/content/content', 'client-modal' ); ?>
+    <?php get_template_part( 'template-parts/content/content', 'guest-modal' ); ?>
     <!-- END MODAL -->
 </section>
 
