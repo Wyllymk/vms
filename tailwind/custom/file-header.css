@@ -1,0 +1,25 @@
+/*!
+Theme Name: Visitor Management System
+Theme URI: https://github.com/Wyllymk/vms
+Description: A custom Visitor Management System theme based on _tw, built with Tailwind CSS and optimized for WordPress.
+Version: 1.0.0
+Author: Wilson Mbuthia
+Author URI: https://wilsondevops.com/
+Text Domain: clubvms
+Requires at least: 6.8
+Requires PHP: 7.4
+License: GNU General Public License v2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+
+This theme, like WordPress, is licensed under the GPL.
+You are free to use, modify, and redistribute it under the same license.
+Use it to build something cool, have fun, and share what you’ve learned.
+
+Visitor Management System is based on _tw (https://underscoretw.com/), © 2021–2025 Greg Sullivan.
+_tw is distributed under the terms of the GNU GPL v2 or later.
+
+_tw is based on:
+- Underscores (https://underscores.me/), © 2012–2025 Automattic, Inc.
+- Varia (https://github.com/Automattic/themes/tree/master/varia), © 2012–2025 Automattic, Inc.
+Both are distributed under the GNU GPL v2 or later.
+*/
