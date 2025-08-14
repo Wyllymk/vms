@@ -17,19 +17,19 @@ get_header();
 
         <!-- ===== Page Wrapper Start ===== -->
         <div
-            class="relative z-1 flex min-h-screen bg-gray-100 dark:bg-gray-900 text-black dark:text-white flex-col items-center justify-center overflow-hidden p-6">
+            class="relative flex flex-col items-center justify-center min-h-screen p-6 overflow-hidden text-black bg-gray-100 z-1 dark:bg-gray-900 dark:text-white">
             <!-- ===== Common Grid Shape Start ===== -->
-            <div class="absolute right-0 top-0 -z-1 w-full max-w-3xs xl:max-w-md">
+            <div class="absolute top-0 right-0 w-full -z-1 max-w-3xs xl:max-w-md">
                 <img src="<?php echo get_template_directory_uri(); ?>/assets/images/shape/grid-01.svg" alt="grid" />
             </div>
-            <div class="absolute bottom-0 left-0 -z-1 w-full max-w-3xs rotate-180 xl:max-w-md">
+            <div class="absolute bottom-0 left-0 w-full rotate-180 -z-1 max-w-3xs xl:max-w-md">
                 <img src="<?php echo get_template_directory_uri(); ?>/assets/images/shape/grid-01.svg" alt="grid" />
             </div>
             <!-- ===== Common Grid Shape End ===== -->
 
             <!-- Centered Content -->
             <div class="mx-auto w-full max-w-[242px] text-center sm:max-w-[472px]">
-                <h1 class="mb-8 text-title-md font-bold text-gray-800 dark:text-white/90 xl:text-title-2xl">
+                <h1 class="mb-8 font-bold text-gray-800 text-title-md dark:text-white/90 xl:text-title-2xl">
                     <?php esc_html_e( 'ERROR', 'vms' ); ?>
                 </h1>
                 <img src="<?php echo get_template_directory_uri(); ?>/assets/images/error/404.svg" alt="404"
@@ -37,7 +37,7 @@ get_header();
                 <img src="<?php echo get_template_directory_uri(); ?>/assets/images/error/404-dark.svg" alt="404"
                     class="hidden dark:block" />
 
-                <p class="mb-6 mt-10 text-base text-gray-700 dark:text-gray-400 sm:text-lg">
+                <p class="mt-10 mb-6 text-base text-gray-700 dark:text-gray-400 sm:text-lg">
                     <?php esc_html_e( "We can't seem to find the page you are looking for!", 'vms' ); ?>
                 </p>
 
@@ -49,7 +49,7 @@ get_header();
 
             <!-- Toggler -->
             <div class="fixed z-50 hidden bottom-6 right-6 sm:block">
-                <a class="cursor-pointer inline-flex items-center justify-center text-white transition-colors rounded-full size-14 bg-brand-500 hover:bg-brand-600"
+                <a class="inline-flex items-center justify-center text-white transition-colors rounded-full cursor-pointer size-14 bg-brand-500 hover:bg-brand-600"
                     @click.prevent="darkMode = !darkMode">
                     <svg class="hidden fill-current dark:block" width="20" height="20" viewBox="0 0 20 20" fill="none"
                         xmlns="http://www.w3.org/2000/svg">
@@ -68,7 +68,7 @@ get_header();
 
             <!-- Footer -->
             <p
-                class="absolute bottom-10 left-1/2 -translate-x-1/2 text-center text-sm text-gray-500 dark:text-gray-400">
+                class="absolute text-sm text-center text-gray-500 -translate-x-1/2 bottom-10 left-1/2 dark:text-gray-400">
                 &copy; <span id="year"></span> - <?php esc_html_e( 'Nyeri Club', 'vms' ); ?>
             </p>
         </div>

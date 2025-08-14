@@ -22,7 +22,7 @@ $receive_emails   = get_user_meta( $user_id, 'receive_emails', true );
 ?>
 
 <div x-show="isProfileInfoModal" class="fixed inset-0 flex items-center justify-center p-5 overflow-y-auto z-99999">
-    <div class="modal-close-btn fixed inset-0 h-full w-full bg-gray-400/50 backdrop-blur-sm"></div>
+    <div class="fixed inset-0 w-full h-full modal-close-btn bg-gray-400/50 backdrop-blur-sm"></div>
     <div @click.outside="isProfileInfoModal = false"
         class="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
         <!-- close btn -->
@@ -100,7 +100,7 @@ $receive_emails   = get_user_meta( $user_id, 'receive_emails', true );
                             <label class="flex items-center">
                                 <input type="checkbox" name="receive_messages" value="yes"
                                     <?php checked( $receive_messages, 'yes' ); ?>
-                                    class="rounded border-gray-300 text-brand-500 shadow-sm focus:border-brand-300 focus:ring focus:ring-brand-200 focus:ring-opacity-50" />
+                                    class="border-gray-300 rounded shadow-sm text-brand-500 focus:border-brand-300 focus:ring focus:ring-brand-200 focus:ring-opacity-50" />
                                 <span
                                     class="ml-2 text-sm text-gray-700 dark:text-gray-300"><?php esc_html_e( 'Receive messages', 'cyber-wakili' ); ?></span>
                             </label>
@@ -110,7 +110,7 @@ $receive_emails   = get_user_meta( $user_id, 'receive_emails', true );
                             <label class="flex items-center">
                                 <input type="checkbox" name="receive_emails" value="yes"
                                     <?php checked( $receive_emails, 'yes' ); ?>
-                                    class="rounded border-gray-300 text-brand-500 shadow-sm focus:border-brand-300 focus:ring focus:ring-brand-200 focus:ring-opacity-50" />
+                                    class="border-gray-300 rounded shadow-sm text-brand-500 focus:border-brand-300 focus:ring focus:ring-brand-200 focus:ring-opacity-50" />
                                 <span
                                     class="ml-2 text-sm text-gray-700 dark:text-gray-300"><?php esc_html_e( 'Receive emails', 'cyber-wakili' ); ?></span>
                             </label>

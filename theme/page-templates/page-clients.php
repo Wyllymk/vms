@@ -52,12 +52,12 @@ get_header();
                                     <?php esc_html_e( 'Clients List', 'cyber-wakili' ); ?>
                                 </h3>
                             </div>
-                            <div class="flex flex-wrap w-full justify-between mb-4 px-5 sm:px-6 ">
+                            <div class="flex flex-wrap justify-between w-full px-5 mb-4 sm:px-6 ">
                                 <!-- Search Form -->
-                                <div class="flex w-full items-center  md:w-1/2 mb-4 md:mb-0">
+                                <div class="flex items-center w-full mb-4 md:w-1/2 md:mb-0">
                                     <form action="" method="get">
                                         <div class="relative">
-                                            <span class="absolute top-1/2 left-4 -translate-y-1/2">
+                                            <span class="absolute -translate-y-1/2 top-1/2 left-4">
                                                 <svg class="fill-gray-500 dark:fill-gray-400" width="20" height="20"
                                                     viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                     <path fill-rule="evenodd" clip-rule="evenodd"
@@ -81,7 +81,7 @@ get_header();
                                 <!-- Register Button -->
                                 <div class="flex items-center justify-end w-full md:w-1/2">
                                     <a @click="isClientInfoModal = true"
-                                        class="cursor-pointer inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600">
+                                        class="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg cursor-pointer bg-brand-500 shadow-theme-xs hover:bg-brand-600">
                                         <?php esc_html_e( 'Register Client', 'cyber-wakili' ); ?>
                                     </a>
                                 </div>
@@ -89,7 +89,7 @@ get_header();
                             <div class="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
                                 <?php if (!empty($clients_success)) : ?>
                                 <?php foreach ((array)$clients_success as $client_success) : ?>
-                                <div class="flex items-center justify-between bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4 rounded"
+                                <div class="flex items-center justify-between p-4 mb-4 text-green-700 bg-green-100 border-l-4 border-green-500 rounded"
                                     role="alert">
                                     <div class="flex items-center">
                                         <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
@@ -117,7 +117,7 @@ get_header();
 
                                 <?php if (!empty($clients_error)) : ?>
                                 <?php foreach ((array)$clients_error as $client_error) : ?>
-                                <div class="flex items-center justify-between bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 rounded"
+                                <div class="flex items-center justify-between p-4 mb-4 text-red-700 bg-red-100 border-l-4 border-red-500 rounded"
                                     role="alert">
                                     <div class="flex items-center">
                                         <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">

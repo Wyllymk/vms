@@ -104,7 +104,7 @@ if ( isset( $_POST['signup'] ) ) {
                 <div class="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
                     <!-- Error Alert -->
                     <?php if ( ! empty( $errors ) ) : ?>
-                    <div class="flex items-center justify-between bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4"
+                    <div class="flex items-center justify-between p-4 mb-4 text-red-700 bg-red-100 border-l-4 border-red-500"
                         role="alert">
                         <div>
                             <strong><?php esc_html_e( 'Warning!', 'cyber-wakili' ); ?></strong>
@@ -118,7 +118,7 @@ if ( isset( $_POST['signup'] ) ) {
                     <?php endif; ?>
                     <!-- Success Alert -->
                     <?php if ( isset( $success_message ) ) : ?>
-                    <div class="flex items-center justify-between bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4"
+                    <div class="flex items-center justify-between p-4 mb-4 text-green-700 bg-green-100 border-l-4 border-green-500"
                         role="alert">
                         <div>
                             <strong><?php esc_html_e( 'Success!', 'cyber-wakili' ); ?></strong>
@@ -140,7 +140,7 @@ if ( isset( $_POST['signup'] ) ) {
                     <div>
                         <div class="grid grid-cols-1 gap-3 sm:grid-cols-1">
                             <a href="<?php echo esc_url(\WyllyMk\CyberWakili\CW_Google::get_instance()->get_google_auth_url()); ?>"
-                                class="cursor-pointer inline-flex items-center justify-center gap-3 py-3 text-sm font-normal text-gray-700 transition-colors bg-gray-100 rounded-lg px-7 hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10">
+                                class="inline-flex items-center justify-center gap-3 py-3 text-sm font-normal text-gray-700 transition-colors bg-gray-100 rounded-lg cursor-pointer px-7 hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10">
                                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none"
                                     xmlns="http://www.w3.org/2000/svg">
                                     <path

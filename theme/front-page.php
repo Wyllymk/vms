@@ -19,31 +19,31 @@ get_header();
 
 <section id="primary">
     <main id="main">
-        <div class="flex h-screen bg-gray-100 dark:bg-gray-900 text-black dark:text-white items-center justify-center">
+        <div class="flex items-center justify-center h-screen text-black bg-gray-100 dark:bg-gray-900 dark:text-white">
 
             <!-- Hero Section - Tailwind Component -->
-            <section id="scrollspyHero" class="w-full flex justify-center items-center">
-                <div class="container mx-auto px-6">
-                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-12">
+            <section id="scrollspyHero" class="flex items-center justify-center w-full">
+                <div class="container px-6 mx-auto">
+                    <div class="flex flex-col gap-12 lg:flex-row lg:items-center lg:justify-between">
                         <!-- Text Column -->
                         <div class="lg:w-1/2">
                             <h1
-                                class="text-4xl md:text-5xl lg:text-6xl font-bold font-oswald mb-4 text-regal-blue dark:text-gray-100 leading-tight md:leading-snug">
+                                class="mb-4 text-4xl font-bold leading-tight md:text-5xl lg:text-6xl font-oswald text-regal-blue dark:text-gray-100 md:leading-snug">
                                 <span>
                                     <?php esc_html_e( 'Welcome to Nyeri Club', 'vms' ); ?>
                                 </span><br>
                                 <span
-                                    class="text-3xl md:text-4xl lg:text-5xl text-red-600 dark:text-red-400 font-satisfy">
+                                    class="text-3xl text-red-600 md:text-4xl lg:text-5xl dark:text-red-400 font-satisfy">
                                     <?php esc_html_e( 'Visitor Management System', 'vms' ); ?>
                                 </span>
                             </h1>
-                            <p class="text-lg md:text-xl mb-8 text-gray-700 dark:text-gray-300">
+                            <p class="mb-8 text-lg text-gray-700 md:text-xl dark:text-gray-300">
                                 <?php esc_html_e( 'A secure and streamlined platform for managing club visitors, members, and reciprocating members — all in one place.', 'vms' ); ?>
                             </p>
                             <div class="flex gap-4">
                                 <?php if ( ! is_user_logged_in() ) : ?>
                                 <a href="<?php echo esc_url( site_url( '/login/' ) ); ?>"
-                                    class="cursor-pointer inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600">
+                                    class="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg cursor-pointer bg-brand-500 shadow-theme-xs hover:bg-brand-600">
                                     <svg class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none"
                                         xmlns="http://www.w3.org/2000/svg">
                                         <path fill-rule="evenodd" clip-rule="evenodd"
@@ -54,7 +54,7 @@ get_header();
                                 </a>
                                 <?php else : ?>
                                 <a href="<?php echo esc_url( site_url( '/dashboard/' ) ); ?>"
-                                    class="cursor-pointer inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600">
+                                    class="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg cursor-pointer bg-brand-500 shadow-theme-xs hover:bg-brand-600">
                                     <svg class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none"
                                         xmlns="http://www.w3.org/2000/svg">
                                         <path fill-rule="evenodd" clip-rule="evenodd"
@@ -69,8 +69,8 @@ get_header();
                         </div>
 
                         <!-- Image Column with Masking -->
-                        <div class="relative text-center lg:w-1/2 lg:text-right overflow-hidden">
-                            <img class="mx-auto lg:mx-0 img-fluid object-cover" loading="lazy"
+                        <div class="relative overflow-hidden text-center lg:w-1/2 lg:text-right">
+                            <img class="object-cover mx-auto lg:mx-0 img-fluid" loading="lazy"
                                 src="<?php echo get_template_directory_uri() . '/assets/images/home/club-house.png'; ?>"
                                 alt="404 Error Image" style="
 									-webkit-mask-image: url(<?php echo get_template_directory_uri() . '/assets/images/home/hero-blob-1.svg'; ?>);
@@ -84,7 +84,7 @@ get_header();
 								">
                             <!-- Toggler -->
                             <div class="fixed z-50 hidden bottom-6 right-6 sm:block">
-                                <a class="cursor-pointer inline-flex items-center justify-center text-white transition-colors rounded-full size-14 bg-brand-500 hover:bg-brand-600"
+                                <a class="inline-flex items-center justify-center text-white transition-colors rounded-full cursor-pointer size-14 bg-brand-500 hover:bg-brand-600"
                                     @click.prevent="darkMode = !darkMode">
                                     <svg class="hidden fill-current dark:block" width="20" height="20"
                                         viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">

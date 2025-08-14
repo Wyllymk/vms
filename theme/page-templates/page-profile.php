@@ -77,7 +77,7 @@ $user_role        = !empty($current_user->roles) ? $current_user->roles[0] : 'gu
                         <!-- Success Alert -->
                         <?php if (!empty($success_messages)) : ?>
                         <?php foreach ($success_messages as $success_message) : ?>
-                        <div class="relative flex items-center justify-between bg-green-500 text-white p-4 mb-4 rounded"
+                        <div class="relative flex items-center justify-between p-4 mb-4 text-white bg-green-500 rounded"
                             role="alert" x-data="{ show: true }" x-show="show"
                             x-init="setTimeout(() => show = false, 5000)">
                             <div>
@@ -85,11 +85,11 @@ $user_role        = !empty($current_user->roles) ? $current_user->roles[0] : 'gu
                                 <p class="text-sm"><?php echo esc_html($success_message); ?></p>
                             </div>
                             <button type="button"
-                                class="cursor-pointer text-lg float-right text-white hover:text-gray-300"
+                                class="float-right text-lg text-white cursor-pointer hover:text-gray-300"
                                 @click="show = false">×</button>
 
                             <!-- Countdown bar container -->
-                            <div class="absolute bottom-0 left-0 right-0 h-1 bg-green-600 overflow-hidden rounded-b">
+                            <div class="absolute bottom-0 left-0 right-0 h-1 overflow-hidden bg-green-600 rounded-b">
                                 <!-- Moving bar - now scales from LEFT to RIGHT -->
                                 <div class="h-full w-full bg-green-700 origin-left transition-transform duration-[5000ms] ease-linear"
                                     x-init="$el.style.transform = 'scaleX(1)'; setTimeout(() => { $el.style.transform = 'scaleX(0)' }, 10)">
@@ -102,18 +102,18 @@ $user_role        = !empty($current_user->roles) ? $current_user->roles[0] : 'gu
                         <!-- Error Alert -->
                         <?php if (!empty($errors)) : ?>
                         <?php foreach ($errors as $error) : ?>
-                        <div class="relative flex items-center justify-between bg-red-500 text-white p-4 mb-4 rounded"
+                        <div class="relative flex items-center justify-between p-4 mb-4 text-white bg-red-500 rounded"
                             role="alert" x-data="{ show: true }" x-show="show"
                             x-init="setTimeout(() => show = false, 5000)">
                             <div>
                                 <strong><?php esc_html_e('Warning!', 'cyber-wakili'); ?></strong>
                                 <p class="text-sm"><?php echo esc_html($error); ?></p>
                             </div>
-                            <button type="button" class="cursor-pointer float-right text-white hover:text-gray-300"
+                            <button type="button" class="float-right text-white cursor-pointer hover:text-gray-300"
                                 @click="show = false">×</button>
 
                             <!-- Countdown bar container -->
-                            <div class="absolute bottom-0 left-0 right-0 h-1 bg-red-600 overflow-hidden rounded-b">
+                            <div class="absolute bottom-0 left-0 right-0 h-1 overflow-hidden bg-red-600 rounded-b">
                                 <!-- Moving bar - scales from left to right -->
                                 <div class="h-full w-full bg-red-700 origin-left transition-transform duration-[5000ms] ease-linear"
                                     x-init="$el.style.transform = 'scaleX(1)'; setTimeout(() => { $el.style.transform = 'scaleX(0)' }, 10)">
@@ -128,12 +128,12 @@ $user_role        = !empty($current_user->roles) ? $current_user->roles[0] : 'gu
                             <div class="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
                                 <div class="flex flex-col items-center w-full gap-6 xl:flex-row">
                                     <div class="relative">
-                                        <img class="rounded-full w-24 h-24 object-cover border-2 border-gray-200 dark:border-gray-700"
+                                        <img class="object-cover w-24 h-24 border-2 border-gray-200 rounded-full dark:border-gray-700"
                                             src="<?php echo esc_url(get_user_meta($user_id, 'profile_picture', true) ?: get_avatar_url($user_id)); ?>"
                                             alt="Profile Picture">
                                         <div
-                                            class="absolute bottom-2 right-2 flex items-center justify-center bg-opacity-50 hover:bg-opacity-75 cursor-pointer rounded-full p-1">
-                                            <label for="profile_picture" class="cursor-pointer text-black">
+                                            class="absolute flex items-center justify-center p-1 bg-opacity-50 rounded-full cursor-pointer bottom-2 right-2 hover:bg-opacity-75">
+                                            <label for="profile_picture" class="text-black cursor-pointer">
                                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20"
                                                     height="20" fill="currentColor" class="text-xl">
                                                     <path

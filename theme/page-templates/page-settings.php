@@ -50,14 +50,14 @@ $last_checked_time = get_option( 'mobilesasa_last_check', 'N/A' );
                     <!-- Main content here grows to fill the available space -->
                     <div class="content-page">
                         <!-- Wrapper for light/dark mode support -->
-                        <div class="content-page text-gray-800 dark:text-gray-100">
-                            <div class="mx-auto py-6">
+                        <div class="text-gray-800 content-page dark:text-gray-100">
+                            <div class="py-6 mx-auto">
                                 <div class="flex flex-col">
                                     <div
                                         class="rounded-2xl shadow-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
                                         <!-- Card Header -->
                                         <div
-                                            class="flex justify-between items-center px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                                            class="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                                             <h4 class="text-lg font-semibold">Settings</h4>
                                         </div>
 
@@ -69,7 +69,7 @@ $last_checked_time = get_option( 'mobilesasa_last_check', 'N/A' );
                                                 if ( isset( $_SESSION['settings_success'] ) && ! empty( $_SESSION['settings_success'] ) ) :
                                                     foreach ( $_SESSION['settings_success'] as $success_message ) :
                                                 ?>
-                                            <div class="flex items-center justify-between bg-green-500 border-l-4 border-green-700 text-white p-4 mb-4 rounded"
+                                            <div class="flex items-center justify-between p-4 mb-4 text-white bg-green-500 border-l-4 border-green-700 rounded"
                                                 role="alert">
                                                 <div>
                                                     <strong>Success!</strong>
@@ -77,7 +77,7 @@ $last_checked_time = get_option( 'mobilesasa_last_check', 'N/A' );
                                                         <?php echo ucwords( esc_html( $success_message ) ); ?></p>
                                                 </div>
                                                 <button type="button"
-                                                    class="cursor-pointer float-right text-white hover:text-gray-300"
+                                                    class="float-right text-white cursor-pointer hover:text-gray-300"
                                                     onclick="this.parentElement.style.display='none';">×</button>
                                             </div>
                                             <?php
@@ -89,12 +89,12 @@ $last_checked_time = get_option( 'mobilesasa_last_check', 'N/A' );
                                             <!-- Update Account Info -->
                                             <div class="overflow-auto">
                                                 <h3
-                                                    class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4 border-b border-gray-200 dark:border-gray-700">
+                                                    class="mb-4 text-lg font-semibold text-gray-700 border-b border-gray-200 dark:text-gray-300 dark:border-gray-700">
                                                     Update SMS Information
                                                 </h3>
                                                 <form action="" method="post" enctype="multipart/form-data">
                                                     <?php wp_nonce_field( 'update_account_data', '_wpnonce_update_account_data' ); ?>
-                                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                                         <!-- Sender ID -->
                                                         <div class="mb-4">
                                                             <div class="flex space-x-4">
@@ -152,9 +152,9 @@ $last_checked_time = get_option( 'mobilesasa_last_check', 'N/A' );
                                                         </div>
                                                         <!-- End of API Token -->
                                                     </div>
-                                                    <div class="mt-4 flex justify-center space-x-2">
+                                                    <div class="flex justify-center mt-4 space-x-2">
                                                         <a type="submit" name="update_details"
-                                                            class="cursor-pointer inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600">
+                                                            class="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-white transition rounded-lg cursor-pointer bg-brand-500 shadow-theme-xs hover:bg-brand-600">
                                                             Update Settings
                                                         </a>
                                                     </div>

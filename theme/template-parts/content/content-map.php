@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
             <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">
                 Client Demographics
             </h3>
-            <p class="mt-1 text-theme-sm text-gray-500 dark:text-gray-400">
+            <p class="mt-1 text-gray-500 text-theme-sm dark:text-gray-400">
                 Distribution of clients by jurisdiction
             </p>
         </div>
@@ -33,20 +33,20 @@ defined( 'ABSPATH' ) || exit;
                 </svg>
             </button>
             <div x-show="openDropDown" @click.outside="openDropDown = false"
-                class="absolute right-0 top-full z-40 w-40 space-y-1 rounded-2xl border border-gray-200 bg-white p-2 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark">
+                class="absolute right-0 z-40 w-40 p-2 space-y-1 bg-white border border-gray-200 top-full rounded-2xl shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark">
                 <button
-                    class="flex w-full rounded-lg px-3 py-2 text-left text-theme-xs font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300">
+                    class="flex w-full px-3 py-2 font-medium text-left text-gray-500 rounded-lg text-theme-xs hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300">
                     View Details
                 </button>
                 <button
-                    class="flex w-full rounded-lg px-3 py-2 text-left text-theme-xs font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300">
+                    class="flex w-full px-3 py-2 font-medium text-left text-gray-500 rounded-lg text-theme-xs hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300">
                     Export Data
                 </button>
             </div>
         </div>
     </div>
     <div
-        class="border-gary-200 my-6 overflow-hidden rounded-2xl border bg-gray-50 px-4 py-6 dark:border-gray-800 dark:bg-gray-900 sm:px-6">
+        class="px-4 py-6 my-6 overflow-hidden border border-gary-200 rounded-2xl bg-gray-50 dark:border-gray-800 dark:bg-gray-900 sm:px-6">
         <div id="legalClientsMap"
             class="legal-clients-map map-btn -mx-4 -my-6 h-[212px] w-[252px] 2xsm:w-[307px] xsm:w-[358px] sm:-mx-6 md:w-[668px] lg:w-[634px] xl:w-[393px] 2xl:w-[554px]">
         </div>
@@ -55,15 +55,15 @@ defined( 'ABSPATH' ) || exit;
     <div class="space-y-5">
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div class="w-full max-w-8 items-center rounded-full">
+                <div class="items-center w-full rounded-full max-w-8">
                     <img src="<?php echo get_template_directory_uri(); ?>/assets/images/country/country-01.svg"
                         alt="usa" />
                 </div>
                 <div>
-                    <p class="text-theme-sm font-semibold text-gray-800 dark:text-white/90">
+                    <p class="font-semibold text-gray-800 text-theme-sm dark:text-white/90">
                         United States
                     </p>
-                    <span class="block text-theme-xs text-gray-500 dark:text-gray-400">
+                    <span class="block text-gray-500 text-theme-xs dark:text-gray-400">
                         1,842 Clients
                     </span>
                 </div>
@@ -75,7 +75,7 @@ defined( 'ABSPATH' ) || exit;
                         class="absolute left-0 top-0 flex h-full w-[68%] items-center justify-center rounded-sm bg-brand-500 text-xs font-medium text-white">
                     </div>
                 </div>
-                <p class="text-theme-sm font-medium text-gray-800 dark:text-white/90">
+                <p class="font-medium text-gray-800 text-theme-sm dark:text-white/90">
                     68%
                 </p>
             </div>
@@ -83,15 +83,15 @@ defined( 'ABSPATH' ) || exit;
 
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div class="w-full max-w-8 items-center rounded-full">
+                <div class="items-center w-full rounded-full max-w-8">
                     <img src="<?php echo get_template_directory_uri(); ?>/assets/images/country/country-02.svg"
                         alt="france" />
                 </div>
                 <div>
-                    <p class="text-theme-sm font-semibold text-gray-800 dark:text-white/90">
+                    <p class="font-semibold text-gray-800 text-theme-sm dark:text-white/90">
                         France
                     </p>
-                    <span class="block text-theme-xs text-gray-500 dark:text-gray-400">
+                    <span class="block text-gray-500 text-theme-xs dark:text-gray-400">
                         792 Clients
                     </span>
                 </div>
@@ -103,7 +103,7 @@ defined( 'ABSPATH' ) || exit;
                         class="absolute left-0 top-0 flex h-full w-[29%] items-center justify-center rounded-sm bg-brand-500 text-xs font-medium text-white">
                     </div>
                 </div>
-                <p class="text-theme-sm font-medium text-gray-800 dark:text-white/90">
+                <p class="font-medium text-gray-800 text-theme-sm dark:text-white/90">
                     29%
                 </p>
             </div>
@@ -111,15 +111,15 @@ defined( 'ABSPATH' ) || exit;
 
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div class="w-full max-w-8 items-center rounded-full">
+                <div class="items-center w-full rounded-full max-w-8">
                     <img src="<?php echo get_template_directory_uri(); ?>/assets/images/country/country-03.svg"
                         alt="eu" />
                 </div>
                 <div>
-                    <p class="text-theme-sm font-semibold text-gray-800 dark:text-white/90">
+                    <p class="font-semibold text-gray-800 text-theme-sm dark:text-white/90">
                         European Union
                     </p>
-                    <span class="block text-theme-xs text-gray-500 dark:text-gray-400">
+                    <span class="block text-gray-500 text-theme-xs dark:text-gray-400">
                         421 Clients
                     </span>
                 </div>
@@ -131,7 +131,7 @@ defined( 'ABSPATH' ) || exit;
                         class="absolute left-0 top-0 flex h-full w-[15%] items-center justify-center rounded-sm bg-brand-500 text-xs font-medium text-white">
                     </div>
                 </div>
-                <p class="text-theme-sm font-medium text-gray-800 dark:text-white/90">
+                <p class="font-medium text-gray-800 text-theme-sm dark:text-white/90">
                     15%
                 </p>
             </div>

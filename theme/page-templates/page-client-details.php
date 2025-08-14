@@ -387,7 +387,7 @@ get_header();
                             <?php get_template_part( 'template-parts/content/content', 'breadcrumb' ); ?>
                         </div>
                         <!-- Breadcrumb End -->
-                        <div class="mx-auto py-8">
+                        <div class="py-8 mx-auto">
                             <div class="flex justify-center">
                                 <div class="w-full lg:w-5/6 xl:4/5 2xl:3/4">
                                     <!-- Personal Information -->
@@ -395,14 +395,14 @@ get_header();
                                         class="rounded-2xl shadow-lg border border-gray-200 bg-white sm:p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
                                         <!-- Header with click toggle functionality -->
                                         <div @click="open = !open; localStorage.setItem('infoOpen', open)"
-                                            class="px-6 py-4 cursor-pointer flex items-center justify-between">
+                                            class="flex items-center justify-between px-6 py-4 cursor-pointer">
                                             <h3
-                                                class="text-lg font-oswald font-semibold text-regal-blue dark:text-white">
+                                                class="text-lg font-semibold font-oswald text-regal-blue dark:text-white">
                                                 Personal Information
                                             </h3>
                                             <!-- SVG arrow icon -->
                                             <svg :class="{'rotate-180': open}"
-                                                class="w-5 h-5 transform transition-transform duration-300 text-gray-500 dark:text-gray-300"
+                                                class="w-5 h-5 text-gray-500 transition-transform duration-300 transform dark:text-gray-300"
                                                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                                 stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -416,7 +416,7 @@ get_header();
                                             <!-- Success Alert -->
                                             <?php if (!empty($client_u_success)) : ?>
                                             <?php foreach ($client_u_success as $message) : ?>
-                                            <div class="flex items-center justify-between bg-green-500 border-l-4 border-green-700 text-white p-4 mb-4 rounded"
+                                            <div class="flex items-center justify-between p-4 mb-4 text-white bg-green-500 border-l-4 border-green-700 rounded"
                                                 role="alert">
                                                 <div>
                                                     <strong>Success!</strong>
@@ -431,7 +431,7 @@ get_header();
                                             <!-- Error Alert -->
                                             <?php if (!empty($client_u_error)) : ?>
                                             <?php foreach ($client_u_error as $message) : ?>
-                                            <div class="flex items-center justify-between bg-red-500 border-l-4 border-red-700 text-white p-4 mb-4 rounded"
+                                            <div class="flex items-center justify-between p-4 mb-4 text-white bg-red-500 border-l-4 border-red-700 rounded"
                                                 role="alert">
                                                 <div>
                                                     <strong>Error!</strong>
@@ -444,17 +444,17 @@ get_header();
                                             <?php endif; ?>
 
                                             <form action="" method="post" enctype="multipart/form-data">
-                                                <div class="mb-4 flex flex-col items-center">
+                                                <div class="flex flex-col items-center mb-4">
                                                     <div class="relative">
                                                         <!-- Display the uploaded profile picture if available, or fall back to default avatar -->
-                                                        <img class="rounded-full w-24 h-24 object-cover border-2 border-gray-200 dark:border-gray-700"
+                                                        <img class="object-cover w-24 h-24 border-2 border-gray-200 rounded-full dark:border-gray-700"
                                                             src="<?php echo esc_url(get_user_meta($user_id, 'profile_picture', true) ?: get_avatar_url($user_id)); ?>"
                                                             alt="Profile Picture">
                                                         <!-- Positioned at the bottom-right inside the profile picture -->
                                                         <div
-                                                            class="absolute bottom-2 right-2 flex items-center justify-center bg-opacity-50 hover:bg-opacity-75 cursor-pointer rounded-full p-1">
+                                                            class="absolute flex items-center justify-center p-1 bg-opacity-50 rounded-full cursor-pointer bottom-2 right-2 hover:bg-opacity-75">
                                                             <label for="profile_picture"
-                                                                class="cursor-pointer text-black">
+                                                                class="text-black cursor-pointer">
                                                                 <!-- Edit icon (SVG for pencil) -->
                                                                 <svg xmlns="http://www.w3.org/2000/svg"
                                                                     viewBox="0 0 24 24" width="20" height="20"
@@ -468,7 +468,7 @@ get_header();
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                                     <!-- User Name field -->
                                                     <div class="mb-4">
                                                         <label for="uname"
@@ -574,7 +574,7 @@ get_header();
                                                             $disabled = (!$is_admin_or_manager) ? 'disabled' : '';
                                                             ?>
                                                             <input type="checkbox"
-                                                                class="px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white"
+                                                                class="px-4 py-2 text-gray-900 border border-gray-300 rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                                                                 id="message" name="receive_messages" value="yes"
                                                                 <?php echo $checked; ?> <?php echo $disabled; ?>>
                                                         </div>
@@ -594,7 +594,7 @@ get_header();
                                                             $disabled = (!$is_admin_or_manager) ? 'disabled' : '';
                                                             ?>
                                                             <input type="checkbox"
-                                                                class="px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white"
+                                                                class="px-4 py-2 text-gray-900 border border-gray-300 rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                                                                 id="email_comm" name="receive_emails" value="yes"
                                                                 <?php echo $checked; ?> <?php echo $disabled; ?>>
                                                         </div>
@@ -614,7 +614,7 @@ get_header();
                                                             $disabled = (!$is_admin_or_manager) ? 'disabled' : '';
                                                             ?>
                                                             <input type="checkbox"
-                                                                class="px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white"
+                                                                class="px-4 py-2 text-gray-900 border border-gray-300 rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                                                                 id="registration_status" name="registration_status"
                                                                 value="inactive" <?php echo $checked; ?>
                                                                 <?php echo $disabled; ?>>
@@ -627,17 +627,17 @@ get_header();
                                                 <?php if ($is_admin_or_manager) : ?>
                                                 <?php wp_nonce_field('update_user_data', '_wpnonce_update_user_data'); ?>
                                                 <?php wp_nonce_field('delete_user', '_wpnonce_delete_user'); ?>
-                                                <div class="mt-4 flex justify-center space-x-2">
+                                                <div class="flex justify-center mt-4 space-x-2">
                                                     <button type="submit" name="update_user"
-                                                        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded">
+                                                        class="px-4 py-2 font-semibold text-white bg-blue-600 rounded hover:bg-blue-700">
                                                         Update Details
                                                     </button>
                                                     <button type="reset"
-                                                        class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded">
+                                                        class="px-4 py-2 font-semibold text-white bg-gray-600 rounded hover:bg-gray-700">
                                                         Reset
                                                     </button>
                                                     <button type="submit" name="delete_user"
-                                                        class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded"
+                                                        class="px-4 py-2 font-semibold text-white bg-red-600 rounded hover:bg-red-700"
                                                         onclick="return confirm('Are you sure you want to delete this account? This action is irreversible.')">
                                                         Delete Account
                                                     </button>
@@ -652,14 +652,14 @@ get_header();
                                         class="rounded-2xl shadow-lg border border-gray-200 bg-white sm:p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6 mt-10">
                                         <!-- Header section with click toggle functionality -->
                                         <div @click="open = !open; localStorage.setItem('titlesOpen', open)"
-                                            class="px-6 py-4 cursor-pointer flex items-center justify-between">
+                                            class="flex items-center justify-between px-6 py-4 cursor-pointer">
                                             <h3
-                                                class="text-lg font-oswald font-semibold text-regal-blue dark:text-white">
+                                                class="text-lg font-semibold font-oswald text-regal-blue dark:text-white">
                                                 Documents
                                             </h3>
                                             <!-- SVG arrow icon -->
                                             <svg :class="{'rotate-180': open}"
-                                                class="w-5 h-5 transform transition-transform duration-300 text-gray-500 dark:text-gray-300"
+                                                class="w-5 h-5 text-gray-500 transition-transform duration-300 transform dark:text-gray-300"
                                                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                                 stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -673,7 +673,7 @@ get_header();
                                             <!-- Success Alert -->
                                             <?php if (!empty($client_d_success)) : ?>
                                             <?php foreach ($client_d_success as $message) : ?>
-                                            <div class="flex items-center justify-between bg-green-500 border-l-4 border-green-700 text-white p-4 mb-4 rounded"
+                                            <div class="flex items-center justify-between p-4 mb-4 text-white bg-green-500 border-l-4 border-green-700 rounded"
                                                 role="alert">
                                                 <div>
                                                     <strong>Success!</strong>
@@ -688,7 +688,7 @@ get_header();
                                             <!-- Error Alert -->
                                             <?php if (!empty($client_d_error)) : ?>
                                             <?php foreach ($client_d_error as $message) : ?>
-                                            <div class="flex items-center justify-between bg-red-500 border-l-4 border-red-700 text-white p-4 mb-4 rounded"
+                                            <div class="flex items-center justify-between p-4 mb-4 text-white bg-red-500 border-l-4 border-red-700 rounded"
                                                 role="alert">
                                                 <div>
                                                     <strong>Error!</strong>
@@ -702,7 +702,7 @@ get_header();
 
                                             <form action="" method="post" enctype="multipart/form-data">
                                                 <?php wp_nonce_field('upload_documents', '_wpnonce_upload_documents'); ?>
-                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                                     <!-- Status field -->
                                                     <div>
                                                         <label
@@ -782,7 +782,7 @@ get_header();
                                                             </select>
 
                                                             <span
-                                                                class="pointer-events-none absolute top-1/2 right-4 z-30 -translate-y-1/2 text-gray-500 dark:text-gray-400">
+                                                                class="absolute z-30 text-gray-500 -translate-y-1/2 pointer-events-none top-1/2 right-4 dark:text-gray-400">
                                                                 <svg class="stroke-current" width="20" height="20"
                                                                     viewBox="0 0 20 20" fill="none"
                                                                     xmlns="http://www.w3.org/2000/svg">
@@ -813,17 +813,17 @@ get_header();
                                                     <!-- Display uploaded PDFs -->
                                                     <div class="mb-4 md:col-span-2">
                                                         <h3
-                                                            class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4 border-b border-gray-200 dark:border-gray-700">
+                                                            class="mb-4 text-lg font-semibold text-gray-700 border-b border-gray-200 dark:text-gray-300 dark:border-gray-700">
                                                             All Title Documents:
                                                         </h3>
                                                         <?php
                                                         $uploaded_pdfs = get_user_meta($user_id, 'uploaded_pdfs', true) ?: array();
                                                         if ($uploaded_pdfs) {
                                                             ?>
-                                                        <table class="w-full table-auto border-collapse">
+                                                        <table class="w-full border-collapse table-auto">
                                                             <thead>
                                                                 <tr
-                                                                    class="text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-gray-700">
+                                                                    class="text-gray-500 bg-gray-200 dark:text-gray-400 dark:bg-gray-700">
                                                                     <th
                                                                         class="p-2 text-left text-gray-700 dark:text-gray-300">
                                                                         #</th>
@@ -849,7 +849,7 @@ get_header();
                                                                         $advocate_name = get_user_meta($uploaded_by, 'first_name', true);
                                                                         ?>
                                                                 <tr
-                                                                    class="rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200 ease-in-out">
+                                                                    class="transition-colors duration-200 ease-in-out rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600">
                                                                     <td class="p-2 text-gray-500 dark:text-gray-400">
                                                                         <?php echo ($index + 1); ?></td>
                                                                     <td class="p-2">
@@ -884,9 +884,9 @@ get_header();
                                                     </div>
                                                     <!-- End of Display Uploaded PDFs -->
                                                 </div>
-                                                <div class="mt-4 flex justify-center space-x-2">
+                                                <div class="flex justify-center mt-4 space-x-2">
                                                     <button type="submit" name="upload_documents"
-                                                        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded">
+                                                        class="px-4 py-2 font-semibold text-white bg-blue-600 rounded hover:bg-blue-700">
                                                         Update Details
                                                     </button>
                                                 </div>
@@ -900,15 +900,15 @@ get_header();
                                         class="rounded-2xl shadow-lg border border-gray-200 bg-white sm:p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6 mt-10">
                                         <!-- Header with click toggle functionality -->
                                         <div @click="open = !open; localStorage.setItem('paymentsOpen', open)"
-                                            class="px-6 py-4 cursor-pointer flex justify-between items-center"
+                                            class="flex items-center justify-between px-6 py-4 cursor-pointer"
                                             id="head">
                                             <h3
-                                                class="text-lg font-oswald font-semibold text-regal-blue dark:text-white">
+                                                class="text-lg font-semibold font-oswald text-regal-blue dark:text-white">
                                                 Payments Section
                                             </h3>
                                             <!-- SVG arrow icon -->
                                             <svg :class="{'rotate-180': open}"
-                                                class="w-5 h-5 transform transition-transform duration-300 text-gray-500 dark:text-gray-300"
+                                                class="w-5 h-5 text-gray-500 transition-transform duration-300 transform dark:text-gray-300"
                                                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                                 stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -922,7 +922,7 @@ get_header();
                                             <!-- Success Alert -->
                                             <?php if (!empty($client_p_success)) : ?>
                                             <?php foreach ($client_p_success as $message) : ?>
-                                            <div class="flex items-center justify-between bg-green-500 border-l-4 border-green-700 text-white p-4 mb-4 rounded"
+                                            <div class="flex items-center justify-between p-4 mb-4 text-white bg-green-500 border-l-4 border-green-700 rounded"
                                                 role="alert">
                                                 <div>
                                                     <strong>Success!</strong>
@@ -937,7 +937,7 @@ get_header();
                                             <!-- Error Alert -->
                                             <?php if (!empty($client_p_error)) : ?>
                                             <?php foreach ($client_p_error as $message) : ?>
-                                            <div class="flex items-center justify-between bg-red-500 border-l-4 border-red-700 text-white p-4 mb-4 rounded"
+                                            <div class="flex items-center justify-between p-4 mb-4 text-white bg-red-500 border-l-4 border-red-700 rounded"
                                                 role="alert">
                                                 <div>
                                                     <strong>Error!</strong>
@@ -949,7 +949,7 @@ get_header();
                                             <?php endforeach; ?>
                                             <?php endif; ?>
 
-                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                                 <!-- Phone Number field -->
                                                 <div class="mb-4">
                                                     <label for="number" class="block text-gray-700 dark:text-gray-300">
@@ -968,7 +968,7 @@ get_header();
                                                             class="block text-gray-700 dark:text-gray-300">
                                                             Enter Amount and Save Payment:
                                                         </label>
-                                                        <div class="flex space-x-2 items-center">
+                                                        <div class="flex items-center space-x-2">
                                                             <!-- Amount Input Field -->
                                                             <input type="number" id="mpesa_amount" name="mpesa_amount"
                                                                 class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-1/2 rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
@@ -976,7 +976,7 @@ get_header();
 
                                                             <!-- Payment Button -->
                                                             <button type="submit" name="save_payment"
-                                                                class="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded w-1/2">
+                                                                class="w-1/2 px-4 py-2 font-semibold text-white bg-green-600 rounded hover:bg-green-700">
                                                                 Save Payment
                                                             </button>
                                                         </div>
@@ -998,14 +998,14 @@ get_header();
                                                 ?>
                                                 <div class="mt-6 md:col-span-2">
                                                     <h3
-                                                        class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4 border-b border-gray-200 dark:border-gray-700">
+                                                        class="mb-4 text-lg font-semibold text-gray-700 border-b border-gray-200 dark:text-gray-300 dark:border-gray-700">
                                                         Transaction History
                                                     </h3>
                                                     <table id="mpesa-transactions-table"
                                                         class="w-full text-left table-auto">
                                                         <thead>
                                                             <tr
-                                                                class="text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-gray-700">
+                                                                class="text-gray-500 bg-gray-200 dark:text-gray-400 dark:bg-gray-700">
                                                                 <th class="px-4 py-2">#</th>
                                                                 <th class="px-4 py-2">Transaction Date</th>
                                                                 <th class="px-4 py-2">Amount</th>
@@ -1019,7 +1019,7 @@ get_header();
                                                             // Loop through each transaction and output it in a table row
                                                             foreach ($transactions as $transaction) : ?>
                                                             <tr
-                                                                class="rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200 ease-in-out">
+                                                                class="transition-colors duration-200 ease-in-out rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600">
                                                                 <td class="px-4 py-2 text-gray-800 dark:text-gray-200">
                                                                     <?php echo esc_html($counter); ?>
                                                                 </td>
@@ -1039,7 +1039,7 @@ get_header();
                                                     <?php
                                                     } else {
                                                         // Display a message if no transactions are found
-                                                        echo '<p class="text-gray-700 dark:text-gray-300 text-center md:col-span-2">No transactions found.</p>';
+                                                        echo '<p class="text-center text-gray-700 dark:text-gray-300 md:col-span-2">No transactions found.</p>';
                                                     }                                                
                                                     ?>
                                                 </div>

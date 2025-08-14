@@ -63,13 +63,13 @@ if ( isset( $_POST['login'] ) ) {
                     <!-- Error Alert -->
                     <?php if ( isset( $errors ) && ! empty( $errors ) ) : ?>
                     <?php foreach ( $errors as $error ) : ?>
-                    <div class="flex items-center justify-between bg-red-500 border-l-4 border-red-700 text-white p-4 mb-4 rounded"
+                    <div class="flex items-center justify-between p-4 mb-4 text-white bg-red-500 border-l-4 border-red-700 rounded"
                         role="alert">
                         <div>
                             <strong><?php esc_html_e( 'Warning!', 'cyber-wakili' ); ?></strong>
                             <p class="text-sm"><?php echo ucwords( $error ); ?></p>
                         </div>
-                        <button type="button" class="cursor-pointer float-right text-white hover:text-gray-300"
+                        <button type="button" class="float-right text-white cursor-pointer hover:text-gray-300"
                             onclick="this.parentElement.style.display='none';">×</button>
                     </div>
                     <?php endforeach; ?>
@@ -88,7 +88,7 @@ if ( isset( $_POST['login'] ) ) {
                         <div>
                             <div class="grid grid-cols-1 gap-3 sm:grid-cols-1">
                                 <a href="<?php echo esc_url(\WyllyMk\CyberWakili\CW_Google::get_instance()->get_google_auth_url()); ?>"
-                                    class="cursor-pointer inline-flex items-center justify-center gap-3 py-3 text-sm font-normal text-gray-700 transition-colors bg-gray-100 rounded-lg px-7 hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10">
+                                    class="inline-flex items-center justify-center gap-3 py-3 text-sm font-normal text-gray-700 transition-colors bg-gray-100 rounded-lg cursor-pointer px-7 hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10">
                                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none"
                                         xmlns="http://www.w3.org/2000/svg">
                                         <path
@@ -183,8 +183,8 @@ if ( isset( $_POST['login'] ) ) {
                                                 <?php esc_html_e( 'Keep me logged in', 'cyber-wakili' ); ?>
                                             </label>
                                         </div>
-                                        <a href="<?php echo esc_url( site_url( '/lost-password/' ) ); ?>" class="text-sm text-brand-500 hover:text-brand-600
-                                            dark:text-brand-400">
+                                        <a href="<?php echo esc_url( site_url( '/lost-password/' ) ); ?>"
+                                            class="text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400">
                                             <?php esc_html_e( 'Forgot password?', 'cyber-wakili' ); ?>
                                         </a>
                                     </div>

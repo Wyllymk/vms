@@ -12,13 +12,13 @@ defined( 'ABSPATH' ) || exit;
 ?>
 
 <div class="rounded-2xl border border-gray-200 bg-gray-100 dark:border-gray-800 dark:bg-white/[0.03]">
-    <div class="shadow-default rounded-2xl bg-white px-5 pb-11 pt-5 dark:bg-gray-900 sm:px-6 sm:pt-6">
+    <div class="px-5 pt-5 bg-white shadow-default rounded-2xl pb-11 dark:bg-gray-900 sm:px-6 sm:pt-6">
         <div class="flex justify-between">
             <div>
                 <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">
                     Monthly Case Targets
                 </h3>
-                <p class="mt-1 text-theme-sm text-gray-500 dark:text-gray-400">
+                <p class="mt-1 text-gray-500 text-theme-sm dark:text-gray-400">
                     Professional goals for your legal practice
                 </p>
             </div>
@@ -33,17 +33,17 @@ defined( 'ABSPATH' ) || exit;
                     </svg>
                 </button>
                 <div x-show="openDropDown" @click.outside="openDropDown = false"
-                    class="absolute right-0 top-full z-40 w-40 space-y-1 rounded-2xl border border-gray-200 bg-white p-2 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark">
+                    class="absolute right-0 z-40 w-40 p-2 space-y-1 bg-white border border-gray-200 top-full rounded-2xl shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark">
                     <button
-                        class="flex w-full rounded-lg px-3 py-2 text-left text-theme-xs font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300">
+                        class="flex w-full px-3 py-2 font-medium text-left text-gray-500 rounded-lg text-theme-xs hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300">
                         View Performance Details
                     </button>
                     <button
-                        class="flex w-full rounded-lg px-3 py-2 text-left text-theme-xs font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300">
+                        class="flex w-full px-3 py-2 font-medium text-left text-gray-500 rounded-lg text-theme-xs hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300">
                         Adjust Targets
                     </button>
                     <button
-                        class="flex w-full rounded-lg px-3 py-2 text-left text-theme-xs font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300">
+                        class="flex w-full px-3 py-2 font-medium text-left text-gray-500 rounded-lg text-theme-xs hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300">
                         Export Report
                     </button>
                 </div>
@@ -61,7 +61,7 @@ defined( 'ABSPATH' ) || exit;
 
     <div class="flex items-center justify-center gap-5 px-6 py-3.5 sm:gap-8 sm:py-5">
         <div>
-            <p class="mb-1 text-center text-theme-xs text-gray-500 dark:text-gray-400 sm:text-sm">
+            <p class="mb-1 text-center text-gray-500 text-theme-xs dark:text-gray-400 sm:text-sm">
                 Case Target
             </p>
             <p
@@ -75,10 +75,10 @@ defined( 'ABSPATH' ) || exit;
             </p>
         </div>
 
-        <div class="h-7 w-px bg-gray-200 dark:bg-gray-800"></div>
+        <div class="w-px bg-gray-200 h-7 dark:bg-gray-800"></div>
 
         <div>
-            <p class="mb-1 text-center text-theme-xs text-gray-500 dark:text-gray-400 sm:text-sm">
+            <p class="mb-1 text-center text-gray-500 text-theme-xs dark:text-gray-400 sm:text-sm">
                 Cases Resolved
             </p>
             <p
@@ -92,10 +92,10 @@ defined( 'ABSPATH' ) || exit;
             </p>
         </div>
 
-        <div class="h-7 w-px bg-gray-200 dark:bg-gray-800"></div>
+        <div class="w-px bg-gray-200 h-7 dark:bg-gray-800"></div>
 
         <div>
-            <p class="mb-1 text-center text-theme-xs text-gray-500 dark:text-gray-400 sm:text-sm">
+            <p class="mb-1 text-center text-gray-500 text-theme-xs dark:text-gray-400 sm:text-sm">
                 New Clients
             </p>
             <p

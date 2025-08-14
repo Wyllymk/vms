@@ -11,7 +11,7 @@ defined( 'ABSPATH' ) || exit;
 
 ?>
 
-<div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+<div class="flex flex-wrap items-center justify-between gap-3 mb-6">
     <h2 class="text-xl font-semibold text-gray-800 dark:text-white/90" x-text="pageName"></h2>
 
     <nav>

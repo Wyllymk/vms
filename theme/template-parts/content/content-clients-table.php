@@ -149,7 +149,7 @@ defined( 'ABSPATH' ) || exit;
                         <form action="<?php echo esc_url(site_url('/client-details/')); ?>" method="get">
                             <input type="hidden" name="user_id" value="<?php echo esc_attr($user_id); ?>">
                             <button type="submit"
-                                class="cursor-pointer inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-60">
+                                class="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg cursor-pointer bg-brand-500 shadow-theme-xs hover:bg-brand-60">
                                 <?php esc_html_e( 'View Details', 'cyber-wakili' ); ?>
                             </button>
                         </form>
@@ -158,7 +158,7 @@ defined( 'ABSPATH' ) || exit;
                 <?php
                             }
                         } else {
-                            echo '<tr><td colspan="10" class="px-4 py-4 text-white text-center">No clients found.</td></tr>';
+                            echo '<tr><td colspan="10" class="px-4 py-4 text-center text-white">No clients found.</td></tr>';
                         }
                     } else {
                         // Display all users if no search
@@ -225,7 +225,7 @@ defined( 'ABSPATH' ) || exit;
                         <form action="<?php echo esc_url(site_url('/client-details/')); ?>" method="get">
                             <input type="hidden" name="user_id" value="<?php echo esc_attr($user_id); ?>">
                             <button type="submit"
-                                class="cursor-pointer inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-60">
+                                class="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg cursor-pointer bg-brand-500 shadow-theme-xs hover:bg-brand-60">
                                 <?php esc_html_e( 'View Details', 'cyber-wakili' ); ?>
                             </button>
                         </form>
@@ -234,7 +234,7 @@ defined( 'ABSPATH' ) || exit;
                 <?php
                         }
                     } else {
-                        echo '<tr><td colspan="10" class="px-4 py-4 text-gray-600 dark:text-white text-center">No clients found.</td></tr>';
+                        echo '<tr><td colspan="10" class="px-4 py-4 text-center text-gray-600 dark:text-white">No clients found.</td></tr>';
                     }
                 }
                 ?>

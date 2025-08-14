@@ -52,7 +52,7 @@ if ( isset( $_POST['lostpassword'] ) ) {
                 <!-- Error Alert -->
                 <!-- Success Alert -->
                 <?php if ( isset( $success_message ) ) : ?>
-                <div class="flex items-center justify-between bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4"
+                <div class="flex items-center justify-between p-4 mb-4 text-green-700 bg-green-100 border-l-4 border-green-500"
                     role="alert">
                     <div>
                         <strong>Success!</strong>
@@ -68,7 +68,7 @@ if ( isset( $_POST['lostpassword'] ) ) {
 					if ( isset( $errors_messages ) ) :
 						foreach ( $errors_messages as $error_message ) :
 							?>
-                <div class="flex items-center justify-between bg-red-500 border-l-4 border-red-700 text-white p-4 mb-4 rounded"
+                <div class="flex items-center justify-between p-4 mb-4 text-white bg-red-500 border-l-4 border-red-700 rounded"
                     role="alert">
                     <div>
                         <strong>Warning!</strong>

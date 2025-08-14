@@ -39,24 +39,24 @@ if ( ! empty( $key ) && ! empty( $login ) ) {
 }
 ?>
 
-<div class="wrapper min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
+<div class="flex items-center justify-center min-h-screen bg-gray-100 wrapper dark:bg-gray-900">
     <section class="reset-content">
-        <div class="container mx-auto px-4 py-8">
+        <div class="container px-4 py-8 mx-auto">
             <div class="flex flex-col items-center justify-center min-h-screen">
                 <div class="w-full max-w-lg">
                     <!-- Display errors or success message -->
                     <?php if ( ! empty( $errors ) ) : ?>
                     <?php foreach ( $errors as $error ) : ?>
-                    <div class="bg-red-500 text-white p-4 mb-4 rounded"><?php echo esc_html( $error ); ?></div>
+                    <div class="p-4 mb-4 text-white bg-red-500 rounded"><?php echo esc_html( $error ); ?></div>
                     <?php endforeach; ?>
                     <?php elseif ( $success ) : ?>
-                    <div class="bg-green-500 text-white p-4 mb-4 rounded"><?php echo wp_kses_post( $success ); ?></div>
+                    <div class="p-4 mb-4 text-white bg-green-500 rounded"><?php echo wp_kses_post( $success ); ?></div>
                     <?php endif; ?>
 
                     <?php if ( empty( $success ) ) : ?>
                     <!-- Password Reset Form -->
-                    <div class="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-8">
-                        <h2 class="text-3xl font-bold text-gray-800 dark:text-white mb-6 text-center">Reset Your
+                    <div class="p-8 bg-white rounded-lg shadow-lg dark:bg-gray-800">
+                        <h2 class="mb-6 text-3xl font-bold text-center text-gray-800 dark:text-white">Reset Your
                             Password</h2>
                         <form method="post">
                             <?php wp_nonce_field( 'reset_password_action', 'reset_password_nonce' ); ?>
@@ -73,7 +73,7 @@ if ( ! empty( $key ) && ! empty( $login ) ) {
                                     required>
                             </div>
                             <button type="submit"
-                                class="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 w-full">
+                                class="w-full px-6 py-3 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
                                 Reset Password
                             </button>
                         </form>

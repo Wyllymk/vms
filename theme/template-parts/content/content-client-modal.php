@@ -41,7 +41,7 @@ $receive_emails   = 'yes';
 
             <!-- Display error/success messages at the top -->
             <?php if ($errors = get_transient('clients_error_' . get_current_user_id())) : ?>
-            <div class="mb-4 p-4 bg-red-100 border-l-4 border-red-500 text-red-700">
+            <div class="p-4 mb-4 text-red-700 bg-red-100 border-l-4 border-red-500">
                 <?php foreach ($errors as $error) : ?>
                 <p><?php echo esc_html($error); ?></p>
                 <?php endforeach; ?>
@@ -49,7 +49,7 @@ $receive_emails   = 'yes';
             <?php endif; ?>
 
             <?php if ($success = get_transient('clients_success_' . get_current_user_id())) : ?>
-            <div class="mb-4 p-4 bg-green-100 border-l-4 border-green-500 text-green-700">
+            <div class="p-4 mb-4 text-green-700 bg-green-100 border-l-4 border-green-500">
                 <?php foreach ($success as $msg) : ?>
                 <p><?php echo esc_html($msg); ?></p>
                 <?php endforeach; ?>
@@ -127,7 +127,7 @@ $receive_emails   = 'yes';
                             <label class="flex items-center">
                                 <input type="checkbox" name="receive_messages" value="yes"
                                     <?php checked(($_POST['receive_messages'] ?? 'no'), 'yes'); ?>
-                                    class="rounded border-gray-300 text-brand-500 shadow-sm focus:border-brand-300 focus:ring focus:ring-brand-200 focus:ring-opacity-50" />
+                                    class="border-gray-300 rounded shadow-sm text-brand-500 focus:border-brand-300 focus:ring focus:ring-brand-200 focus:ring-opacity-50" />
                                 <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
                                     <?php esc_html_e('Receive messages', 'cyber-wakili'); ?>
                                 </span>
@@ -138,7 +138,7 @@ $receive_emails   = 'yes';
                             <label class="flex items-center">
                                 <input type="checkbox" name="receive_emails" value="yes"
                                     <?php checked(($_POST['receive_emails'] ?? 'no'), 'yes'); ?>
-                                    class="rounded border-gray-300 text-brand-500 shadow-sm focus:border-brand-300 focus:ring focus:ring-brand-200 focus:ring-opacity-50" />
+                                    class="border-gray-300 rounded shadow-sm text-brand-500 focus:border-brand-300 focus:ring focus:ring-brand-200 focus:ring-opacity-50" />
                                 <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
                                     <?php esc_html_e('Receive emails', 'cyber-wakili'); ?>
                                 </span>
