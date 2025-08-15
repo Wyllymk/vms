@@ -26,6 +26,7 @@ $guest_u_error = [];
 $guest_d_error = [];
 $guest_p_success = [];
 $guest_p_error = [];
+$is_admin_or_manager;
 
 // Process form submissions if user_id is set
 if (isset($_GET['user_id']) && intval($_GET['user_id'])) {

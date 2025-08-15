@@ -9,8 +9,6 @@
 // Exit if accessed directly
 defined( 'ABSPATH' ) || exit;
 
-$receive_messages = 'yes';
-$receive_emails   = 'yes';
 ?>
 
 <div x-show="isGuestInfoModal" class="fixed inset-0 flex items-center justify-center p-5 overflow-y-auto z-99999">
@@ -38,23 +36,6 @@ $receive_emails   = 'yes';
         <form id="guest-form" class="flex flex-col" method="post" enctype="multipart/form-data">
             <?php wp_nonce_field('create_user_data', '_wpnonce_create_user_data'); ?>
             <input type="hidden" name="register_guest" value="1">
-
-            <!-- Display error/success messages at the top -->
-            <?php if ($errors = get_transient('guests_error_' . get_current_user_id())) : ?>
-            <div class="p-4 mb-4 text-red-700 bg-red-100 border-l-4 border-red-500">
-                <?php foreach ($errors as $error) : ?>
-                <p><?php echo esc_html($error); ?></p>
-                <?php endforeach; ?>
-            </div>
-            <?php endif; ?>
-
-            <?php if ($success = get_transient('guests_success_' . get_current_user_id())) : ?>
-            <div class="p-4 mb-4 text-green-700 bg-green-100 border-l-4 border-green-500">
-                <?php foreach ($success as $msg) : ?>
-                <p><?php echo esc_html($msg); ?></p>
-                <?php endforeach; ?>
-            </div>
-            <?php endif; ?>
 
             <div class="custom-scrollbar h-[450px] overflow-y-auto px-2">
                 <div class="mt-7">
@@ -113,20 +94,61 @@ $receive_emails   = 'yes';
                             </p>
                         </div>
 
-                        <!-- Bio -->
+                        <!-- ID Number -->
+                        <div class="col-span-2 lg:col-span-1">
+                            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                                <?php esc_html_e('ID Number', 'vms'); ?>
+                                <span class="text-error-500">*</span>
+                            </label>
+                            <input type="number" name="id_number"
+                                value="<?php echo esc_attr($_POST['id_number'] ?? ''); ?>"
+                                class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+                                required />
+                        </div>
+
+                        <!-- Host Member Dropdown -->
+                        <div class="col-span-2 lg:col-span-1">
+                            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                                <?php esc_html_e('Host Member', 'vms'); ?>
+                                <span class="text-error-500">*</span>
+                            </label>
+                            <select name="host_member_id" required
+                                class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800">
+                                <option value=""><?php esc_html_e('Select Host Member', 'vms'); ?></option>
+                                <?php 
+                                // Get all members (assuming they have a 'member' role)
+                                $members = get_users(array(
+                                    'role' => 'member',
+                                    'orderby' => 'display_name',
+                                    'fields' => array('ID', 'display_name', 'user_email')
+                                ));
+
+                                foreach ($members as $member) {
+                                    $selected = isset($_POST['host_member_id']) && $_POST['host_member_id'] == $member->ID ? 'selected' : '';
+                                    echo '<option value="' . esc_attr($member->ID) . '" ' . $selected . '>' 
+                                        . esc_html($member->display_name) . ' (' . esc_html($member->user_email) . ')' 
+                                        . '</option>';
+                                }
+                                ?>
+                            </select>
+                        </div>
+
+                        <!-- Visit Date -->
                         <div class="col-span-2">
                             <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                <?php esc_html_e('Bio', 'vms'); ?>
+                                <?php esc_html_e('Visit Date', 'vms'); ?>
+                                <span class="text-error-500">*</span>
                             </label>
-                            <textarea name="bio"
-                                class="w-full px-3 py-2 text-sm text-gray-800 border border-gray-300 rounded dark:bg-gray-900 dark:text-white/90 dark:border-gray-700"><?php echo esc_textarea($_POST['bio'] ?? ''); ?></textarea>
+                            <input type="date" name="visit_date"
+                                value="<?php echo esc_attr($_POST['visit_date'] ?? ''); ?>"
+                                class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+                                required />
                         </div>
 
                         <!-- Preferences -->
                         <div>
                             <label class="flex items-center">
-                                <input type="checkbox" name="receive_messages" value="yes"
-                                    <?php checked(($_POST['receive_messages'] ?? 'no'), 'yes'); ?>
+                                <input type="checkbox" name="receive_messages" value="yes" <?php checked(true); ?>
                                     class="border-gray-300 rounded shadow-sm text-brand-500 focus:border-brand-300 focus:ring focus:ring-brand-200 focus:ring-opacity-50" />
                                 <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
                                     <?php esc_html_e('Receive messages', 'vms'); ?>
@@ -136,8 +158,7 @@ $receive_emails   = 'yes';
 
                         <div>
                             <label class="flex items-center">
-                                <input type="checkbox" name="receive_emails" value="yes"
-                                    <?php checked(($_POST['receive_emails'] ?? 'no'), 'yes'); ?>
+                                <input type="checkbox" name="receive_emails" value="yes" <?php checked(true); ?>
                                     class="border-gray-300 rounded shadow-sm text-brand-500 focus:border-brand-300 focus:ring focus:ring-brand-200 focus:ring-opacity-50" />
                                 <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
                                     <?php esc_html_e('Receive emails', 'vms'); ?>
@@ -156,7 +177,7 @@ $receive_emails   = 'yes';
                 <button type="submit" id="submit-guest-form"
                     class="cursor-pointer flex w-full justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 sm:w-auto">
                     <?php esc_html_e('Create Guest', 'vms'); ?>
-                    </a>
+                </button>
             </div>
         </form>
     </div>
