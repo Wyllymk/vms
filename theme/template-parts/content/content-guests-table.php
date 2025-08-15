@@ -110,7 +110,7 @@ $guest_visits_table = $wpdb->prefix . 'vms_guest_visits';
                     }
 
                     // Add ordering by visit date (most recent first)
-                    $query .= " ORDER BY v.visit_date DESC, g.id DESC";
+                    $query .= " ORDER BY v.visit_date ASC, g.id DESC";
 
                     // Get guests from custom tables
                     $guests = $wpdb->get_results($query);
@@ -187,17 +187,44 @@ $guest_visits_table = $wpdb->prefix . 'vms_guest_visits';
                                 data-visit-id="<?php echo $guest->visit_id; ?>">
                                 <?php esc_html_e( 'Edit', 'vms' ); ?>
                             </button>
+                            <?php
+                            // Get current date in WordPress timezone (EAT)
+                            $current_date = current_time('Y-m-d');
+
+                            // Validate guest data
+                            if (!isset($guest->visit_date) || !isset($guest->status)) {
+                                error_log("Guest table error: Missing visit_date or status for guest ID {$guest->id}");
+                                $is_button_disabled = true; // Disable buttons if data is missing
+                            } else {
+                                // Normalize visit_date to YYYY-MM-DD
+                                $normalized_visit_date = substr($guest->visit_date, 0, 10); // Extract YYYY-MM-DD from YYYY-MM-DD HH:MM:SS
+                                if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $normalized_visit_date)) {
+                                    error_log("Guest table error: Invalid visit_date format for guest ID {$guest->id}: {$guest->visit_date}");
+                                    $is_button_disabled = true;
+                                } else {
+                                    // Disable buttons if current date is before visit_date or status is not approved
+                                    $is_button_disabled = $current_date < $normalized_visit_date || $guest->status !== 'approved';                                    
+                                }
+                            }
+
+                            // Common button classes
+                            $base_button_classes = 'inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition rounded-lg whitespace-nowrap shadow-theme-xs';
+                            $disabled_classes = 'opacity-50 cursor-not-allowed';
+                            ?>
+
                             <?php if (empty($guest->sign_in_time)): ?>
-                            <button id="sign-in-button-<?php echo $guest->id; ?>"
-                                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition bg-blue-500 rounded-lg cursor-pointer whitespace-nowrap shadow-theme-xs hover:bg-blue-600"
-                                data-visit-id="<?php echo $guest->visit_id; ?>">
-                                <?php esc_html_e( 'Sign In', 'vms' ); ?>
+                            <button id="sign-in-button-<?php echo esc_attr($guest->id); ?>"
+                                class="<?php echo esc_attr($base_button_classes . ' bg-blue-500 ' . ($is_button_disabled ? $disabled_classes : 'cursor-pointer hover:bg-blue-600')); ?>"
+                                data-visit-id="<?php echo esc_attr($guest->visit_id); ?>"
+                                <?php echo $is_button_disabled ? 'disabled' : ''; ?>>
+                                <?php esc_html_e('Sign In', 'vms'); ?>
                             </button>
                             <?php elseif (empty($guest->sign_out_time)): ?>
-                            <button id="sign-out-button-<?php echo $guest->id; ?>"
-                                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition bg-purple-500 rounded-lg cursor-pointer whitespace-nowrap shadow-theme-xs hover:bg-purple-600"
-                                data-visit-id="<?php echo $guest->visit_id; ?>">
-                                <?php esc_html_e( 'Sign Out', 'vms' ); ?>
+                            <button id="sign-out-button-<?php echo esc_attr($guest->id); ?>"
+                                class="<?php echo esc_attr($base_button_classes . ' bg-purple-500 ' . ($is_button_disabled ? $disabled_classes : 'cursor-pointer hover:bg-purple-600')); ?>"
+                                data-visit-id="<?php echo esc_attr($guest->visit_id); ?>"
+                                <?php echo $is_button_disabled ? 'disabled' : ''; ?>>
+                                <?php esc_html_e('Sign Out', 'vms'); ?>
                             </button>
                             <?php else: ?>
                             <div class="flex flex-col items-center justify-center w-full text-xs">
