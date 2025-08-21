@@ -516,6 +516,18 @@ jQuery(document).ready(function ($) {
 		});
 	});
 
+	// Edit Guest Button Handler
+	$(document).on('click', '[id^="edit-guest-button-"]', function (e) {
+		e.preventDefault();
+
+		// Extract guest ID from button ID
+		const guestId = $(this).attr('id').replace('edit-guest-button-', '');
+
+		// Redirect to edit page
+		window.location.href =
+			vms_script_ajax.admin_url + 'guest-details/?guest_id=' + guestId;
+	});
+
 	// Sign In Guest Button Handler
 	$(document).on('click', '[id^="sign-in-button-"]', function (e) {
 		e.preventDefault();

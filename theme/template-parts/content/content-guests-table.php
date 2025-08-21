@@ -227,7 +227,7 @@ $guest_visits_table = $wpdb->prefix . 'vms_guest_visits';
                                 <?php esc_html_e('Sign Out', 'vms'); ?>
                             </button>
                             <?php else: ?>
-                            <div class="flex flex-col items-center justify-center w-full text-xs">
+                            <div class="flex flex-col items-center justify-center text-xs px-4">
                                 <span
                                     class="text-green-600 dark:text-green-400"><?php echo esc_html($sign_in_time); ?></span>
                                 <span
@@ -238,11 +238,11 @@ $guest_visits_table = $wpdb->prefix . 'vms_guest_visits';
                     </td>
                 </tr>
                 <?php
-        }
-    } else {
-        echo '<tr id="no-guests-row"><td colspan="11" class="px-4 py-4 text-center text-gray-600 dark:text-white">No guests found.</td></tr>';
-    }
-    ?>
+                    }
+                } else {
+                    echo '<tr id="no-guests-row"><td colspan="11" class="px-4 py-4 text-center text-gray-600 dark:text-white">No guests found.</td></tr>';
+                }
+                ?>
             </tbody>
         </table>
     </div>
