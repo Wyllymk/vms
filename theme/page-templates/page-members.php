@@ -9,7 +9,7 @@
 defined( 'ABSPATH' ) || exit;
 
 // Check if the current user is an Administrator or Manager or Advocate
-if ( ! ( current_user_can( 'administrator' ) || current_user_can( 'managing_partner' ) || current_user_can( 'senior_partner' ) || current_user_can( 'advocate' ) || current_user_can( 'pupil' ) ) ) {
+if ( ! ( current_user_can( 'administrator' ) || current_user_can( 'general_manager' ) || current_user_can( 'chairman' ) || current_user_can( 'reception' ) ) ) {
 	// Redirect unauthorized users to the front page
 	wp_redirect( home_url() );
 	exit;

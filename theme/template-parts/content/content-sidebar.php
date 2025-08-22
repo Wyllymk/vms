@@ -92,7 +92,7 @@ defined( 'ABSPATH' ) || exit;
                     <!-- Menu Item Profile -->
 
                     <!-- Menu Item Members -->
-                    <?php if ( ( current_user_can( 'administrator' ) || current_user_can( 'managing_partner' ) || current_user_can( 'senior_partner' ) || current_user_can( 'advocate' ) ) ) : ?>
+                    <?php if ( ( current_user_can( 'administrator' ) || current_user_can( 'chairman' ) || current_user_can( 'general_manager' ) || current_user_can( 'reception' ) ) ) : ?>
                     <li>
                         <a href="<?php echo esc_url( site_url( '/members' ) ); ?>"
                             @click="selected = (selected === 'Members' ? '':'Members')"
@@ -111,7 +111,7 @@ defined( 'ABSPATH' ) || exit;
                     <!-- Menu Item Members -->
 
                     <!-- Menu Item Employees -->
-                    <?php if ( ( current_user_can( 'administrator' ) || current_user_can( 'managing_partner' ) || current_user_can( 'senior_partner' ) || current_user_can( 'advocate' ) ) ) : ?>
+                    <?php if ( ( current_user_can( 'administrator' ) || current_user_can( 'general_manager' ) || current_user_can( 'reception' ) || current_user_can( 'chairman' ) ) ) : ?>
                     <li>
                         <a href="<?php echo esc_url( site_url( '/employees' ) ); ?>"
                             @click="selected = (selected === 'Employees' ? '':'Employees')"
@@ -157,7 +157,7 @@ defined( 'ABSPATH' ) || exit;
                 </ul>
             </div>
             <!-- Support Group -->
-            <?php if ( ( current_user_can( 'administrator' ) || current_user_can( 'managing_partner' ) || current_user_can( 'senior_partner' ) ) ) : ?>
+            <?php if ( ( current_user_can( 'administrator' ) || current_user_can( 'chairman' ) || current_user_can( 'reception' ) ) ) : ?>
             <div>
                 <h3 class="mb-4 text-xs uppercase leading-[20px] text-gray-400">
                     <span class="menu-group-title" :class="sidebarToggle ? 'lg:hidden' : ''">
@@ -180,7 +180,7 @@ defined( 'ABSPATH' ) || exit;
                         <a href="<?php echo esc_url( site_url( '/settings' ) ); ?>"
                             @click="selected = (selected === 'Settings' ? '':'Settings')"
                             class="<?php echo ( is_page( 'settings' ) ) ? 'menu-item group menu-item-active' : 'menu-item group menu-item-inactive'; ?>">
-                            <svg class="<?php echo ( is_page( 'profile' ) ) ? 'menu-item-icon-active' : 'menu-item-icon-inactive'; ?>"
+                            <svg class="<?php echo ( is_page( 'settings' ) ) ? 'menu-item-icon-active' : 'menu-item-icon-inactive'; ?>"
                                 width="24" height="24" viewBox="0 0 24 24" fill="none"
                                 xmlns="http://www.w3.org/2000/svg">
                                 <path fill-rule="evenodd" clip-rule="evenodd"

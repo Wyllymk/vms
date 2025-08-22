@@ -9,7 +9,7 @@
 defined( 'ABSPATH' ) || exit;
 
 // Check if the current user is an Administrator or Manager or Advocate
-if ( ! ( current_user_can( 'administrator' ) || current_user_can( 'managing_partner' ) || current_user_can( 'senior_partner' ) || current_user_can( 'advocate' ) || current_user_can( 'pupil' ) || current_user_can( 'guest' )) ) {
+if ( ! ( current_user_can( 'administrator' ) || current_user_can( 'general_manager' ) || current_user_can( 'chairman' ) || current_user_can( 'reception' ) || current_user_can( 'gate' ) ) ) {
 	// Redirect unauthorized users to the front page
 	wp_redirect( home_url() );
 	exit;
@@ -49,11 +49,12 @@ get_header();
                 <main>
                     <div class="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
                         <div class="grid grid-cols-12 gap-4 md:gap-6">
-                            <div class="col-span-12 space-y-6 xl:col-span-7">
+                            <div class="col-span-12">
                                 <!-- Metric Group One -->
                                 <?php get_template_part( 'template-parts/content/content', 'metric' ); ?>
                                 <!-- Metric Group One -->
-
+                            </div>
+                            <div class="col-span-12 xl:col-span-7">
                                 <!-- ====== Chart One Start -->
                                 <?php get_template_part( 'template-parts/content/content', 'chart' ); ?>
                                 <!-- ====== Chart One End -->

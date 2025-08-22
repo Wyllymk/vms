@@ -14,348 +14,10 @@ if (!session_id()) {
 }
 
 // Check if the current user is an Administrator or Manager or Advocate
-if ( ! ( current_user_can( 'administrator' ) || current_user_can( 'managing_partner' ) || current_user_can( 'senior_partner' ) || current_user_can( 'advocate' ) || current_user_can( 'pupil' ) ) ) {
+if ( ! ( current_user_can( 'administrator' ) || current_user_can( 'general_manager' ) || current_user_can( 'chairman' ) || current_user_can( 'reception' ) || current_user_can( 'member' ) ) ) {
 	// Redirect unauthorized users to the front page
 	wp_redirect( home_url() );
 	exit;
-}
-
-// Initialize message arrays
-$guest_u_success = [];
-$guest_u_error = [];
-$guest_d_error = [];
-$guest_p_success = [];
-$guest_p_error = [];
-$is_admin_or_manager;
-
-// Process form submissions if user_id is set
-if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
-    $user_id = intval($_GET['user_id']);
-    $current_user = wp_get_current_user();
-    $is_admin_or_manager = in_array('administrator', $current_user->roles) || in_array('manager', $current_user->roles);
-
-    // Update User Data          
-    if (isset($_POST['update_user']) && check_admin_referer('update_user_data', '_wpnonce_update_user_data')) {
-        $user_data = get_userdata($user_id);
-
-        // Update email if changed
-        $new_email = sanitize_email($_POST['email']);
-        if ($new_email !== $user_data->user_email) {
-            $user_data->user_email = $new_email;
-            $update_user_result = wp_update_user($user_data);
-            if (!is_wp_error($update_user_result)) {
-                $guest_u_success[] = 'Email updated successfully.';
-            } else {
-                $guest_u_error[] = 'User update error: ' . $update_user_result->get_error_message();
-            }
-        }
-
-        // Update first name if changed
-        $new_first_name = sanitize_text_field($_POST['first_name']);
-        if ($new_first_name !== $user_data->first_name) {
-            $user_data->first_name = $new_first_name;
-            wp_update_user($user_data);
-            $guest_u_success[] = 'First name updated successfully.';
-        }
-
-        // Update last name if changed
-        $new_last_name = sanitize_text_field($_POST['last_name']);
-        if ($new_last_name !== $user_data->last_name) {
-            $user_data->last_name = $new_last_name;
-            wp_update_user($user_data);
-            $guest_u_success[] = 'Last name updated successfully.';
-        }
-
-        // Update display name if changed
-        $new_display_name = sanitize_text_field($_POST['display_name']);
-        if ($new_display_name !== $user_data->display_name) {
-            $user_data->display_name = $new_display_name;
-            wp_update_user($user_data);
-            $guest_u_success[] = 'Display name updated successfully.';
-        }
-
-        // Update phone number if changed
-        if (isset($_POST['pnumber'])) {
-            $new_phone_number = sanitize_text_field($_POST['pnumber']);
-            if ($new_phone_number !== get_user_meta($user_id, 'phone_number', true)) {
-                update_user_meta($user_id, 'phone_number', $new_phone_number);
-                $guest_u_success[] = 'Phone number updated successfully.';
-            }
-        }
-
-        // Update receive messages preference
-        $new_receive_messages = isset($_POST['receive_messages']) ? 'yes' : 'no';
-        $current_receive_messages = get_user_meta($user_id, 'receive_messages', true);
-        if ($new_receive_messages !== $current_receive_messages) {
-            if ($new_receive_messages === 'no' && $current_receive_messages === 'yes') {
-                $guest_u_error[] = 'This guest will no longer receive messages.';
-            } elseif ($new_receive_messages === 'yes' && $current_receive_messages === 'no') {
-                $guest_u_success[] = 'This guest will now receive messages.';
-            }
-            update_user_meta($user_id, 'receive_messages', $new_receive_messages);
-        }
-
-        // Update receive emails preference
-        $new_receive_emails = isset($_POST['receive_emails']) ? 'yes' : 'no';
-        $current_receive_emails = get_user_meta($user_id, 'receive_emails', true);
-        if ($new_receive_emails !== $current_receive_emails) {
-            if ($new_receive_emails === 'no' && $current_receive_emails === 'yes') {
-                $guest_u_error[] = 'This guest will no longer receive emails.';
-            } elseif ($new_receive_emails === 'yes' && $current_receive_emails === 'no') {
-                $guest_u_success[] = 'This guest will now receive emails.';
-            }
-            update_user_meta($user_id, 'receive_emails', $new_receive_emails);
-        }
-
-        // Update registration status
-        $new_registration_status = isset($_POST['registration_status']) && $_POST['registration_status'] === 'inactive' ? 'inactive' : 'active';
-        $current_registration_status = get_user_meta($user_id, 'registration_status', true);
-        if ($new_registration_status !== $current_registration_status) {
-            if ($new_registration_status === 'inactive' && $current_registration_status === 'active') {
-                $guest_u_error[] = 'This account has been deactivated and the user can no longer login.';
-            } elseif ($new_registration_status === 'active' && $current_registration_status === 'inactive') {
-                $guest_u_success[] = 'This account has been activated and the user can now login successfully.';
-            }
-            update_user_meta($user_id, 'registration_status', $new_registration_status);
-        }
-
-        // Handle avatar upload
-        if (isset($_FILES['profile_picture']) && !empty($_FILES['profile_picture']['name'])) {
-            if (!function_exists('wp_handle_upload')) {
-                require_once ABSPATH . 'wp-admin/includes/file.php';
-            }
-
-            $uploadedfile = $_FILES['profile_picture'];
-            $upload_overrides = ['test_form' => false];
-            $movefile = wp_handle_upload($uploadedfile, $upload_overrides);
-
-            if ($movefile && !isset($movefile['error'])) {
-                $avatar_url = esc_url($movefile['url']);
-                update_user_meta($user_id, 'profile_picture', $avatar_url);
-                
-                $avatar_id = attachment_url_to_postid($avatar_url);
-                if ($avatar_id) {
-                    update_user_meta($user_id, '_wp_attachment_metadata', get_post_meta($avatar_id, '_wp_attachment_metadata', true));
-                }
-                $guest_u_success[] = 'User Profile Picture Updated successfully';
-            }
-        }
-
-        // Store messages in session
-        $_SESSION['guest_u_success'] = $guest_u_success;
-        $_SESSION['guest_u_error'] = $guest_u_error;
-
-        wp_safe_redirect(add_query_arg(['user_id' => $user_id], site_url('/guest-details')));
-        exit;
-    }
-
-    // Delete User
-    if (isset($_POST['delete_user']) && check_admin_referer('delete_user', '_wpnonce_delete_user')) {
-        if ($user_id === get_current_user_id() || $is_admin_or_manager) {
-            $first_name = get_user_meta($user_id, 'first_name', true);
-
-            require_once ABSPATH . 'wp-admin/includes/user.php';
-            wp_delete_user($user_id);
-
-            $_SESSION['guests_error'] = [$first_name . "'s account has been deleted permanently"];
-
-            if ($user_id === get_current_user_id()) {
-                wp_logout();
-            }
-
-            wp_safe_redirect(site_url('/guests'));
-            exit;
-        }
-    }
-
-    // Handle PDF deletion
-    if (isset($_POST['delete_document']) && check_admin_referer('delete_documents', '_wpnonce_delete_documents')) {
-        $pdf_id_to_delete = intval($_POST['delete_pdf']);
-
-        $uploaded_pdfs = get_user_meta($user_id, 'uploaded_pdfs', true);
-        $uploaded_pdfs = maybe_unserialize($uploaded_pdfs);
-
-        if (is_array($uploaded_pdfs) && !empty($uploaded_pdfs)) {
-            $pdf_entry_key = null;
-            foreach ($uploaded_pdfs as $key => $entry) {
-                if (is_array($entry) && isset($entry['pdf_id']) && $entry['pdf_id'] == $pdf_id_to_delete) {
-                    $pdf_entry_key = $key;
-                    break;
-                }
-            }
-
-            if ($pdf_entry_key !== null) {
-                $pdf_url = wp_get_attachment_url($pdf_id_to_delete);
-                $filename = basename($pdf_url);
-
-                if (wp_delete_attachment($pdf_id_to_delete, true)) {
-                    unset($uploaded_pdfs[$pdf_entry_key]);
-                    $uploaded_pdfs = array_values($uploaded_pdfs);
-                    update_user_meta($user_id, 'uploaded_pdfs', $uploaded_pdfs);
-
-                    delete_post_meta($pdf_id_to_delete, 'uploaded_on');
-                    delete_post_meta($pdf_id_to_delete, 'uploaded_by');
-
-                    $guest_d_success[] = 'Title Document: ' . esc_html($filename) . ' successfully deleted.';
-                } else {
-                    $guest_d_error[] = 'Error: Failed to delete the document attachment.';
-                }
-            } else {
-                $guest_d_error[] = 'Error: Could not find the document to delete.';
-            }
-        } else {
-            $guest_d_error[] = 'Error: No uploaded documents found for this guest.';
-        }
-
-        $_SESSION['guest_d_success'] = $guest_d_success;
-        $_SESSION['guest_d_error'] = $guest_d_error;
-        
-        wp_safe_redirect(add_query_arg(['user_id' => $user_id], site_url('/guest-details')));
-        exit;
-    }
-
-    // Handle document uploads
-    if (isset($_POST['upload_documents']) && check_admin_referer('upload_documents', '_wpnonce_upload_documents')) {
-        // Update guest status
-        if (isset($_POST['guest_status'])) {
-            $new_status = sanitize_text_field($_POST['guest_status']);
-            update_user_meta($user_id, 'guest_status', $new_status);
-            $guest_d_success[] = 'Guest status updated successfully.';
-        }
-
-        // Handle PDF uploads
-        if (!empty($_FILES['pdf_files']['name'][0])) {
-            require_once(ABSPATH . 'wp-admin/includes/file.php');
-            require_once(ABSPATH . 'wp-admin/includes/image.php');
-            
-            $uploaded_pdfs = get_user_meta($user_id, 'uploaded_pdfs', true) ?: array();
-            
-            foreach ($_FILES['pdf_files']['name'] as $key => $value) {
-                if ($_FILES['pdf_files']['name'][$key]) {
-                    $file = array(
-                        'name'     => $_FILES['pdf_files']['name'][$key],
-                        'type'     => $_FILES['pdf_files']['type'][$key],
-                        'tmp_name' => $_FILES['pdf_files']['tmp_name'][$key],
-                        'error'    => $_FILES['pdf_files']['error'][$key],
-                        'size'     => $_FILES['pdf_files']['size'][$key]
-                    );
-                    
-                    $upload_overrides = array('test_form' => false);
-                    $movefile = wp_handle_upload($file, $upload_overrides);
-                    
-                    if ($movefile && !isset($movefile['error'])) {
-                        $wp_upload_dir = wp_upload_dir();
-                        $attachment = array(
-                            'guid'           => $wp_upload_dir['url'] . '/' . basename($movefile['file']),
-                            'post_mime_type' => $movefile['type'],
-                            'post_title'     => preg_replace('/\.[^.]+$/', '', basename($movefile['file'])),
-                            'post_content'   => '',
-                            'post_status'    => 'inherit'
-                        );
-                        
-                        $attach_id = wp_insert_attachment($attachment, $movefile['file']);
-                        
-                        if (!is_wp_error($attach_id)) {
-                            $attach_data = wp_generate_attachment_metadata($attach_id, $movefile['file']);
-                            wp_update_attachment_metadata($attach_id, $attach_data);
-                            
-                            $upload_entry = array(
-                                'pdf_id' => $attach_id,
-                                'timestamp' => current_time('mysql'),
-                                'uploaded_by' => get_current_user_id()
-                            );
-                            
-                            array_push($uploaded_pdfs, $upload_entry);
-                            $guest_d_success[] = 'Document ' . esc_html($file['name']) . ' uploaded successfully.';
-                        }
-                    } else {
-                        $guest_d_error[] = 'Error uploading ' . esc_html($file['name']) . ': ' . $movefile['error'];
-                    }
-                }
-            }
-            
-            update_user_meta($user_id, 'uploaded_pdfs', $uploaded_pdfs);
-        }
-        
-        $_SESSION['guest_d_success'] = $guest_d_success;
-        $_SESSION['guest_d_error'] = $guest_d_error;
-        
-        wp_safe_redirect(add_query_arg(['user_id' => $user_id], site_url('/guest-details')));
-        exit;
-    }
-
-    // Handle payment saving
-    if (isset($_POST['save_payment']) && check_admin_referer('mpesa_payment', '_wpnonce_mpesa_payment')) {
-        global $wpdb;
-        $table_name = $wpdb->prefix . 'transactions';
-        
-        $amount = sanitize_text_field( $_POST['mpesa_amount'] );
-        $user_phone_number = get_user_meta($user_id, 'phone_number', true);
-
-        
-        if ($amount > 0) {
-            $wpdb->insert(
-                $table_name,
-                array(
-                    'user_id' => $user_id,
-                    'amount' => $amount,
-                    'phone_number' => $user_phone_number,
-                    'created_at' => current_time('mysql')
-                ),
-                array('%d', '%f', '%d', '%s')
-            );
-            
-            if ($wpdb->insert_id) {
-                $guest_p_success[] = 'Payment of ' . number_format($amount, 2) . ' saved successfully.';
-            } else {
-                $guest_p_error[] = 'Error saving payment. Please try again.';
-            }
-        } else {
-            $guest_p_error[] = 'Invalid payment amount. Please enter a positive number.';
-        }
-        
-        $_SESSION['guest_p_success'] = $guest_p_success;
-        $_SESSION['guest_p_error'] = $guest_p_error;
-        
-        wp_safe_redirect(add_query_arg(['user_id' => $user_id], site_url('/guest-details')));
-        exit;
-    }   
-    
-    // Get messages from session if they exist
-    if (isset($_SESSION['guest_u_success'])) {
-        $guest_u_success = $_SESSION['guest_u_success'];
-        unset($_SESSION['guest_u_success']);
-    }
-    if (isset($_SESSION['guest_u_error'])) {
-        $guest_u_error = $_SESSION['guest_u_error'];
-        unset($_SESSION['guest_u_error']);
-    }
-    if (isset($_SESSION['guest_d_success'])) {
-        $guest_d_success = $_SESSION['guest_d_success'];
-        unset($_SESSION['guest_d_success']);
-    }
-    if (isset($_SESSION['guest_d_error'])) {
-        $guest_d_error = $_SESSION['guest_d_error'];
-        unset($_SESSION['guest_d_error']);
-    }
-    if (isset($_SESSION['guest_p_success'])) {
-        $guest_p_success = $_SESSION['guest_p_success'];
-        unset($_SESSION['guest_p_success']);
-    }
-    if (isset($_SESSION['guest_p_error'])) {
-        $guest_p_error = $_SESSION['guest_p_error'];
-        unset($_SESSION['guest_p_error']);
-    }
-
-    // Get user data
-    $user_data = get_userdata($user_id);
-    $user_avatar = get_avatar_url($user_id);
-    $user_phone_number = get_user_meta($user_id, 'phone_number', true);
-    $guest_status = get_user_meta($user_id, 'guest_status', true);
-    $receive_messages = get_user_meta($user_id, 'receive_messages', true);
-    $receive_emails = get_user_meta($user_id, 'receive_emails', true);
-    $registration_status = get_user_meta($user_id, 'registration_status', true);
-    $uploaded_pdfs = get_user_meta($user_id, 'uploaded_pdfs', true) ?: array();
 }
 
 // WordPress table prefix
@@ -396,6 +58,9 @@ $allowed_sort_columns = ['visit_date', 'sign_in_time', 'sign_out_time', 'host_me
 if (!in_array($sort_column, $allowed_sort_columns)) {
     $sort_column = 'visit_date';
 }
+
+// Get current date for missed visit calculation
+$current_date = current_time('Y-m-d');
 
 // Get total count for pagination
 $total_visits = $wpdb->get_var(
@@ -463,12 +128,43 @@ function calculate_duration($sign_in, $sign_out) {
     return sprintf('%dh %dm', $hours, $minutes);
 }
 
-function get_status_class($sign_out_time) {
-    return $sign_out_time ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800';
+// Updated status functions to include "Missed" status
+function get_visit_status($visit_date, $sign_in_time, $sign_out_time) {
+    global $current_date;
+    
+    // If visit date is in the past and no sign in, it's missed
+    if (empty($sign_in_time) && !empty($visit_date) && $visit_date < $current_date) {
+        return 'missed';
+    }
+    
+    // Otherwise, use the standard logic
+    return !empty($sign_out_time) ? 'completed' : 'active';
 }
 
-function get_status_text($sign_out_time) {
-    return $sign_out_time ? 'Completed' : 'Active';
+function get_status_class($status) {
+    switch ($status) {
+        case 'completed':
+            return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+        case 'active':
+            return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+        case 'missed':
+            return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+        default:
+            return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+    }
+}
+
+function get_status_text($status) {
+    switch ($status) {
+        case 'completed':
+            return 'Completed';
+        case 'active':
+            return 'Active';
+        case 'missed':
+            return 'Missed';
+        default:
+            return 'Unknown';
+    }
 }
 
 function build_sort_url($column) {
@@ -595,7 +291,8 @@ get_header();
                                             <?php endforeach; ?>
                                             <?php endif; ?>
 
-                                            <form action="" method="post" enctype="multipart/form-data">
+                                            <form id="guest-update-form" action="" method="post"
+                                                enctype="multipart/form-data">
                                                 <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
 
                                                     <!-- First Name -->
@@ -656,13 +353,13 @@ get_header();
                                                             <span
                                                                 class="absolute top-1/2 left-0 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
                                                                 <!-- Phone SVG -->
-                                                                <svg width="20" height="20" viewBox="0 0 24 24"
-                                                                    fill="none" xmlns="http://www.w3.org/2000/svg"
-                                                                    aria-hidden="true">
-                                                                    <path
-                                                                        d="M3.654 5.29c.37-1.06 1.62-1.58 2.6-1.06l2.04 1.08c.83.44 1.23 1.43.94 2.32l-.57 1.72a1.75 1.75 0 0 0 .44 1.78l3.01 3.01c.49.49 1.22.67 1.88.47l1.83-.55c.93-.28 1.93.14 2.36 1.02l1.05 2.1c.49.98.02 2.18-1.03 2.55-2.41.85-5.55.45-9.44-3.44C5.01 12.42 4.56 9.25 5.04 7.21c.07-.31.31-.79.31-.79l-.02-.02.01-.01c.02-.04.04-.07.06-.1l.01-.02.01-.02.03-.05Z"
-                                                                        fill="currentColor" />
+                                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                                    viewBox="0 0 24 24" stroke-width="1"
+                                                                    stroke="currentColor" class="size-6">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                                        d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
                                                                 </svg>
+
                                                             </span>
 
                                                             <input id="pnumber" name="phone_number" type="tel"
@@ -796,8 +493,9 @@ get_header();
                                                 </div>
 
                                                 <div class="flex justify-center mt-4 space-x-2">
-                                                    <?php wp_nonce_field('update_guest', '_wpnonce_update_guest'); ?>
-                                                    <button type="submit" name="update_guest"
+                                                    <input type="hidden" name="guest_id"
+                                                        value="<?php echo esc_attr($guest_id); ?>">
+                                                    <button type="submit" name="update_guest" id="update-guest-btn"
                                                         class="px-4 py-2 font-semibold text-white bg-blue-600 rounded hover:bg-blue-700">
                                                         Update Guest
                                                     </button>
@@ -805,9 +503,8 @@ get_header();
                                                         class="px-4 py-2 font-semibold text-white bg-gray-600 rounded hover:bg-gray-700">
                                                         Reset
                                                     </button>
-                                                    <button type="submit" name="delete_guest"
-                                                        class="px-4 py-2 font-semibold text-white bg-red-600 rounded hover:bg-red-700"
-                                                        onclick="return confirm('Are you sure you want to delete this guest? This action is irreversible.')">
+                                                    <button type="submit" name="delete_guest" id="delete-guest-btn"
+                                                        class="px-4 py-2 font-semibold text-white bg-red-600 rounded hover:bg-red-700">
                                                         Delete Guest
                                                     </button>
                                                 </div>
@@ -1096,18 +793,27 @@ get_header();
                                                                     </p>
                                                                 </div>
                                                                 <div class="col-span-2 flex items-center px-4 py-3">
-                                                                    <span
-                                                                        class="<?php echo get_status_class($visit->sign_out_time); ?> inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
-                                                                        <?php echo get_status_text($visit->sign_out_time); ?>
-                                                                    </span>
+                                                                    <?php
+                                                                    // Determine the visit status first
+                                                                    $status = get_visit_status($visit->visit_date, $visit->sign_in_time, $visit->sign_out_time);
+                                                                    $status_class = get_status_class($status);
+                                                                    $status_text = get_status_text($status);
+                                                                    ?>
+                                                                    <div class="col-span-2 flex items-center px-4 py-3">
+                                                                        <span
+                                                                            class="<?php echo esc_attr($status_class); ?> inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
+                                                                            <?php echo esc_html($status_text); ?>
+                                                                        </span>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                             <?php endforeach; ?>
                                                             <?php else: ?>
                                                             <div
                                                                 class="border-t border-gray-100 px-4 py-8 text-center dark:border-gray-800">
-                                                                <p class="text-gray-500 dark:text-gray-400">No
-                                                                    visits found</p>
+                                                                <p class="text-gray-500 dark:text-gray-400">
+                                                                    No visits found
+                                                                </p>
                                                             </div>
                                                             <?php endif; ?>
                                                         </div>

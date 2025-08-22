@@ -204,13 +204,14 @@ jQuery(document).ready(function ($) {
 			dataType: 'json',
 			success: function (response) {
 				if (response.success && response.data.guestData) {
-					console.log('Guest creation response:', response);
-					console.log('New guest data:', response.data.guestData);
+					// console.log('Guest creation response:', response);
+					// console.log('New guest data:', response.data.guestData);
 
 					const guest = response.data.guestData;
 
-					// Format the visit date with fallback
+					// Format visit date
 					let formattedDate = 'N/A';
+					let normalizedVisitDate = '';
 					if (guest.visit_date) {
 						const visitDate = new Date(guest.visit_date);
 						if (!isNaN(visitDate)) {
@@ -222,9 +223,32 @@ jQuery(document).ready(function ($) {
 									year: 'numeric',
 								}
 							);
+							normalizedVisitDate =
+								guest.visit_date.split(' ')[0];
 						}
 					}
 
+					// Host name
+					let hostName = 'N/A';
+					if (
+						(guest.host_first_name &&
+							guest.host_first_name.trim()) ||
+						(guest.host_last_name && guest.host_last_name.trim())
+					) {
+						hostName =
+							`${guest.host_first_name || ''} ${guest.host_last_name || ''}`.trim();
+					} else if (guest.display_name) {
+						// Split display_name "wilson.mbuthia" → "Wilson Mbuthia"
+						hostName = guest.display_name
+							.split('.')
+							.map(
+								(part) =>
+									part.charAt(0).toUpperCase() + part.slice(1)
+							)
+							.join(' ');
+					}
+
+					// Status classes
 					const statusClasses = {
 						approved:
 							'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
@@ -235,161 +259,344 @@ jQuery(document).ready(function ($) {
 						banned: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
 					};
 
-					// Generate action buttons based on sign-in/out status
+					// Action buttons / Missed logic
 					const actionButtons = () => {
-						// Get current date in YYYY-MM-DD format
 						const currentDate = new Date()
 							.toISOString()
 							.split('T')[0];
-						// Normalize visit_date to YYYY-MM-DD
-						const normalizedVisitDate = guest.visit_date
-							? guest.visit_date.split(' ')[0]
-							: '';
-						// Disable buttons if current date is before visit_date or status is not approved
+
 						const isButtonDisabled =
 							!guest.visit_date ||
 							!guest.status ||
 							!/^\d{4}-\d{2}-\d{2}$/.test(normalizedVisitDate) ||
 							currentDate < normalizedVisitDate ||
 							guest.status !== 'approved';
+
+						const isMissed =
+							!guest.sign_in_time &&
+							normalizedVisitDate &&
+							currentDate > normalizedVisitDate;
+
 						const baseButtonClasses =
-							'inline-flex bg-blue-500 items-center gap-2 px-4 py-2 text-sm font-medium text-white transition rounded-lg whitespace-nowrap shadow-theme-xs';
+							'inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition rounded-lg whitespace-nowrap shadow-theme-xs';
 						const disabledClasses = 'opacity-50 cursor-not-allowed';
 						const signInEnabledClasses =
 							'bg-blue-500 cursor-pointer hover:bg-blue-600';
 						const signOutEnabledClasses =
 							'bg-purple-500 cursor-pointer hover:bg-purple-600';
 
-						if (isButtonDisabled) {
-							console.log(
-								`Button disabled for guest ID ${guest.id}: visit_date=${normalizedVisitDate}, status=${guest.status}, current_date=${currentDate}`
-							);
+						if (isMissed) {
+							return `
+							<span class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-yellow-800 bg-yellow-100 rounded-lg dark:bg-yellow-900 dark:text-yellow-200">
+								Missed
+							</span>
+						`;
 						}
 
 						if (!guest.sign_in_time) {
 							return `
-								<button id="sign-in-button-${guest.id}"
-									class="${baseButtonClasses} ${isButtonDisabled ? disabledClasses : signInEnabledClasses}"
-									data-visit-id="${guest.visit_id}"
-									${isButtonDisabled ? 'disabled' : ''}>
-									Sign In
-								</button>
-							`;
+							<button id="sign-in-button-${guest.id}"
+								class="${baseButtonClasses} ${isButtonDisabled ? disabledClasses : signInEnabledClasses}"
+								data-visit-id="${guest.visit_id}"
+								${isButtonDisabled ? 'disabled' : ''}>
+								Sign In
+							</button>
+						`;
 						} else if (!guest.sign_out_time) {
 							return `
-								<button id="sign-out-button-${guest.id}"
-									class="${baseButtonClasses} ${isButtonDisabled ? disabledClasses : signOutEnabledClasses}"
-									data-visit-id="${guest.visit_id}"
-									${isButtonDisabled ? 'disabled' : ''}>
-									Sign Out
-								</button>
-							`;
+							<button id="sign-out-button-${guest.id}"
+								class="${baseButtonClasses} ${isButtonDisabled ? disabledClasses : signOutEnabledClasses}"
+								data-visit-id="${guest.visit_id}"
+								${isButtonDisabled ? 'disabled' : ''}>
+								Sign Out
+							</button>
+						`;
 						} else {
-							return `<span class="text-xs text-gray-500">Completed</span>`;
+							const signInTime = guest.sign_in_time
+								? new Date(
+										guest.sign_in_time
+									).toLocaleTimeString([], {
+										hour: 'numeric',
+										minute: '2-digit',
+									})
+								: '';
+							const signOutTime = guest.sign_out_time
+								? new Date(
+										guest.sign_out_time
+									).toLocaleTimeString([], {
+										hour: 'numeric',
+										minute: '2-digit',
+									})
+								: '';
+							return `
+							<div class="flex flex-col items-center justify-center text-xs px-4">
+								<span class="text-green-600 dark:text-green-400">${signInTime}</span>
+								<span class="text-red-600 dark:text-red-400">${signOutTime}</span>
+							</div>
+						`;
 						}
 					};
 
-					// Create the new row HTML
+					// Build row
 					const newRow = `
-					<tr>
-						<td class="px-5 py-4 sm:px-6">
-							<p class="text-gray-500 text-theme-sm dark:text-gray-400">
-								${$('tbody tr').length + 1}
+				<tr>
+					<td class="px-5 py-4 sm:px-6">
+						<p class="text-gray-500 text-theme-sm dark:text-gray-400">
+							${$('tbody tr').length + 1}
+						</p>
+					</td>
+					<td class="px-5 py-4 sm:px-6">
+						<div class="flex items-center">
+							<p class="text-gray-800 text-theme-sm dark:text-white/90">
+								${guest.first_name || 'N/A'}
 							</p>
-						</td>
-						<td class="px-5 py-4 sm:px-6">
-							<div class="flex items-center">
-								<p class="text-gray-800 text-theme-sm dark:text-white/90">
-									${guest.first_name || 'N/A'}
-								</p>
-							</div>
-						</td>
-						<td class="px-5 py-4 sm:px-6">
-							<div class="flex items-center">
-								<p class="text-gray-800 text-theme-sm dark:text-white/90">
-									${guest.last_name || 'N/A'}
-								</p>
-							</div>
-						</td>                    
-						<td class="px-5 py-4 sm:px-6">
-							<div class="flex items-center">
-								<span class="px-2 py-1 text-xs font-medium rounded-full ${statusClasses[guest.status] || ''}">
-									${guest.status ? guest.status.charAt(0).toUpperCase() + guest.status.slice(1) : 'N/A'}
-								</span>
-							</div>
-						</td>
-						<td class="px-5 py-4 sm:px-6">
-							<div class="flex items-center">
-								<p class="text-gray-500 text-theme-sm dark:text-gray-400">
-									${guest.id_number || 'N/A'}
-								</p>
-							</div>
-						</td>
-						<td class="px-5 py-4 sm:px-6">
-							<div class="flex items-center">
-								<p class="text-gray-500 text-theme-sm dark:text-gray-400">
-									${guest.host_name || 'N/A'}
-								</p>
-							</div>
-						</td>
-						<td class="px-5 py-4 sm:px-6">
-							<div class="flex items-center">
-								<p class="text-gray-500 text-theme-sm dark:text-gray-400">
-									${formattedDate}
-								</p>
-							</div>
-						</td>
-						<td class="px-5 py-4 sm:px-6">
-							<div class="flex items-center gap-2">                            
-								<button id="edit-guest-button-${guest.id}"
-									class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 transition bg-white border border-gray-300 rounded-lg cursor-pointer whitespace-nowrap dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
-									Edit
-								</button>
-								${actionButtons()}
-							</div>
-						</td>
-					</tr>
+						</div>
+					</td>
+					<td class="px-5 py-4 sm:px-6">
+						<div class="flex items-center">
+							<p class="text-gray-800 text-theme-sm dark:text-white/90">
+								${guest.last_name || 'N/A'}
+							</p>
+						</div>
+					</td>                    
+					<td class="px-5 py-4 sm:px-6">
+						<div class="flex items-center">
+							<span class="px-2 py-1 text-xs font-medium rounded-full ${statusClasses[guest.status] || ''}">
+								${guest.status ? guest.status.charAt(0).toUpperCase() + guest.status.slice(1) : 'N/A'}
+							</span>
+						</div>
+					</td>
+					<td class="px-5 py-4 sm:px-6">
+						<div class="flex items-center">
+							<p class="text-gray-500 text-theme-sm dark:text-gray-400">
+								${guest.id_number || 'N/A'}
+							</p>
+						</div>
+					</td>
+					<td class="px-5 py-4 sm:px-6">
+						<div class="flex items-center">
+							<p class="text-gray-500 text-theme-sm dark:text-gray-400">
+								${hostName}
+							</p>
+						</div>
+					</td>
+					<td class="px-5 py-4 sm:px-6">
+						<div class="flex items-center">
+							<p class="text-gray-500 text-theme-sm dark:text-gray-400">
+								${formattedDate}
+							</p>
+						</div>
+					</td>
+					<td class="px-5 py-4 sm:px-6">
+						<div class="flex items-center gap-2">                            
+							<button id="edit-guest-button-${guest.id}"
+								class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 transition bg-white border border-gray-300 rounded-lg cursor-pointer whitespace-nowrap dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+								Edit
+							</button>
+							${actionButtons()}
+						</div>
+					</td>
+				</tr>
 				`;
 
-					// Remove "no guests" row if it exists
+					// Remove "no guests" row
 					if ($('#no-guests-row').length) {
 						$('#no-guests-row').remove();
 					}
 
-					// Prepend the new row to the table
+					// Prepend row
 					$('tbody').prepend(newRow);
 
-					// Update row numbers
+					// Re-number rows
 					$('tbody tr').each(function (index) {
 						$(this)
 							.find('td:first p')
 							.text(index + 1);
 					});
 
-					// Show success message
+					// Success modal
 					const message =
 						response.data.messages[0] ||
 						'Guest registered successfully';
+					const successModal = `
+				<div id="success-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+					<div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+						<div class="check_mark mx-auto mb-4">
+							<div class="sa-icon sa-success animate">
+								<span class="sa-line sa-tip animateSuccessTip"></span>
+								<span class="sa-line sa-long animateSuccessLong"></span>
+								<div class="sa-placeholder"></div>
+								<div class="sa-fix"></div>
+							</div>
+						</div>
+						<p class="text-lg font-medium text-gray-700 dark:text-white">${message}</p>
+						<button id="ok-success-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 transition">
+							OK
+						</button>
+					</div>
+				</div>
+				`;
+					$('body').append(successModal);
+
+					// Close modal
+					$(document)
+						.off('click', '#ok-success-btn')
+						.on('click', '#ok-success-btn', function (e) {
+							e.preventDefault();
+							$('#success-modal-overlay').fadeOut(
+								300,
+								function () {
+									$(this).remove();
+									window.dispatchEvent(
+										new Event('close-guest-modal')
+									);
+									$('#guest-form')[0].reset();
+								}
+							);
+						});
+				} else {
+					// Error modal
+					const errorMessages = response.data.messages || [
+						'An error occurred during guest registration',
+					];
+					const errorMessageHtml = errorMessages
+						.map(
+							(msg) =>
+								`<p class="text-lg font-medium text-gray-700 dark:text-white">${msg}</p>`
+						)
+						.join('');
+
+					const errorModal = `
+				<div id="guest-error-modal-overlay"
+					class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+					<div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+						<div class="check_mark mx-auto mb-4">
+							<div class="sa-icon sa-error animate">
+								<span class="sa-line sa-left animateXLeft"></span>
+								<span class="sa-line sa-right animateXRight"></span>
+								<div class="sa-placeholder"></div>
+							</div>
+						</div>
+						${errorMessageHtml}
+						<button id="ok-error-btn" type="button"
+							class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">
+							OK
+						</button>
+					</div>
+				</div>
+				`;
+					$('body').append(errorModal);
+					$(document)
+						.off('click', '#ok-error-btn')
+						.on('click', '#ok-error-btn', function (e) {
+							e.preventDefault();
+							$('#guest-error-modal-overlay').fadeOut(
+								300,
+								function () {
+									$(this).remove();
+								}
+							);
+						});
+				}
+			},
+			error: function (xhr, status, error) {
+				const errorMessage =
+					xhr.responseJSON?.data?.messages?.join('<br>') ||
+					'An error occurred: ' + error;
+
+				const errorModal = `
+			<div id="guest-error-modal-overlay"
+				class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+				<div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+					<div class="check_mark mx-auto mb-4">
+						<div class="sa-icon sa-error animate">
+							<span class="sa-line sa-left animateXLeft"></span>
+							<span class="sa-line sa-right animateXRight"></span>
+							<div class="sa-placeholder"></div>
+						</div>
+					</div>
+					<p class="text-lg font-medium text-gray-700 dark:text-white">${errorMessage}</p>
+					<button id="ok-error-btn" type="button"
+						class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">
+						OK
+					</button>
+				</div>
+			</div>
+			`;
+				$('body').append(errorModal);
+				$(document)
+					.off('click', '#ok-error-btn')
+					.on('click', '#ok-error-btn', function (e) {
+						e.preventDefault();
+						$('#guest-error-modal-overlay').fadeOut(
+							300,
+							function () {
+								$(this).remove();
+							}
+						);
+					});
+			},
+			complete: function () {
+				$('#submit-guest-form')
+					.prop('disabled', false)
+					.text('Create Guest');
+			},
+		});
+	});
+
+	// Guest Update FORM
+	$('#guest-update-form').on('submit', function (e) {
+		e.preventDefault();
+
+		// Show loading indicator
+		$('#update-guest-btn')
+			.prop('disabled', true)
+			.html(
+				'<span class="animate-spin inline-block w-6 h-6 border-4 border-current border-t-transparent rounded-full mr-2"></span> Updating...'
+			);
+
+		// Clear previous messages and modals
+		$('.alert-message').remove();
+		$('#success-modal-overlay, #guest-error-modal-overlay').remove();
+
+		// Collect form data
+		var formData = new FormData(this);
+		formData.append('action', 'update_guest');
+		formData.append('nonce', vms_script_ajax.nonce);
+
+		// AJAX request
+		$.ajax({
+			url: vms_script_ajax.ajaxurl,
+			type: 'POST',
+			data: formData,
+			processData: false,
+			contentType: false,
+			dataType: 'json',
+			success: function (response) {
+				if (response.success) {
+					// Show success message
+					const message =
+						response.data.message || 'Guest updated successfully';
 
 					// Create and show success animation modal
 					const successModal = `
-					<div id="success-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
-						<div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
-							<div class="check_mark mx-auto mb-4">
-								<div class="sa-icon sa-success animate">
-									<span class="sa-line sa-tip animateSuccessTip"></span>
-									<span class="sa-line sa-long animateSuccessLong"></span>
-									<div class="sa-placeholder"></div>
-									<div class="sa-fix"></div>
-								</div>
-							</div>
-							<p class="text-lg font-medium text-gray-700 dark:text-white">${message}</p>
-							<button id="ok-success-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 transition">
-								OK
-							</button>
-						</div>
-					</div>
-				`;
+                            <div id="success-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+                                <div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+                                    <div class="check_mark mx-auto mb-4">
+                                        <div class="sa-icon sa-success animate">
+                                            <span class="sa-line sa-tip animateSuccessTip"></span>
+                                            <span class="sa-line sa-long animateSuccessLong"></span>
+                                            <div class="sa-placeholder"></div>
+                                            <div class="sa-fix"></div>
+                                        </div>
+                                    </div>
+                                    <p class="text-lg font-medium text-gray-700 dark:text-white">${message}</p>
+                                    <button id="ok-success-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 transition">
+                                        OK
+                                    </button>
+                                </div>
+                            </div>
+                        `;
 
 					// Inject modal into body
 					$('body').append(successModal);
@@ -403,19 +610,13 @@ jQuery(document).ready(function ($) {
 								300,
 								function () {
 									$(this).remove();
-									// Trigger Alpine to close guest modal
-									window.dispatchEvent(
-										new Event('close-guest-modal')
-									);
-									// Reset form
-									$('#guest-form')[0].reset();
 								}
 							);
 						});
 				} else {
 					// Show error messages in a single modal
 					const errorMessages = response.data.messages || [
-						'An error occurred during guest registration',
+						'An error occurred during guest update',
 					];
 					const errorMessageHtml = errorMessages
 						.map(
@@ -426,25 +627,25 @@ jQuery(document).ready(function ($) {
 
 					// Create and show error animation modal
 					const errorModal = `
-					<div id="guest-error-modal-overlay"
-						class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
-						<div
-							class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
-							<div class="check_mark mx-auto mb-4">
-								<div class="sa-icon sa-error animate">
-									<span class="sa-line sa-left animateXLeft"></span>
-									<span class="sa-line sa-right animateXRight"></span>
-									<div class="sa-placeholder"></div>
-								</div>
-							</div>
-							${errorMessageHtml}
-							<button id="ok-error-btn" type="button"
-								class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">
-								OK
-							</button>
-						</div>
-					</div>
-				`;
+                            <div id="guest-error-modal-overlay"
+                                class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+                                <div
+                                    class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+                                    <div class="check_mark mx-auto mb-4">
+                                        <div class="sa-icon sa-error animate">
+                                            <span class="sa-line sa-left animateXLeft"></span>
+                                            <span class="sa-line sa-right animateXRight"></span>
+                                            <div class="sa-placeholder"></div>
+                                        </div>
+                                    </div>
+                                    ${errorMessageHtml}
+                                    <button id="ok-error-btn" type="button"
+                                        class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">
+                                        OK
+                                    </button>
+                                </div>
+                            </div>
+                        `;
 
 					// Inject modal into body
 					$('body').append(errorModal);
@@ -471,25 +672,25 @@ jQuery(document).ready(function ($) {
 
 				// Create and show error animation modal
 				const errorModal = `
-				<div id="guest-error-modal-overlay"
-					class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
-					<div
-						class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
-						<div class="check_mark mx-auto mb-4">
-							<div class="sa-icon sa-error animate">
-								<span class="sa-line sa-left animateXLeft"></span>
-								<span class="sa-line sa-right animateXRight"></span>
-								<div class="sa-placeholder"></div>
-							</div>
-						</div>
-						<p class="text-lg font-medium text-gray-700 dark:text-white">${errorMessage}</p>
-						<button id="ok-error-btn" type="button"
-							class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">
-							OK
-						</button>
-					</div>
-				</div>
-			`;
+                        <div id="guest-error-modal-overlay"
+                            class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+                            <div
+                                class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+                                <div class="check_mark mx-auto mb-4">
+                                    <div class="sa-icon sa-error animate">
+                                        <span class="sa-line sa-left animateXLeft"></span>
+                                        <span class="sa-line sa-right animateXRight"></span>
+                                        <div class="sa-placeholder"></div>
+                                    </div>
+                                </div>
+                                <p class="text-lg font-medium text-gray-700 dark:text-white">${errorMessage}</p>
+                                <button id="ok-error-btn" type="button"
+                                    class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">
+                                    OK
+                                </button>
+                            </div>
+                        </div>
+                    `;
 
 				// Inject modal into body
 				$('body').append(errorModal);
@@ -509,9 +710,193 @@ jQuery(document).ready(function ($) {
 			},
 			complete: function () {
 				// Reset button
-				$('#submit-guest-form')
+				$('#update-guest-btn')
 					.prop('disabled', false)
-					.text('Create Guest');
+					.text('Update Guest');
+			},
+		});
+	});
+
+	// Delete Guest Button
+	$('#delete-guest-btn').on('click', function (e) {
+		e.preventDefault();
+
+		if (
+			!confirm(
+				'Are you sure you want to delete this guest? This action is irreversible.'
+			)
+		) {
+			return;
+		}
+
+		// Show loading indicator
+		$(this)
+			.prop('disabled', true)
+			.html(
+				'<span class="animate-spin inline-block w-6 h-6 border-4 border-current border-t-transparent rounded-full mr-2"></span> Deleting...'
+			);
+
+		// Clear previous messages and modals
+		$('.alert-message').remove();
+		$('#success-modal-overlay, #guest-error-modal-overlay').remove();
+
+		// Collect form data
+		var formData = new FormData();
+		formData.append('action', 'delete_guest');
+		formData.append('nonce', vms_script_ajax.nonce);
+		formData.append('guest_id', $('input[name="guest_id"]').val());
+
+		// AJAX request
+		$.ajax({
+			url: vms_script_ajax.ajaxurl,
+			type: 'POST',
+			data: formData,
+			processData: false,
+			contentType: false,
+			dataType: 'json',
+			success: function (response) {
+				if (response.success) {
+					// Show success message
+					const message =
+						response.data.message || 'Guest deleted successfully';
+
+					// Create and show success animation modal
+					const successModal = `
+                            <div id="success-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+                                <div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+                                    <div class="check_mark mx-auto mb-4">
+                                        <div class="sa-icon sa-success animate">
+                                            <span class="sa-line sa-tip animateSuccessTip"></span>
+                                            <span class="sa-line sa-long animateSuccessLong"></span>
+                                            <div class="sa-placeholder"></div>
+                                            <div class="sa-fix"></div>
+                                        </div>
+                                    </div>
+                                    <p class="text-lg font-medium text-gray-700 dark:text-white">${message}</p>
+                                    <button id="ok-success-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 transition">
+                                        OK
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+
+					// Inject modal into body
+					$('body').append(successModal);
+
+					// Handle OK button click - redirect after deletion
+					$(document)
+						.off('click', '#ok-success-btn')
+						.on('click', '#ok-success-btn', function (e) {
+							e.preventDefault();
+							$('#success-modal-overlay').fadeOut(
+								300,
+								function () {
+									$(this).remove();
+									// Redirect to guests list page
+									window.location.href = '/guests';
+								}
+							);
+						});
+				} else {
+					// Show error messages in a single modal
+					const errorMessages = response.data.messages || [
+						'An error occurred during guest deletion',
+					];
+					const errorMessageHtml = errorMessages
+						.map(
+							(msg) =>
+								`<p class="text-lg font-medium text-gray-700 dark:text-white">${msg}</p>`
+						)
+						.join('');
+
+					// Create and show error animation modal
+					const errorModal = `
+                            <div id="guest-error-modal-overlay"
+                                class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+                                <div
+                                    class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+                                    <div class="check_mark mx-auto mb-4">
+                                        <div class="sa-icon sa-error animate">
+                                            <span class="sa-line sa-left animateXLeft"></span>
+                                            <span class="sa-line sa-right animateXRight"></span>
+                                            <div class="sa-placeholder"></div>
+                                        </div>
+                                    </div>
+                                    ${errorMessageHtml}
+                                    <button id="ok-error-btn" type="button"
+                                        class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">
+                                        OK
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+
+					// Inject modal into body
+					$('body').append(errorModal);
+
+					// Handle OK button click
+					$(document)
+						.off('click', '#ok-error-btn')
+						.on('click', '#ok-error-btn', function (e) {
+							e.preventDefault();
+							$('#guest-error-modal-overlay').fadeOut(
+								300,
+								function () {
+									$(this).remove();
+								}
+							);
+						});
+				}
+			},
+			error: function (xhr, status, error) {
+				// Show error message in a modal
+				const errorMessage =
+					xhr.responseJSON?.data?.messages?.join('<br>') ||
+					'An error occurred: ' + error;
+
+				// Create and show error animation modal
+				const errorModal = `
+                        <div id="guest-error-modal-overlay"
+                            class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+                            <div
+                                class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+                                <div class="check_mark mx-auto mb-4">
+                                    <div class="sa-icon sa-error animate">
+                                        <span class="sa-line sa-left animateXLeft"></span>
+                                        <span class="sa-line sa-right animateXRight"></span>
+                                        <div class="sa-placeholder"></div>
+                                    </div>
+                                </div>
+                                <p class="text-lg font-medium text-gray-700 dark:text-white">${errorMessage}</p>
+                                <button id="ok-error-btn" type="button"
+                                    class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">
+                                    OK
+                                </button>
+                            </div>
+                        </div>
+                    `;
+
+				// Inject modal into body
+				$('body').append(errorModal);
+
+				// Handle OK button click
+				$(document)
+					.off('click', '#ok-error-btn')
+					.on('click', '#ok-error-btn', function (e) {
+						e.preventDefault();
+						$('#guest-error-modal-overlay').fadeOut(
+							300,
+							function () {
+								$(this).remove();
+							}
+						);
+					});
+			},
+			complete: function () {
+				// Reset button
+				$('#delete-guest-btn')
+					.prop('disabled', false)
+					.text('Delete Guest');
 			},
 		});
 	});
@@ -554,7 +939,7 @@ jQuery(document).ready(function ($) {
 			},
 			dataType: 'json',
 			success: function (response) {
-				console.log('Sign in response:', response);
+				// console.log('Sign in response:', response);
 
 				if (response.success && response.data.guestData) {
 					const guest = response.data.guestData;
@@ -671,7 +1056,7 @@ jQuery(document).ready(function ($) {
 
 					// Append the times block right after the edit button
 					parentContainer.append(`
-                    <div class="flex flex-col items-center justify-center w-full text-xs">
+                    <div class="flex flex-col items-center justify-center px-4 text-xs">
                         <span class="text-green-600 dark:text-green-400">${formatTime(guest.sign_in_time)}</span>
                         <span class="text-red-600 dark:text-red-400">${formatTime(guest.sign_out_time)}</span>
                     </div>

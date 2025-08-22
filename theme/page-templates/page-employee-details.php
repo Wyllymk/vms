@@ -9,7 +9,7 @@
 defined('ABSPATH') || exit;
 
 // Check if the current user is an Administrator or Manager or Advocate
-if ( ! ( current_user_can( 'administrator' ) || current_user_can( 'managing_partner' ) || current_user_can( 'senior_partner' ) || current_user_can( 'advocate' ) || current_user_can( 'pupil' ) ) ) {
+if ( ! ( current_user_can( 'administrator' ) || current_user_can( 'general_manager' ) )  ) {
 	// Redirect unauthorized users to the front page
 	wp_redirect( home_url() );
 	exit;
@@ -24,7 +24,7 @@ $lawyer_d_error = [];
 if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
     $user_id = intval($_GET['user_id']);
     $current_user = wp_get_current_user();
-    $is_admin_or_manager = in_array('administrator', $current_user->roles) || in_array('manager', $current_user->roles);
+    $is_admin_or_manager = in_array('administrator', $current_user->roles) || in_array('general_manager', $current_user->roles);
 
     // Update User Data          
     if (isset($_POST['update_user']) && check_admin_referer('update_user_data', '_wpnonce_update_user_data')) {

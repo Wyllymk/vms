@@ -82,53 +82,65 @@ $guest_visits_table = $wpdb->prefix . 'vms_guest_visits';
             <!-- table header end -->
             <!-- table body start -->
             <tbody id="guests-table-body" class="divide-y divide-gray-100 dark:divide-gray-800">
-                <?php
-                    // Initialize counter
-                    $counter = 1;
+                <?php 
+                // Initialize counter
+                $counter = 1;
 
-                    // Base query - join guests with guest_visits and users tables
-                    $query = "SELECT g.*, v.id as visit_id, v.visit_date, v.sign_in_time, v.sign_out_time, 
-                                    u.display_name as host_name 
-                            FROM {$guests_table} g 
-                            LEFT JOIN {$guest_visits_table} v ON g.id = v.guest_id
-                            LEFT JOIN {$wpdb->users} u ON g.host_member_id = u.ID";
-                    // Check if search form submitted
-                    if (isset($_GET['search_users']) && !empty($_GET['user_search'])) {
-                        $search_term = sanitize_text_field($_GET['user_search']);
-                        $query .= $wpdb->prepare(" WHERE (g.first_name LIKE %s 
-                                                OR g.last_name LIKE %s                                               
-                                                OR g.id_number LIKE %s
-                                                OR g.email LIKE %s
-                                                OR g.phone_number LIKE %s
-                                                OR u.display_name LIKE %s)",
-                                                '%' . $wpdb->esc_like($search_term) . '%',
-                                                '%' . $wpdb->esc_like($search_term) . '%',                                              
-                                                '%' . $wpdb->esc_like($search_term) . '%',
-                                                '%' . $wpdb->esc_like($search_term) . '%',
-                                                '%' . $wpdb->esc_like($search_term) . '%',
-                                                '%' . $wpdb->esc_like($search_term) . '%');
-                    }
+                // Base query - join guests with guest_visits and users tables
+                // We need to join with usermeta to get first and last names
+                // Note: host_member_id is in the guest_visits table, not the guests table
+                $query = "SELECT g.*, v.id as visit_id, v.visit_date, v.sign_in_time, v.sign_out_time, v.host_member_id,
+                                u.display_name,
+                                MAX(CASE WHEN um1.meta_key = 'first_name' THEN um1.meta_value END) as host_first_name,
+                                MAX(CASE WHEN um2.meta_key = 'last_name' THEN um2.meta_value END) as host_last_name
+                        FROM {$guests_table} g 
+                        LEFT JOIN {$guest_visits_table} v ON g.id = v.guest_id 
+                        LEFT JOIN {$wpdb->users} u ON v.host_member_id = u.ID
+                        LEFT JOIN {$wpdb->usermeta} um1 ON (u.ID = um1.user_id AND um1.meta_key = 'first_name')
+                        LEFT JOIN {$wpdb->usermeta} um2 ON (u.ID = um2.user_id AND um2.meta_key = 'last_name')";
 
-                    // Add ordering by visit date (most recent first)
-                    $query .= " ORDER BY v.visit_date ASC, g.id DESC";
+                // Check if search form submitted
+                if (isset($_GET['search_users']) && !empty($_GET['user_search'])) {
+                    $search_term = sanitize_text_field($_GET['user_search']);
+                    $query .= $wpdb->prepare(" WHERE (g.first_name LIKE %s OR g.last_name LIKE %s OR g.id_number LIKE %s OR g.email LIKE %s OR g.phone_number LIKE %s OR u.display_name LIKE %s OR um1.meta_value LIKE %s OR um2.meta_value LIKE %s)",
+                        '%' . $wpdb->esc_like($search_term) . '%',
+                        '%' . $wpdb->esc_like($search_term) . '%',
+                        '%' . $wpdb->esc_like($search_term) . '%',
+                        '%' . $wpdb->esc_like($search_term) . '%',
+                        '%' . $wpdb->esc_like($search_term) . '%',
+                        '%' . $wpdb->esc_like($search_term) . '%',
+                        '%' . $wpdb->esc_like($search_term) . '%',
+                        '%' . $wpdb->esc_like($search_term) . '%');
+                }
 
-                    // Get guests from custom tables
-                    $guests = $wpdb->get_results($query);
-                    
-                    $status_classes = [
-                        'approved' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-                        'unapproved' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-                        'suspended' => 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
-                        'banned' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                    ];                
+                // Add grouping and ordering
+                $query .= " GROUP BY g.id, v.id ORDER BY v.visit_date ASC, g.id DESC";
 
-                    if (!empty($guests)) {
-                        foreach ($guests as $guest) {
-                            $visit_date = !empty($guest->visit_date) ? date('M j, Y', strtotime($guest->visit_date)) : 'N/A';
-                            $sign_in_time = !empty($guest->sign_in_time) ? date('g:i a', strtotime($guest->sign_in_time)) : null;
-                            $sign_out_time = !empty($guest->sign_out_time) ? date('g:i a', strtotime($guest->sign_out_time)) : null;
-                            $status = isset($guest->status) ? $guest->status : 'approved';
-                            ?>
+                // Get guests from custom tables
+                $guests = $wpdb->get_results($query);
+
+                $status_classes = [
+                    'approved' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+                    'unapproved' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+                    'suspended' => 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
+                    'banned' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                ];
+
+                if (!empty($guests)) {
+                    foreach ($guests as $guest) {
+                        $visit_date = !empty($guest->visit_date) ? date('M j, Y', strtotime($guest->visit_date)) : 'N/A';
+                        $sign_in_time = !empty($guest->sign_in_time) ? date('g:i a', strtotime($guest->sign_in_time)) : null;
+                        $sign_out_time = !empty($guest->sign_out_time) ? date('g:i a', strtotime($guest->sign_out_time)) : null;
+                        $status = isset($guest->status) ? $guest->status : 'approved';
+                        
+                        // Get host name - use first and last name if available, otherwise fallback to display name
+                        $host_name = 'N/A';
+                        if (!empty($guest->host_first_name) || !empty($guest->host_last_name)) {
+                            $host_name = trim($guest->host_first_name . ' ' . $guest->host_last_name);
+                        } elseif (!empty($guest->display_name)) {
+                            $host_name = $guest->display_name;
+                        }
+                ?>
                 <tr data-guest-id="<?php echo esc_attr($guest->id); ?>"
                     data-visit-id="<?php echo esc_attr($guest->visit_id); ?>">
                     <td class="px-5 py-4 sm:px-6">
@@ -168,7 +180,7 @@ $guest_visits_table = $wpdb->prefix . 'vms_guest_visits';
                     <td class="px-5 py-4 sm:px-6">
                         <div class="flex items-center">
                             <p class="text-gray-500 text-theme-sm dark:text-gray-400">
-                                <?php echo $guest->host_name ? esc_html($guest->host_name) : 'N/A'; ?>
+                                <?php echo esc_html($host_name); ?>
                             </p>
                         </div>
                     </td>
@@ -190,29 +202,41 @@ $guest_visits_table = $wpdb->prefix . 'vms_guest_visits';
                             <?php
                             // Get current date in WordPress timezone (EAT)
                             $current_date = current_time('Y-m-d');
-
+                            
                             // Validate guest data
                             if (!isset($guest->visit_date) || !isset($guest->status)) {
                                 error_log("Guest table error: Missing visit_date or status for guest ID {$guest->id}");
                                 $is_button_disabled = true; // Disable buttons if data is missing
+                                $is_missed = false;
                             } else {
                                 // Normalize visit_date to YYYY-MM-DD
                                 $normalized_visit_date = substr($guest->visit_date, 0, 10); // Extract YYYY-MM-DD from YYYY-MM-DD HH:MM:SS
+                                
                                 if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $normalized_visit_date)) {
                                     error_log("Guest table error: Invalid visit_date format for guest ID {$guest->id}: {$guest->visit_date}");
                                     $is_button_disabled = true;
+                                    $is_missed = false;
                                 } else {
                                     // Disable buttons if current date is before visit_date or status is not approved
-                                    $is_button_disabled = $current_date < $normalized_visit_date || $guest->status !== 'approved';                                    
+                                    $is_button_disabled = $current_date < $normalized_visit_date || $guest->status !== 'approved';
+                                    
+                                    // Check if visit was missed (no sign-in and visit date has passed)
+                                    $is_missed = empty($guest->sign_in_time) && $current_date > $normalized_visit_date;
                                 }
                             }
-
+                            
                             // Common button classes
                             $base_button_classes = 'inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition rounded-lg whitespace-nowrap shadow-theme-xs';
                             $disabled_classes = 'opacity-50 cursor-not-allowed';
                             ?>
 
-                            <?php if (empty($guest->sign_in_time)): ?>
+                            <?php if ($is_missed): ?>
+                            <!-- Missed status -->
+                            <span
+                                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-yellow-800 bg-yellow-100 rounded-lg dark:bg-yellow-900 dark:text-yellow-200">
+                                <?php esc_html_e('Missed', 'vms'); ?>
+                            </span>
+                            <?php elseif (empty($guest->sign_in_time)): ?>
                             <button id="sign-in-button-<?php echo esc_attr($guest->id); ?>"
                                 class="<?php echo esc_attr($base_button_classes . ' bg-blue-500 ' . ($is_button_disabled ? $disabled_classes : 'cursor-pointer hover:bg-blue-600')); ?>"
                                 data-visit-id="<?php echo esc_attr($guest->visit_id); ?>"
@@ -237,8 +261,8 @@ $guest_visits_table = $wpdb->prefix . 'vms_guest_visits';
                         </div>
                     </td>
                 </tr>
-                <?php
-                    }
+                <?php 
+                    } 
                 } else {
                     echo '<tr id="no-guests-row"><td colspan="11" class="px-4 py-4 text-center text-gray-600 dark:text-white">No guests found.</td></tr>';
                 }
