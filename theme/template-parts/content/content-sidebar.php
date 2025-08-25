@@ -25,7 +25,7 @@ defined( 'ABSPATH' ) || exit;
                 </h2>
             </span>
 
-            <img class="logo-icon" :class="sidebarToggle ? 'lg:block' : 'hidden'" loading="lazy"
+            <img class="logo-icon h-10" :class="sidebarToggle ? 'lg:block' : 'hidden'" loading="lazy"
                 src="<?php echo get_template_directory_uri(); ?>/assets/images/logo/logo.png" alt="Logo" />
         </a>
     </div>

@@ -34,13 +34,28 @@ defined( 'ABSPATH' ) || exit;
     <?php wp_head(); ?>
 </head>
 
-<body x-data="{ 'loaded': true, 'darkMode': false, 'stickyMenu': false, 'sidebarToggle': false, 'scrollTop': false }"
-    x-init="
-         darkMode = JSON.parse(localStorage.getItem('darkMode'));
-         $watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(value)))"
-    :class="{'dark bg-gray-900': darkMode === true}" <?php body_class(); ?>>
+<body x-data="{ loaded: true, darkMode: false, stickyMenu: false, sidebarToggle: false, scrollTop: false 
+    }" x-init="
+        (() => {
+            // Use saved preference if available
+            if (localStorage.getItem('darkMode') !== null) {
+                darkMode = JSON.parse(localStorage.getItem('darkMode'));
+            } else {
+                // Otherwise fall back to system preference
+                darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            }
 
-    <?php wp_body_open(); ?>
+            // Watch for system changes
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+                if (localStorage.getItem('darkMode') === null) {
+                    darkMode = e.matches;
+                }
+            });
+
+            // Persist user choice
+            $watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(value)));
+        })()
+    " :class="{ 'dark bg-gray-900': darkMode }" <?php body_class(); ?>>
 
     <div id="page">
         <a href="#content" class="sr-only"><?php esc_html_e( 'Skip to content', 'vms' ); ?></a>
