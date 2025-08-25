@@ -153,10 +153,24 @@ defined( 'ABSPATH' ) || exit;
                     </td>
                     <td class="px-5 py-4 sm:px-6">
                         <div class="flex items-center">
-                            <p
-                                class="px-2 py-0.5 text-theme-xs font-medium rounded-full <?php echo $registration_status == 'inactive' ? 'bg-warning-50 dark:bg-warning-500/15 text-warning-700 dark:text-warning-400' : 'bg-success-50 dark:bg-success-500/15 text-success-700 dark:text-success-500'; ?>">
-                                <?php echo esc_html($registration_status); ?>
-                            </p>
+                            <?php
+                            // Map statuses to badge classes
+                            $status_classes = [
+                                'pending'   => 'bg-blue-light-50 text-blue-light-500 dark:bg-blue-light-500/15 dark:text-blue-light-500',
+                                'active'    => 'bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-500',
+                                'suspended' => 'bg-warning-50 text-warning-600 dark:bg-warning-500/15 dark:text-orange-400',
+                                'banned'    => 'bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500',
+                            ];
+
+                            // fallback class if status is unknown
+                            $badge_class = $status_classes[$registration_status] ?? 'bg-gray-100 text-gray-700 dark:bg-white/5 dark:text-white/80';
+                            ?>
+
+                            <span
+                                class="inline-flex items-center justify-center gap-1 rounded-full px-2.5 py-0.5 text-sm font-medium <?php echo esc_attr($badge_class); ?>">
+                                <?php echo esc_html(ucfirst($registration_status)); ?>
+                            </span>
+
                         </div>
                     </td>
                     <td class="px-5 py-4 sm:px-6">
@@ -236,10 +250,24 @@ defined( 'ABSPATH' ) || exit;
                     </td>
                     <td class="px-5 py-4 sm:px-6">
                         <div class="flex items-center">
-                            <p
-                                class="px-2 py-0.5 text-theme-xs font-medium rounded-full <?php echo $registration_status == 'inactive' ? 'bg-warning-50 dark:bg-warning-500/15 text-warning-700 dark:text-warning-400' : 'bg-success-50 dark:bg-success-500/15 text-success-700 dark:text-success-500'; ?>">
-                                <?php echo esc_html($registration_status); ?>
-                            </p>
+                            <?php
+                            // Map statuses to badge classes
+                            $status_classes = [
+                                'pending'   => 'bg-blue-light-50 text-blue-light-500 dark:bg-blue-light-500/15 dark:text-blue-light-500',
+                                'active'    => 'bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-500',
+                                'suspended' => 'bg-warning-50 text-warning-600 dark:bg-warning-500/15 dark:text-orange-400',
+                                'banned'    => 'bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500',
+                            ];
+
+                            // fallback class if status is unknown
+                            $badge_class = $status_classes[$registration_status] ?? 'bg-gray-100 text-gray-700 dark:bg-white/5 dark:text-white/80';
+                            ?>
+
+                            <span
+                                class="inline-flex items-center justify-center gap-1 rounded-full px-2.5 py-0.5 text-sm font-medium <?php echo esc_attr($badge_class); ?>">
+                                <?php echo esc_html(ucfirst($registration_status)); ?>
+                            </span>
+
                         </div>
                     </td>
                     <td class="px-5 py-4 sm:px-6">

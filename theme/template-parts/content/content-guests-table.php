@@ -238,7 +238,7 @@ $guest_visits_table = $wpdb->prefix . 'vms_guest_visits';
                             </span>
                             <?php elseif (empty($guest->sign_in_time)): ?>
                             <button id="sign-in-button-<?php echo esc_attr($guest->id); ?>"
-                                class="<?php echo esc_attr($base_button_classes . ' bg-blue-500 ' . ($is_button_disabled ? $disabled_classes : 'cursor-pointer hover:bg-blue-600')); ?>"
+                                class="<?php echo esc_attr($base_button_classes . ' bg-brand-500 ' . ($is_button_disabled ? $disabled_classes : 'cursor-pointer hover:bg-brand-600')); ?>"
                                 data-visit-id="<?php echo esc_attr($guest->visit_id); ?>"
                                 <?php echo $is_button_disabled ? 'disabled' : ''; ?>>
                                 <?php esc_html_e('Sign In', 'vms'); ?>

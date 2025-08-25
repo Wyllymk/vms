@@ -60,7 +60,7 @@ if ( isset( $_POST['signup'] ) ) {
                 'phone_number'          => $user_number,
 				'receive_messages'     => 'yes',
 				'receive_emails'       => 'yes',
-				'registration_status'  => 'inactive',
+				'registration_status'  => 'pending',
 				'show_admin_bar_front' => 'false',
 			),
 		);

@@ -11,38 +11,46 @@ defined( 'ABSPATH' ) || exit;
 
 ?>
 
-<article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
+<div class="flex flex-wrap gap-4 sm:items-center sm:justify-center">
+    <!-- Primary Badge-->
+    <span
+        class="inline-flex items-center justify-center gap-1 rounded-full bg-brand-50 px-2.5 py-0.5 text-sm font-medium text-brand-500 dark:bg-brand-500/15 dark:text-brand-400">
+        Primary
+    </span>
 
-    <header class="entry-header">
-        <?php
-		if ( is_sticky() && is_home() && ! is_paged() ) {
-			printf( '<span">%s</span>', esc_html_x( 'Featured', 'post', 'vms' ) );
-		}
-		if ( is_singular() ) :
-			the_title( '<h1 class="entry-title">', '</h1>' );
-		else :
-			the_title( sprintf( '<h2 class="entry-title"><a href="%s" rel="bookmark">', esc_url( get_permalink() ) ), '</a></h2>' );
-		endif;
-		?>
-    </header><!-- .entry-header -->
+    <!-- Success Badge-->
+    <span
+        class="inline-flex items-center justify-center gap-1 rounded-full bg-success-50 px-2.5 py-0.5 text-sm font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">
+        Success
+    </span>
 
-    <?php clubvms_post_thumbnail(); ?>
+    <!-- Error Badge-->
+    <span
+        class="inline-flex items-center justify-center gap-1 rounded-full bg-error-50 px-2.5 py-0.5 text-sm font-medium text-error-600 dark:bg-error-500/15 dark:text-error-500">
+        Error
+    </span>
 
-    <div <?php clubvms_content_class( 'entry-content' ); ?>>
-        <?php
-		the_content();
+    <!-- Warning Badge-->
+    <span
+        class="inline-flex items-center justify-center gap-1 rounded-full bg-warning-50 px-2.5 py-0.5 text-sm font-medium text-warning-600 dark:bg-warning-500/15 dark:text-orange-400">
+        Warning
+    </span>
 
-		wp_link_pages(
-			array(
-				'before' => '<div>' . __( 'Pages:', 'vms' ),
-				'after'  => '</div>',
-			)
-		);
-		?>
-    </div><!-- .entry-content -->
+    <!-- Info Badge-->
+    <span
+        class="inline-flex items-center justify-center gap-1 rounded-full bg-blue-light-50 px-2.5 py-0.5 text-sm font-medium text-blue-light-500 dark:bg-blue-light-500/15 dark:text-blue-light-500">
+        Info
+    </span>
 
-    <footer class="entry-footer">
-        <?php clubvms_entry_footer(); ?>
-    </footer><!-- .entry-footer -->
+    <!-- Light Badge-->
+    <span
+        class="inline-flex items-center justify-center gap-1 rounded-full bg-gray-100 px-2.5 py-0.5 text-sm font-medium text-gray-700 dark:bg-white/5 dark:text-white/80">
+        Light
+    </span>
 
-</article><!-- #post-${ID} -->
+    <!-- Dark Badge-->
+    <span
+        class="inline-flex items-center justify-center gap-1 rounded-full bg-gray-500 px-2.5 py-0.5 text-sm font-medium text-white dark:bg-white/5 dark:text-white">
+        Dark
+    </span>
+</div>

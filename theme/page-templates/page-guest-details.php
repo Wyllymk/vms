@@ -4,6 +4,7 @@
  *
  * @package Visitor_Management_System
  */
+use WyllyMk\VMS\VMS_CoreManager;
 
 // Exit if accessed directly
 defined('ABSPATH') || exit;
@@ -19,6 +20,12 @@ if ( ! ( current_user_can( 'administrator' ) || current_user_can( 'general_manag
 	wp_redirect( home_url() );
 	exit;
 }
+
+// ===============================================
+// MAIN PAGE LOGIC (place this at the top of your page)
+// ===============================================
+
+global $wpdb;
 
 // WordPress table prefix
 $guests_table       = $wpdb->prefix . 'vms_guests';
@@ -40,175 +47,76 @@ if (!$guest) {
     wp_die('Guest not found.');
 }
 
-// Pagination parameters
+// Pagination parameters with proper validation
 $per_page = isset($_GET['per_page']) ? absint($_GET['per_page']) : 10;
-if (!in_array($per_page, [5, 8, 10])) {
+if (!in_array($per_page, [10, 25, 50])) {
     $per_page = 10;
 }
 
-$current_page = isset($_GET['paged']) ? absint($_GET['paged']) : 1;
-$offset = ($current_page - 1) * $per_page;
+$paged = isset($_GET['paged']) ? max(1, intval($_GET['paged'])) : 1;
 
-// Sorting parameters
-$sort_column = isset($_GET['sort_column']) ? sanitize_text_field($_GET['sort_column']) : 'visit_date';
-$sort_direction = isset($_GET['sort_direction']) && $_GET['sort_direction'] === 'asc' ? 'asc' : 'desc';
+$offset = ($paged - 1) * $per_page;
 
-// Allowed sort columns
-$allowed_sort_columns = ['visit_date', 'sign_in_time', 'sign_out_time', 'host_member_name'];
-if (!in_array($sort_column, $allowed_sort_columns)) {
-    $sort_column = 'visit_date';
-}
-
-// Get current date for missed visit calculation
-$current_date = current_time('Y-m-d');
-
-// Get total count for pagination
+// Count total visits for this guest
 $total_visits = $wpdb->get_var(
     $wpdb->prepare("SELECT COUNT(*) FROM $guest_visits_table WHERE guest_id = %d", $guest_id)
 );
 
-// Get visits with host member information
-$visits_query = "
-    SELECT 
-        gv.*,
-        CONCAT(g_host.first_name, ' ', g_host.last_name) as host_member_name
-    FROM $guest_visits_table gv
-    LEFT JOIN $guests_table g_host ON gv.host_member_id = g_host.id
-    WHERE gv.guest_id = %d
-    ORDER BY ";
+// Ensure we have a valid total_visits count
+$total_visits = $total_visits ? (int) $total_visits : 0;
 
-// Handle sorting
-switch ($sort_column) {
-    case 'host_member_name':
-        $visits_query .= "CONCAT(g_host.first_name, ' ', g_host.last_name) $sort_direction";
-        break;
-    case 'visit_date':
-        $visits_query .= "gv.visit_date $sort_direction";
-        break;
-    case 'sign_in_time':
-        $visits_query .= "gv.sign_in_time $sort_direction";
-        break;
-    case 'sign_out_time':
-        $visits_query .= "gv.sign_out_time $sort_direction";
-        break;
+// Calculate total pages
+$total_pages = $total_visits > 0 ? (int) ceil($total_visits / $per_page) : 1;
+
+// Ensure current page doesn't exceed total pages
+if ($paged > $total_pages) {
+    $paged = $total_pages;
+    $offset = ($paged - 1) * $per_page;
 }
 
-$visits_query .= " LIMIT %d OFFSET %d";
-
-$visits = $wpdb->get_results(
-    $wpdb->prepare($visits_query, $guest_id, $per_page, $offset)
-);
-
-// Calculate pagination values
-$total_pages = ceil($total_visits / $per_page);
-$start_entry = $total_visits > 0 ? ($current_page - 1) * $per_page + 1 : 0;
-$end_entry = min($current_page * $per_page, $total_visits);
-
-// Helper functions
-function format_date($date_string) {
-    if (!$date_string) return 'N/A';
-    return date('M j, Y', strtotime($date_string));
+// Get paged visits with proper ordering
+$visits = [];
+if ($total_visits > 0) {
+    $visits = $wpdb->get_results(
+        $wpdb->prepare("
+            SELECT gv.*, gv.id as visit_id
+            FROM $guest_visits_table gv
+            WHERE gv.guest_id = %d
+            ORDER BY gv.visit_date DESC, gv.created_at DESC
+            LIMIT %d OFFSET %d
+        ", $guest_id, $per_page, $offset)
+    );
 }
 
-function format_time($time_string) {
-    if (!$time_string) return 'N/A';
-    return date('g:i A', strtotime($time_string));
-}
+// Calculate row numbers for display
+$current_start = $total_visits > 0 ? ($paged - 1) * $per_page + 1 : 0;
+$row_number = $current_start;
 
-function calculate_duration($sign_in, $sign_out) {
-    if (!$sign_in || !$sign_out) return 'N/A';
+// Build compact pagination array (1, ..., current-1, current, current+1, ..., last)
+$pages_to_show = [];
+if ($total_pages > 0) {
+    $pages_to_show = [1];
     
-    $in_time = strtotime($sign_in);
-    $out_time = strtotime($sign_out);
-    $diff = $out_time - $in_time;
-    
-    $hours = floor($diff / 3600);
-    $minutes = floor(($diff % 3600) / 60);
-    
-    return sprintf('%dh %dm', $hours, $minutes);
-}
-
-// Updated status functions to include "Missed" status
-function get_visit_status($visit_date, $sign_in_time, $sign_out_time) {
-    global $current_date;
-    
-    // If visit date is in the past and no sign in, it's missed
-    if (empty($sign_in_time) && !empty($visit_date) && $visit_date < $current_date) {
-        return 'missed';
+    // Add current page and surrounding pages
+    for ($i = max(1, $paged - 1); $i <= min($total_pages, $paged + 1); $i++) {
+        $pages_to_show[] = $i;
     }
     
-    // Otherwise, use the standard logic
-    return !empty($sign_out_time) ? 'completed' : 'active';
-}
-
-function get_status_class($status) {
-    switch ($status) {
-        case 'completed':
-            return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-        case 'active':
-            return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-        case 'missed':
-            return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
-        default:
-            return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+    // Add last page if it's not already included
+    if ($total_pages > 1) {
+        $pages_to_show[] = $total_pages;
     }
-}
-
-function get_status_text($status) {
-    switch ($status) {
-        case 'completed':
-            return 'Completed';
-        case 'active':
-            return 'Active';
-        case 'missed':
-            return 'Missed';
-        default:
-            return 'Unknown';
-    }
-}
-
-function build_sort_url($column) {
-    global $sort_column, $sort_direction, $per_page, $guest_id;
     
-    $new_direction = ($sort_column === $column && $sort_direction === 'asc') ? 'desc' : 'asc';
-    
-    return add_query_arg([
-        'guest_id' => $guest_id,
-        'sort_column' => $column,
-        'sort_direction' => $new_direction,
-        'per_page' => $per_page,
-        'paged' => 1
-    ]);
-}
-
-function build_pagination_url($page) {
-    global $sort_column, $sort_direction, $per_page, $guest_id;
-    
-    return add_query_arg([
-        'guest_id' => $guest_id,
-        'sort_column' => $sort_column,
-        'sort_direction' => $sort_direction,
-        'per_page' => $per_page,
-        'paged' => $page
-    ]);
-}
-
-function build_per_page_url($new_per_page) {
-    global $sort_column, $sort_direction, $guest_id;
-    
-    return add_query_arg([
-        'guest_id' => $guest_id,
-        'sort_column' => $sort_column,
-        'sort_direction' => $sort_direction,
-        'per_page' => $new_per_page,
-        'paged' => 1
-    ]);
+    // Remove duplicates and sort
+    $pages_to_show = array_values(array_unique($pages_to_show));
+    sort($pages_to_show);
 }
 
 get_header();
 ?>
 
-<section id="primary" x-data="{ page: 'guest-details'}">
+<section id="primary" x-data="{ page: 'guest-details', 'isVisitInfoModal': false}"
+    @close-guest-modal.window="isVisitInfoModal = false">
     <main id="main">
         <!-- ===== Page Wrapper Start ===== -->
         <div class="flex h-screen overflow-hidden">
@@ -261,36 +169,6 @@ get_header();
                                         <!-- In the Personal Information section -->
                                         <div x-show="open" x-transition
                                             class="p-6 border-t border-gray-200 dark:border-gray-700">
-                                            <!-- Success Alert -->
-                                            <?php if (!empty($guest_u_success)) : ?>
-                                            <?php foreach ($guest_u_success as $message) : ?>
-                                            <div class="flex items-center justify-between p-4 mb-4 text-white bg-green-500 border-l-4 border-green-700 rounded"
-                                                role="alert">
-                                                <div>
-                                                    <strong>Success!</strong>
-                                                    <p class="text-sm"><?php echo esc_html($message); ?></p>
-                                                </div>
-                                                <button type="button" class="float-right text-white hover:text-gray-300"
-                                                    onclick="this.parentElement.style.display='none';">×</button>
-                                            </div>
-                                            <?php endforeach; ?>
-                                            <?php endif; ?>
-
-                                            <!-- Error Alert -->
-                                            <?php if (!empty($guest_u_error)) : ?>
-                                            <?php foreach ($guest_u_error as $message) : ?>
-                                            <div class="flex items-center justify-between p-4 mb-4 text-white bg-red-500 border-l-4 border-red-700 rounded"
-                                                role="alert">
-                                                <div>
-                                                    <strong>Error!</strong>
-                                                    <p class="text-sm"><?php echo esc_html($message); ?></p>
-                                                </div>
-                                                <button type="button" class="float-right text-white hover:text-gray-300"
-                                                    onclick="this.parentElement.style.display='none';">×</button>
-                                            </div>
-                                            <?php endforeach; ?>
-                                            <?php endif; ?>
-
                                             <form id="guest-update-form" action="" method="post"
                                                 enctype="multipart/form-data">
                                                 <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -394,7 +272,6 @@ get_header();
                                                     </div>
 
                                                     <!-- Status -->
-
                                                     <div class="mb-4">
                                                         <label for="guest_status"
                                                             class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
@@ -496,15 +373,15 @@ get_header();
                                                     <input type="hidden" name="guest_id"
                                                         value="<?php echo esc_attr($guest_id); ?>">
                                                     <button type="submit" name="update_guest" id="update-guest-btn"
-                                                        class="px-4 py-2 font-semibold text-white bg-blue-600 rounded hover:bg-blue-700">
+                                                        class="px-4 py-2 font-semibold text-white bg-brand-500 rounded-lg hover:bg-brand-600">
                                                         Update Guest
                                                     </button>
                                                     <button type="reset"
-                                                        class="px-4 py-2 font-semibold text-white bg-gray-600 rounded hover:bg-gray-700">
+                                                        class="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-3 text-gray-700 shadow-theme-xs ring-1 ring-inset ring-gray-300 transition hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-white/[0.03] cursor-pointer">
                                                         Reset
                                                     </button>
                                                     <button type="submit" name="delete_guest" id="delete-guest-btn"
-                                                        class="px-4 py-2 font-semibold text-white bg-red-600 rounded hover:bg-red-700">
+                                                        class="px-4 py-2 font-semibold text-white bg-error-500 rounded-lg hover:bg-error-600">
                                                         Delete Guest
                                                     </button>
                                                 </div>
@@ -513,47 +390,24 @@ get_header();
                                         </div>
                                     </div>
                                     <!-- End of Personal Information Section -->
+
                                     <!-- Visits Section -->
-                                    <!-- Collapsible content section -->
                                     <div class="mt-10" id="payment">
-                                        <!-- Success Alert -->
-                                        <?php if (!empty($client_p_success)) : ?>
-                                        <?php foreach ($client_p_success as $message) : ?>
-                                        <div class="flex items-center justify-between p-4 mb-4 text-white bg-green-500 border-l-4 border-green-700 rounded"
-                                            role="alert">
-                                            <div>
-                                                <strong>Success!</strong>
-                                                <p class="text-sm"><?php echo esc_html($message); ?></p>
-                                            </div>
-                                            <button type="button" class="float-right text-white hover:text-gray-300"
-                                                onclick="this.parentElement.style.display='none';">×</button>
-                                        </div>
-                                        <?php endforeach; ?>
-                                        <?php endif; ?>
-
-                                        <!-- Error Alert -->
-                                        <?php if (!empty($client_p_error)) : ?>
-                                        <?php foreach ($client_p_error as $message) : ?>
-                                        <div class="flex items-center justify-between p-4 mb-4 text-white bg-red-500 border-l-4 border-red-700 rounded"
-                                            role="alert">
-                                            <div>
-                                                <strong>Error!</strong>
-                                                <p class="text-sm"><?php echo esc_html($message); ?></p>
-                                            </div>
-                                            <button type="button" class="float-right text-white hover:text-gray-300"
-                                                onclick="this.parentElement.style.display='none';">×</button>
-                                        </div>
-                                        <?php endforeach; ?>
-                                        <?php endif; ?>
-
                                         <div
                                             class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
-                                            <div class="px-5 py-4 sm:px-6 sm:py-5">
+                                            <div class="flex items-center justify-between px-5 py-4 sm:px-6 sm:py-5">
                                                 <h3 class="text-base font-medium text-gray-800 dark:text-white/90">
-                                                    Guest Visits -
+                                                    <?php esc_html_e('Guest Visits -', 'vms'); ?>
                                                     <?php echo esc_html($guest->first_name . ' ' . $guest->last_name); ?>
                                                 </h3>
+                                                <div class="flex items-center justify-end w-full md:w-1/2">
+                                                    <a @click="isVisitInfoModal = true"
+                                                        class="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg cursor-pointer bg-brand-500 shadow-theme-xs hover:bg-brand-600">
+                                                        <?php esc_html_e('Register New Visit', 'vms'); ?>
+                                                    </a>
+                                                </div>
                                             </div>
+
                                             <div class="border-t border-gray-100 p-5 dark:border-gray-800 sm:p-6">
                                                 <div
                                                     class="overflow-hidden rounded-xl border border-gray-200 bg-white pt-4 dark:border-gray-800 dark:bg-white/[0.03]">
@@ -566,16 +420,13 @@ get_header();
                                                             <div class="relative z-20 bg-transparent">
                                                                 <select
                                                                     class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-9 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none py-2 pr-8 pl-3 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
-                                                                    onchange="window.location.href = '<?php echo build_per_page_url(''); ?>' + this.value">
-                                                                    <option value="10" <?php selected($per_page, 10); ?>
-                                                                        class="text-gray-500 dark:bg-gray-900 dark:text-gray-400">
-                                                                        10</option>
-                                                                    <option value="8" <?php selected($per_page, 8); ?>
-                                                                        class="text-gray-500 dark:bg-gray-900 dark:text-gray-400">
-                                                                        8</option>
-                                                                    <option value="5" <?php selected($per_page, 5); ?>
-                                                                        class="text-gray-500 dark:bg-gray-900 dark:text-gray-400">
-                                                                        5</option>
+                                                                    onchange="window.location.href = '<?php echo esc_js(VMS_CoreManager::build_per_page_url()); ?>' + this.value">
+                                                                    <option value="10"
+                                                                        <?php selected($per_page, 10); ?>>10</option>
+                                                                    <option value="25"
+                                                                        <?php selected($per_page, 25); ?>>25</option>
+                                                                    <option value="50"
+                                                                        <?php selected($per_page, 50); ?>>50</option>
                                                                 </select>
                                                                 <span
                                                                     class="absolute top-1/2 right-2 z-30 -translate-y-1/2 text-gray-500 dark:text-gray-400">
@@ -593,307 +444,301 @@ get_header();
                                                             <span
                                                                 class="text-gray-500 dark:text-gray-400">entries</span>
                                                         </div>
+
+                                                        <!-- Show total entries info -->
+                                                        <div class="text-sm text-gray-500 dark:text-gray-400">
+                                                            <?php if ($total_visits > 0): ?>
+                                                            Showing <?php echo esc_html($current_start); ?> to
+                                                            <?php echo esc_html(min($current_start + count($visits) - 1, $total_visits)); ?>
+                                                            of <?php echo esc_html($total_visits); ?> entries
+                                                            <?php else: ?>
+                                                            No entries found
+                                                            <?php endif; ?>
+                                                        </div>
                                                     </div>
 
                                                     <div class="max-w-full overflow-x-auto">
-                                                        <div class="min-w-[1102px]">
+                                                        <div id="visits-table" class="min-w-[1102px]">
                                                             <!-- Table Header -->
-                                                            <div
+                                                            <div id="visits-header"
                                                                 class="grid grid-cols-12 border-t border-gray-200 dark:border-gray-800">
+                                                                <!-- # -->
                                                                 <div
-                                                                    class="col-span-2 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
-                                                                    <div
-                                                                        class="flex w-full cursor-pointer items-center justify-between">
-                                                                        <a href="<?php echo build_sort_url('host_member_name'); ?>"
-                                                                            class="flex w-full items-center justify-between">
-                                                                            <p
-                                                                                class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
-                                                                                Host Member</p>
-                                                                            <span class="flex flex-col gap-0.5">
-                                                                                <svg class="fill-gray-300 dark:fill-gray-700 <?php echo ($sort_column === 'host_member_name' && $sort_direction === 'asc') ? 'fill-blue-500' : ''; ?>"
-                                                                                    width="8" height="5"
-                                                                                    viewBox="0 0 8 5" fill="none"
-                                                                                    xmlns="http://www.w3.org/2000/svg">
-                                                                                    <path
-                                                                                        d="M4.40962 0.585167C4.21057 0.300808 3.78943 0.300807 3.59038 0.585166L1.05071 4.21327C0.81874 4.54466 1.05582 5 1.46033 5H6.53967C6.94418 5 7.18126 4.54466 6.94929 4.21327L4.40962 0.585167Z"
-                                                                                        fill=""></path>
-                                                                                </svg>
-                                                                                <svg class="fill-gray-300 dark:fill-gray-700 <?php echo ($sort_column === 'host_member_name' && $sort_direction === 'desc') ? 'fill-blue-500' : ''; ?>"
-                                                                                    width="8" height="5"
-                                                                                    viewBox="0 0 8 5" fill="none"
-                                                                                    xmlns="http://www.w3.org/2000/svg">
-                                                                                    <path
-                                                                                        d="M4.40962 4.41483C4.21057 4.69919 3.78943 4.69919 3.59038 4.41483L1.05071 0.786732C0.81874 0.455343 1.05582 0 1.46033 0H6.53967C6.94418 0 7.18126 0.455342 6.94929 0.786731L4.40962 4.41483Z"
-                                                                                        fill=""></path>
-                                                                                </svg>
-                                                                            </span>
-                                                                        </a>
-                                                                    </div>
+                                                                    class="col-span-1 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
+                                                                    <p
+                                                                        class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
+                                                                        #</p>
                                                                 </div>
-                                                                <div
-                                                                    class="col-span-2 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
-                                                                    <div
-                                                                        class="flex w-full cursor-pointer items-center justify-between">
-                                                                        <a href="<?php echo build_sort_url('visit_date'); ?>"
-                                                                            class="flex w-full items-center justify-between">
-                                                                            <p
-                                                                                class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
-                                                                                Visit Date</p>
-                                                                            <span class="flex flex-col gap-0.5">
-                                                                                <svg class="fill-gray-300 dark:fill-gray-700 <?php echo ($sort_column === 'visit_date' && $sort_direction === 'asc') ? 'fill-blue-500' : ''; ?>"
-                                                                                    width="8" height="5"
-                                                                                    viewBox="0 0 8 5" fill="none"
-                                                                                    xmlns="http://www.w3.org/2000/svg">
-                                                                                    <path
-                                                                                        d="M4.40962 0.585167C4.21057 0.300808 3.78943 0.300807 3.59038 0.585166L1.05071 4.21327C0.81874 4.54466 1.05582 5 1.46033 5H6.53967C6.94418 5 7.18126 4.54466 6.94929 4.21327L4.40962 0.585167Z"
-                                                                                        fill=""></path>
-                                                                                </svg>
-                                                                                <svg class="fill-gray-300 dark:fill-gray-700 <?php echo ($sort_column === 'visit_date' && $sort_direction === 'desc') ? 'fill-blue-500' : ''; ?>"
-                                                                                    width="8" height="5"
-                                                                                    viewBox="0 0 8 5" fill="none"
-                                                                                    xmlns="http://www.w3.org/2000/svg">
-                                                                                    <path
-                                                                                        d="M4.40962 4.41483C4.21057 4.69919 3.78943 4.69919 3.59038 4.41483L1.05071 0.786732C0.81874 0.455343 1.05582 0 1.46033 0H6.53967C6.94418 0 7.18126 0.455342 6.94929 0.786731L4.40962 4.41483Z"
-                                                                                        fill=""></path>
-                                                                                </svg>
-                                                                            </span>
-                                                                        </a>
-                                                                    </div>
-                                                                </div>
-                                                                <div
-                                                                    class="col-span-2 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
-                                                                    <div
-                                                                        class="flex w-full cursor-pointer items-center justify-between">
-                                                                        <a href="<?php echo build_sort_url('sign_in_time'); ?>"
-                                                                            class="flex w-full items-center justify-between">
-                                                                            <p
-                                                                                class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
-                                                                                Sign In Time</p>
-                                                                            <span class="flex flex-col gap-0.5">
-                                                                                <svg class="fill-gray-300 dark:fill-gray-700 <?php echo ($sort_column === 'sign_in_time' && $sort_direction === 'asc') ? 'fill-blue-500' : ''; ?>"
-                                                                                    width="8" height="5"
-                                                                                    viewBox="0 0 8 5" fill="none"
-                                                                                    xmlns="http://www.w3.org/2000/svg">
-                                                                                    <path
-                                                                                        d="M4.40962 0.585167C4.21057 0.300808 3.78943 0.300807 3.59038 0.585166L1.05071 4.21327C0.81874 4.54466 1.05582 5 1.46033 5H6.53967C6.94418 5 7.18126 4.54466 6.94929 4.21327L4.40962 0.585167Z"
-                                                                                        fill=""></path>
-                                                                                </svg>
-                                                                                <svg class="fill-gray-300 dark:fill-gray-700 <?php echo ($sort_column === 'sign_in_time' && $sort_direction === 'desc') ? 'fill-blue-500' : ''; ?>"
-                                                                                    width="8" height="5"
-                                                                                    viewBox="0 0 8 5" fill="none"
-                                                                                    xmlns="http://www.w3.org/2000/svg">
-                                                                                    <path
-                                                                                        d="M4.40962 4.41483C4.21057 4.69919 3.78943 4.69919 3.59038 4.41483L1.05071 0.786732C0.81874 0.455343 1.05582 0 1.46033 0H6.53967C6.94418 0 7.18126 0.455342 6.94929 0.786731L4.40962 4.41483Z"
-                                                                                        fill=""></path>
-                                                                                </svg>
-                                                                            </span>
-                                                                        </a>
-                                                                    </div>
-                                                                </div>
-                                                                <div
-                                                                    class="col-span-2 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
-                                                                    <div
-                                                                        class="flex w-full cursor-pointer items-center justify-between">
-                                                                        <a href="<?php echo build_sort_url('sign_out_time'); ?>"
-                                                                            class="flex w-full items-center justify-between">
-                                                                            <p
-                                                                                class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
-                                                                                Sign Out Time</p>
-                                                                            <span class="flex flex-col gap-0.5">
-                                                                                <svg class="fill-gray-300 dark:fill-gray-700 <?php echo ($sort_column === 'sign_out_time' && $sort_direction === 'asc') ? 'fill-blue-500' : ''; ?>"
-                                                                                    width="8" height="5"
-                                                                                    viewBox="0 0 8 5" fill="none"
-                                                                                    xmlns="http://www.w3.org/2000/svg">
-                                                                                    <path
-                                                                                        d="M4.40962 0.585167C4.21057 0.300808 3.78943 0.300807 3.59038 0.585166L1.05071 4.21327C0.81874 4.54466 1.05582 5 1.46033 5H6.53967C6.94418 5 7.18126 4.54466 6.94929 4.21327L4.40962 0.585167Z"
-                                                                                        fill=""></path>
-                                                                                </svg>
-                                                                                <svg class="fill-gray-300 dark:fill-gray-700 <?php echo ($sort_column === 'sign_out_time' && $sort_direction === 'desc') ? 'fill-blue-500' : ''; ?>"
-                                                                                    width="8" height="5"
-                                                                                    viewBox="0 0 8 5" fill="none"
-                                                                                    xmlns="http://www.w3.org/2000/svg">
-                                                                                    <path
-                                                                                        d="M4.40962 4.41483C4.21057 4.69919 3.78943 4.69919 3.59038 4.41483L1.05071 0.786732C0.81874 0.455343 1.05582 0 1.46033 0H6.53967C6.94418 0 7.18126 0.455342 6.94929 0.786731L4.40962 4.41483Z"
-                                                                                        fill=""></path>
-                                                                                </svg>
-                                                                            </span>
-                                                                        </a>
-                                                                    </div>
-                                                                </div>
+                                                                <!-- Host Member -->
                                                                 <div
                                                                     class="col-span-2 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
                                                                     <p
                                                                         class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
+                                                                        Host Member</p>
+                                                                </div>
+                                                                <!-- Visit Date -->
+                                                                <div
+                                                                    class="col-span-2 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
+                                                                    <p
+                                                                        class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
+                                                                        Visit Date</p>
+                                                                </div>
+                                                                <!-- Sign In Time -->
+                                                                <div
+                                                                    class="col-span-1 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
+                                                                    <p
+                                                                        class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
+                                                                        Sign In Time</p>
+                                                                </div>
+                                                                <!-- Sign Out Time -->
+                                                                <div
+                                                                    class="col-span-1 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
+                                                                    <p
+                                                                        class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
+                                                                        Sign Out Time</p>
+                                                                </div>
+                                                                <!-- Duration -->
+                                                                <div
+                                                                    class="col-span-1 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
+                                                                    <p
+                                                                        class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
                                                                         Duration</p>
                                                                 </div>
+                                                                <!-- Status -->
                                                                 <div class="col-span-2 flex items-center px-4 py-3">
                                                                     <p
                                                                         class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
                                                                         Status</p>
                                                                 </div>
+                                                                <!-- Action -->
+                                                                <div class="col-span-2 flex items-center px-4 py-3">
+                                                                    <p
+                                                                        class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
+                                                                        Action</p>
+                                                                </div>
                                                             </div>
 
                                                             <!-- Table Body -->
-                                                            <?php if (!empty($visits)): ?>
-                                                            <?php foreach ($visits as $visit): ?>
-                                                            <div
-                                                                class="grid grid-cols-12 border-t border-gray-100 dark:border-gray-800">
-                                                                <div
-                                                                    class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
-                                                                    <p
-                                                                        class="text-theme-sm text-gray-700 dark:text-gray-400">
-                                                                        <?php
-                                                                        $host_display = 'N/A';
+                                                            <div id="visits-body">
+                                                                <?php if (!empty($visits)): ?>
+                                                                <?php foreach ($visits as $visit): ?>
+                                                                <div id="visit-div-<?php echo esc_attr($visit->id); ?>"
+                                                                    class="grid grid-cols-12 border-t border-gray-100 dark:border-gray-800">
+                                                                    <!-- Row Number -->
+                                                                    <div
+                                                                        class="col-span-1 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
+                                                                        <p
+                                                                            class="text-theme-sm text-gray-700 dark:text-gray-400">
+                                                                            <?php echo esc_html($row_number++); ?>
+                                                                        </p>
+                                                                    </div>
 
-                                                                        if (!empty($visit->host_member_id)) {
-                                                                            $host_user = get_userdata($visit->host_member_id);
-                                                                            if ($host_user) {
-                                                                                $first_name = get_user_meta($visit->host_member_id, 'first_name', true);
-                                                                                $last_name  = get_user_meta($visit->host_member_id, 'last_name', true);
-
-                                                                                if (!empty($first_name) || !empty($last_name)) {
-                                                                                    $host_display = trim($first_name . ' ' . $last_name);
-                                                                                } else {
-                                                                                    // fallback to username if no names
-                                                                                    $host_display = $host_user->user_login;
+                                                                    <!-- Host -->
+                                                                    <div
+                                                                        class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
+                                                                        <p
+                                                                            class="text-theme-sm text-gray-700 dark:text-gray-400">
+                                                                            <?php
+                                                                            $host_display = 'N/A';
+                                                                            if (!empty($visit->host_member_id)) {
+                                                                                $host_user = get_userdata($visit->host_member_id);
+                                                                                if ($host_user) {
+                                                                                    $first_name = get_user_meta($visit->host_member_id, 'first_name', true);
+                                                                                    $last_name = get_user_meta($visit->host_member_id, 'last_name', true);
+                                                                                    $host_display = (!empty($first_name) || !empty($last_name))
+                                                                                        ? trim($first_name . ' ' . $last_name)
+                                                                                        : $host_user->user_login;
                                                                                 }
                                                                             }
-                                                                        }
+                                                                            echo esc_html($host_display);
+                                                                            ?>
+                                                                        </p>
+                                                                    </div>
 
-                                                                        echo esc_html($host_display);
-                                                                        ?>
-                                                                    </p>
-                                                                </div>
-                                                                <div
-                                                                    class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
-                                                                    <p
-                                                                        class="text-theme-sm text-gray-700 dark:text-gray-400">
-                                                                        <?php echo esc_html(format_date($visit->visit_date)); ?>
-                                                                    </p>
-                                                                </div>
-                                                                <div
-                                                                    class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
-                                                                    <p
-                                                                        class="text-theme-sm text-gray-700 dark:text-gray-400">
-                                                                        <?php echo esc_html(format_time($visit->sign_in_time)); ?>
-                                                                    </p>
-                                                                </div>
-                                                                <div
-                                                                    class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
-                                                                    <p
-                                                                        class="text-theme-sm text-gray-700 dark:text-gray-400">
-                                                                        <?php echo esc_html(format_time($visit->sign_out_time)); ?>
-                                                                    </p>
-                                                                </div>
-                                                                <div
-                                                                    class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
-                                                                    <p
-                                                                        class="text-theme-sm text-gray-700 dark:text-gray-400">
-                                                                        <?php echo esc_html(calculate_duration($visit->sign_in_time, $visit->sign_out_time)); ?>
-                                                                    </p>
-                                                                </div>
-                                                                <div class="col-span-2 flex items-center px-4 py-3">
-                                                                    <?php
-                                                                    // Determine the visit status first
-                                                                    $status = get_visit_status($visit->visit_date, $visit->sign_in_time, $visit->sign_out_time);
-                                                                    $status_class = get_status_class($status);
-                                                                    $status_text = get_status_text($status);
-                                                                    ?>
+                                                                    <!-- Visit Date -->
+                                                                    <div
+                                                                        class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
+                                                                        <p
+                                                                            class="text-theme-sm text-gray-700 dark:text-gray-400">
+                                                                            <?php echo esc_html(VMS_CoreManager::format_date($visit->visit_date)); ?>
+                                                                        </p>
+                                                                    </div>
+
+                                                                    <!-- Sign In -->
+                                                                    <div
+                                                                        class="col-span-1 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
+                                                                        <p
+                                                                            class="text-theme-sm text-gray-700 dark:text-gray-400">
+                                                                            <?php echo esc_html(VMS_CoreManager::format_time($visit->sign_in_time)); ?>
+                                                                        </p>
+                                                                    </div>
+
+                                                                    <!-- Sign Out -->
+                                                                    <div
+                                                                        class="col-span-1 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
+                                                                        <p
+                                                                            class="text-theme-sm text-gray-700 dark:text-gray-400">
+                                                                            <?php echo esc_html(VMS_CoreManager::format_time($visit->sign_out_time)); ?>
+                                                                        </p>
+                                                                    </div>
+
+                                                                    <!-- Duration -->
+                                                                    <div
+                                                                        class="col-span-1 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
+                                                                        <p
+                                                                            class="text-theme-sm text-gray-700 dark:text-gray-400">
+                                                                            <?php echo esc_html(VMS_CoreManager::calculate_duration($visit->sign_in_time, $visit->sign_out_time)); ?>
+                                                                        </p>
+                                                                    </div>
+
+                                                                    <!-- Status -->
                                                                     <div class="col-span-2 flex items-center px-4 py-3">
+                                                                        <?php
+                                                                        $status = VMS_CoreManager::get_visit_status($visit->visit_date, $visit->sign_in_time, $visit->sign_out_time);
+                                                                        $status_class = VMS_CoreManager::get_status_class($status);
+                                                                        $status_text = VMS_CoreManager::get_status_text($status);
+                                                                        ?>
                                                                         <span
-                                                                            class="<?php echo esc_attr($status_class); ?> inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
+                                                                            class="<?php echo esc_attr($status_class); ?> inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-sm font-medium">
                                                                             <?php echo esc_html($status_text); ?>
                                                                         </span>
                                                                     </div>
+                                                                    <!-- Action -->
+                                                                    <div class="col-span-2 px-4 py-3">
+                                                                        <form method="post"
+                                                                            onsubmit="return confirm('Are you sure you want to delete this visit?');">
+                                                                            <input type="hidden" name="visit_id"
+                                                                                value="<?php echo esc_attr($guest->id); ?>">
+                                                                            <?php wp_nonce_field('delete_visit_action', 'delete_visit_nonce'); ?>
+                                                                            <button type="submit" name="delete_visit"
+                                                                                class="px-3 py-1 text-xs font-medium text-white bg-red-500 rounded-lg hover:bg-red-600">
+                                                                                Delete
+                                                                            </button>
+                                                                        </form>
+                                                                    </div>
                                                                 </div>
+                                                                <?php endforeach; ?>
+                                                                <?php else: ?>
+                                                                <div id="no-visits-div"
+                                                                    class="border-t border-gray-100 px-4 py-8 text-center dark:border-gray-800">
+                                                                    <p class="text-gray-500 dark:text-gray-400">No
+                                                                        visits found</p>
+                                                                </div>
+                                                                <?php endif; ?>
                                                             </div>
-                                                            <?php endforeach; ?>
-                                                            <?php else: ?>
-                                                            <div
-                                                                class="border-t border-gray-100 px-4 py-8 text-center dark:border-gray-800">
-                                                                <p class="text-gray-500 dark:text-gray-400">
-                                                                    No visits found
-                                                                </p>
-                                                            </div>
-                                                            <?php endif; ?>
                                                         </div>
                                                     </div>
 
-                                                    <!-- Pagination Controls -->
+                                                    <!-- Pagination -->
+                                                    <?php if ($total_pages > 1): ?>
                                                     <div
-                                                        class="border-t border-gray-100 py-4 pr-4 pl-[18px] dark:border-gray-800">
+                                                        class="flex items-center justify-between gap-8 px-6 py-4 sm:justify-normal">
+                                                        <!-- Previous Button -->
+                                                        <?php if ($paged > 1): ?>
+                                                        <a href="<?php echo esc_url(VMS_CoreManager::build_pagination_url($paged - 1)); ?>"
+                                                            class="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 sm:px-3.5 sm:py-2.5">
+                                                            <svg class="fill-current" width="20" height="20"
+                                                                viewBox="0 0 20 20" fill="none"
+                                                                xmlns="http://www.w3.org/2000/svg">
+                                                                <path fill-rule="evenodd" clip-rule="evenodd"
+                                                                    d="M2.58203 9.99868C2.58174 10.1909 2.6549 10.3833 2.80152 10.53L7.79818 15.5301C8.09097 15.8231 8.56584 15.8233 8.85883 15.5305C9.15183 15.2377 9.152 14.7629 8.85921 14.4699L5.13911 10.7472L16.6665 10.7472C17.0807 10.7472 17.4165 10.4114 17.4165 9.99715C17.4165 9.58294 17.0807 9.24715 16.6665 9.24715L5.14456 9.24715L8.85919 5.53016C9.15199 5.23717 9.15184 4.7623 8.85885 4.4695C8.56587 4.1767 8.09099 4.17685 7.79819 4.46984L2.84069 9.43049C2.68224 9.568 2.58203 9.77087 2.58203 9.99715C2.58203 9.99766 2.58203 9.99817 2.58203 9.99868Z"
+                                                                    fill=""></path>
+                                                            </svg>
+                                                            <span class="hidden sm:inline">Previous</span>
+                                                        </a>
+                                                        <?php else: ?>
+                                                        <span
+                                                            class="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-400 shadow-theme-xs sm:px-3.5 sm:py-2.5 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-600 cursor-not-allowed">
+                                                            <svg class="fill-current" width="20" height="20"
+                                                                viewBox="0 0 20 20" fill="none"
+                                                                xmlns="http://www.w3.org/2000/svg">
+                                                                <path fill-rule="evenodd" clip-rule="evenodd"
+                                                                    d="M2.58203 9.99868C2.58174 10.1909 2.6549 10.3833 2.80152 10.53L7.79818 15.5301C8.09097 15.8231 8.56584 15.8233 8.85883 15.5305C9.15183 15.2377 9.152 14.7629 8.85921 14.4699L5.13911 10.7472L16.6665 10.7472C17.0807 10.7472 17.4165 10.4114 17.4165 9.99715C17.4165 9.58294 17.0807 9.24715 16.6665 9.24715L5.14456 9.24715L8.85919 5.53016C9.15199 5.23717 9.15184 4.7623 8.85885 4.4695C8.56587 4.1767 8.09099 4.17685 7.79819 4.46984L2.84069 9.43049C2.68224 9.568 2.58203 9.77087 2.58203 9.99715C2.58203 9.99766 2.58203 9.99817 2.58203 9.99868Z"
+                                                                    fill=""></path>
+                                                            </svg>
+                                                            <span class="hidden sm:inline">Previous</span>
+                                                        </span>
+                                                        <?php endif; ?>
+
+                                                        <!-- Mobile: Page X of Y -->
+                                                        <span
+                                                            class="block text-sm font-medium text-gray-700 dark:text-gray-400 sm:hidden">
+                                                            Page <?php echo esc_html($paged); ?> of
+                                                            <?php echo esc_html($total_pages); ?>
+                                                        </span>
+
+                                                        <!-- Desktop: Page numbers -->
+                                                        <ul class="hidden items-center gap-0.5 sm:flex">
+                                                            <?php
+                                                            $last_shown = 0;
+                                                            foreach ($pages_to_show as $page_num):
+                                                                if ($last_shown && ($page_num - $last_shown) > 1):
+                                                                    // Show ellipsis
+                                                                    ?>
+                                                            <li>
+                                                                <span
+                                                                    class="flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium text-gray-500 dark:text-gray-500 pointer-events-none">...</span>
+                                                            </li>
+                                                            <?php
+                                                            endif;
+                                                            $last_shown = $page_num;
+                                                            $is_current = ($page_num === $paged);
+                                                            ?>
+                                                            <li>
+                                                                <?php if ($is_current): ?>
+                                                                <span
+                                                                    class="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-500 text-sm font-medium text-white hover:bg-brand-500 hover:text-white">
+                                                                    <?php echo esc_html($page_num); ?>
+                                                                </span>
+                                                                <?php else: ?>
+                                                                <a href="<?php echo esc_url(VMS_CoreManager::build_pagination_url($page_num)); ?>"
+                                                                    class="flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium text-gray-700 hover:bg-brand-500 hover:text-white dark:text-gray-400 dark:hover:text-white">
+                                                                    <?php echo esc_html($page_num); ?>
+                                                                </a>
+                                                                <?php endif; ?>
+                                                            </li>
+                                                            <?php endforeach; ?>
+                                                        </ul>
+
+                                                        <!-- Next Button -->
+                                                        <?php if ($paged < $total_pages): ?>
+                                                        <a href="<?php echo esc_url(VMS_CoreManager::build_pagination_url($paged + 1)); ?>"
+                                                            class="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 sm:px-3.5 sm:py-2.5">
+                                                            <span class="hidden sm:inline">Next</span>
+                                                            <svg class="fill-current" width="20" height="20"
+                                                                viewBox="0 0 20 20" fill="none"
+                                                                xmlns="http://www.w3.org/2000/svg">
+                                                                <path fill-rule="evenodd" clip-rule="evenodd"
+                                                                    d="M17.4165 9.9986C17.4168 10.1909 17.3437 10.3832 17.197 10.53L12.2004 15.5301C11.9076 15.8231 11.4327 15.8233 11.1397 15.5305C10.8467 15.2377 10.8465 14.7629 11.1393 14.4699L14.8594 10.7472L3.33203 10.7472C2.91782 10.7472 2.58203 10.4114 2.58203 9.99715C2.58203 9.58294 2.91782 9.24715 3.33203 9.24715L14.854 9.24715L11.1393 5.53016C10.8465 5.23717 10.8467 4.7623 11.1397 4.4695C11.4327 4.1767 11.9075 4.17685 12.2003 4.46984L17.1578 9.43049C17.3163 9.568 17.4165 9.77087 17.4165 9.99715C17.4165 9.99763 17.4165 9.99812 17.4165 9.9986Z"
+                                                                    fill=""></path>
+                                                            </svg>
+                                                        </a>
+                                                        <?php else: ?>
+                                                        <span
+                                                            class="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-400 shadow-theme-xs sm:px-3.5 sm:py-2.5 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-600 cursor-not-allowed">
+                                                            <span class="hidden sm:inline">Next</span>
+                                                            <svg class="fill-current" width="20" height="20"
+                                                                viewBox="0 0 20 20" fill="none"
+                                                                xmlns="http://www.w3.org/2000/svg">
+                                                                <path fill-rule="evenodd" clip-rule="evenodd"
+                                                                    d="M17.4165 9.9986C17.4168 10.1909 17.3437 10.3832 17.197 10.53L12.2004 15.5301C11.9076 15.8231 11.4327 15.8233 11.1397 15.5305C10.8467 15.2377 10.8465 14.7629 11.1393 14.4699L14.8594 10.7472L3.33203 10.7472C2.91782 10.7472 2.58203 10.4114 2.58203 9.99715C2.58203 9.58294 2.91782 9.24715 3.33203 9.24715L14.854 9.24715L11.1393 5.53016C10.8465 5.23717 10.8467 4.7623 11.1397 4.4695C11.4327 4.1767 11.9075 4.17685 12.2003 4.46984L17.1578 9.43049C17.3163 9.568 17.4165 9.77087 17.4165 9.99715C17.4165 9.99763 17.4165 9.99812 17.4165 9.9986Z"
+                                                                    fill=""></path>
+                                                            </svg>
+                                                        </span>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                    <?php else: ?>
+                                                    <!-- No pagination needed, but show entry count -->
+                                                    <div class="px-6 py-4">
                                                         <div
-                                                            class="flex flex-col xl:flex-row xl:items-center xl:justify-between">
-                                                            <p
-                                                                class="border-b border-gray-100 pb-3 text-center text-sm font-medium text-gray-500 xl:border-b-0 xl:pb-0 xl:text-left dark:border-gray-800 dark:text-gray-400">
-                                                                Showing <?php echo $start_entry; ?> to
-                                                                <?php echo $end_entry; ?> of
-                                                                <?php echo $total_visits; ?> entries
-                                                            </p>
-
-                                                            <?php if ($total_pages > 1): ?>
-                                                            <div
-                                                                class="flex items-center justify-center gap-0.5 pt-4 xl:justify-end xl:pt-0">
-                                                                <!-- Previous Button -->
-                                                                <a href="<?php echo $current_page > 1 ? build_pagination_url($current_page - 1) : '#'; ?>"
-                                                                    class="shadow-theme-xs mr-2.5 flex h-10 w-10 items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 <?php echo $current_page === 1 ? 'opacity-50 cursor-not-allowed' : ''; ?> dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03]">
-                                                                    <svg class="fill-current" width="20" height="20"
-                                                                        viewBox="0 0 20 20" fill="none"
-                                                                        xmlns="http://www.w3.org/2000/svg">
-                                                                        <path fill-rule="evenodd" clip-rule="evenodd"
-                                                                            d="M2.58301 9.99868C2.58272 10.1909 2.65588 10.3833 2.80249 10.53L7.79915 15.5301C8.09194 15.8231 8.56682 15.8233 8.85981 15.5305C9.15281 15.2377 9.15297 14.7629 8.86018 14.4699L5.14009 10.7472L16.6675 10.7472C17.0817 10.7472 17.4175 10.4114 17.4175 9.99715C17.4175 9.58294 17.0817 9.24715 16.6675 9.24715L5.14554 9.24715L8.86017 5.53016C9.15297 5.23717 9.15282 4.7623 8.85983 4.4695C8.56684 4.1767 8.09197 4.17685 7.79917 4.46984L2.84167 9.43049C2.68321 9.568 2.58301 9.77087 2.58301 9.99715C2.58301 9.99766 2.58301 9.99817 2.58301 9.99868Z"
-                                                                            fill=""></path>
-                                                                    </svg>
-                                                                </a>
-
-                                                                <!-- Page Numbers -->
-                                                                <?php
-                                                                    $start_page = max(1, $current_page - 2);
-                                                                    $end_page = min($total_pages, $current_page + 2);
-                                                                    
-                                                                    // Show first page if not in range
-                                                                    if ($start_page > 1): ?>
-                                                                <a href="<?php echo build_pagination_url(1); ?>"
-                                                                    class="hover:text-blue-500 dark:hover:text-blue-500 flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium hover:bg-blue-500/[0.08] text-gray-700 dark:text-gray-400">1</a>
-                                                                <?php if ($start_page > 2): ?>
-                                                                <span
-                                                                    class="flex h-10 w-10 items-center justify-center text-gray-700 dark:text-gray-400">...</span>
-                                                                <?php endif; ?>
-                                                                <?php endif; ?>
-
-                                                                <!-- Page range -->
-                                                                <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
-                                                                <a href="<?php echo build_pagination_url($i); ?>"
-                                                                    class="<?php echo $current_page === $i ? 'bg-blue-500/[0.08] text-blue-500' : 'text-gray-700 dark:text-gray-400'; ?> hover:text-blue-500 dark:hover:text-blue-500 flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium hover:bg-blue-500/[0.08]">
-                                                                    <?php echo $i; ?>
-                                                                </a>
-                                                                <?php endfor; ?>
-
-                                                                <!-- Show last page if not in range -->
-                                                                <?php if ($end_page < $total_pages): ?>
-                                                                <?php if ($end_page < $total_pages - 1): ?>
-                                                                <span
-                                                                    class="flex h-10 w-10 items-center justify-center text-gray-700 dark:text-gray-400">...</span>
-                                                                <?php endif; ?>
-                                                                <a href="<?php echo build_pagination_url($total_pages); ?>"
-                                                                    class="hover:text-blue-500 dark:hover:text-blue-500 flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium hover:bg-blue-500/[0.08] text-gray-700 dark:text-gray-400"><?php echo $total_pages; ?></a>
-                                                                <?php endif; ?>
-
-                                                                <!-- Next Button -->
-                                                                <a href="<?php echo $current_page < $total_pages ? build_pagination_url($current_page + 1) : '#'; ?>"
-                                                                    class="shadow-theme-xs ml-2.5 flex h-10 w-10 items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 <?php echo $current_page === $total_pages ? 'opacity-50 cursor-not-allowed' : ''; ?> dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03]">
-                                                                    <svg class="fill-current" width="20" height="20"
-                                                                        viewBox="0 0 20 20" fill="none"
-                                                                        xmlns="http://www.w3.org/2000/svg">
-                                                                        <path fill-rule="evenodd" clip-rule="evenodd"
-                                                                            d="M17.4175 9.9986C17.4178 10.1909 17.3446 10.3832 17.198 10.53L12.2013 15.5301C11.9085 15.8231 11.4337 15.8233 11.1407 15.5305C10.8477 15.2377 10.8475 14.7629 11.1403 14.4699L14.8604 10.7472L3.33301 10.7472C2.91879 10.7472 2.58301 10.4114 2.58301 9.99715C2.58301 9.58294 2.91879 9.24715 3.33301 9.24715L14.8549 9.24715L11.1403 5.53016C10.8475 5.23717 10.8477 4.7623 11.1407 4.4695C11.4336 4.1767 11.9085 4.17685 12.2013 4.46984L17.1588 9.43049C17.3173 9.568 17.4175 9.77087 17.4175 9.99715C17.4175 9.99763 17.4175 9.99812 17.4175 9.9986Z"
-                                                                            fill=""></path>
-                                                                    </svg>
-                                                                </a>
-                                                            </div>
+                                                            class="text-sm text-gray-500 dark:text-gray-400 text-center">
+                                                            <?php if ($total_visits > 0): ?>
+                                                            Showing all <?php echo esc_html($total_visits); ?> entries
                                                             <?php endif; ?>
                                                         </div>
                                                     </div>
+                                                    <?php endif; ?>
+
                                                 </div>
                                             </div>
                                         </div>
@@ -903,6 +748,10 @@ get_header();
                             </div>
                         </div>
                     </div>
+
+                    <!-- BEGIN MODAL -->
+                    <?php get_template_part( 'template-parts/content/content', 'visit-modal' ); ?>
+                    <!-- END MODAL -->
 
                     <!-- Footer -->
                     <?php get_template_part('template-parts/content/content-footer', 'content'); ?>

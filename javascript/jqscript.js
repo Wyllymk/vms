@@ -552,7 +552,7 @@ jQuery(document).ready(function ($) {
 		$('#update-guest-btn')
 			.prop('disabled', true)
 			.html(
-				'<span class="animate-spin inline-block w-6 h-6 border-4 border-current border-t-transparent rounded-full mr-2"></span> Updating...'
+				'<span class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2"></span> Updating...'
 			);
 
 		// Clear previous messages and modals
@@ -901,6 +901,219 @@ jQuery(document).ready(function ($) {
 		});
 	});
 
+	// VISIT FORM
+	$('#visit-form').on('submit', function (e) {
+		e.preventDefault();
+
+		// Show loading indicator
+		$('#submit-visit-form')
+			.prop('disabled', true)
+			.html(
+				'<span class="animate-spin inline-block w-6 h-6 border-4 border-current border-t-transparent rounded-full mr-2"></span> Registering...'
+			);
+
+		// Clear previous messages and modals
+		$('#alert-message').remove();
+		$('#success-modal-overlay, #visit-error-modal-overlay').remove();
+
+		// Collect form data
+		var formData = new FormData(this);
+		formData.append('action', 'register_visit');
+		formData.append('nonce', vms_script_ajax.nonce);
+
+		// AJAX request
+		$.ajax({
+			url: vms_script_ajax.ajaxurl,
+			type: 'POST',
+			data: formData,
+			processData: false,
+			contentType: false,
+			dataType: 'json',
+			success: function (response) {
+				if (response.success) {
+					const data = response.data;
+
+					// Build new row HTML (matching your PHP loop structure)
+					const newRow = `
+					<div id="visit-div"
+						class="grid grid-cols-12 border-t border-gray-100 dark:border-gray-800">
+						
+						<!-- Host Member -->
+						<div id="visit-host" class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
+							<p class="text-theme-sm text-gray-700 dark:text-gray-400">${data.host_display}</p>
+						</div>
+						
+						<!-- Visit Date -->
+						<div id="visit-date" class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
+							<p class="text-theme-sm text-gray-700 dark:text-gray-400">${data.visit_date}</p>
+						</div>
+						
+						<!-- Sign In Time -->
+						<div id="sign-in-time" class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
+							<p class="text-theme-sm text-gray-700 dark:text-gray-400">${data.sign_in_time}</p>
+						</div>
+						
+						<!-- Sign Out Time -->
+						<div id="sign-out-time" class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
+							<p class="text-theme-sm text-gray-700 dark:text-gray-400">${data.sign_out_time}</p>
+						</div>
+						
+						<!-- Duration -->
+						<div id="visit-duration" class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
+							<p class="text-theme-sm text-gray-700 dark:text-gray-400">${data.duration}</p>
+						</div>
+						
+						<!-- Status -->
+						<div id="visit-status" class="col-span-2 flex items-center px-4 py-3">
+							<span class="${data.status_class} inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-sm font-medium">
+								${data.status_text}
+							</span>
+						</div>
+					</div>
+				`;
+
+					// Append the new row to the visits container
+					$('#visits-container').append(newRow);
+
+					// Remove "No visits found" if exists
+					if ($('#no-visits-div').length) {
+						$('#no-visits-div').remove();
+					}
+
+					// Success modal
+					const message =
+						response.data.messages?.[0] ||
+						'Visit registered successfully';
+					const successModal = `
+					<div id="success-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+						<div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+							<div class="check_mark mx-auto mb-4">
+								<div class="sa-icon sa-success animate">
+									<span class="sa-line sa-tip animateSuccessTip"></span>
+									<span class="sa-line sa-long animateSuccessLong"></span>
+									<div class="sa-placeholder"></div>
+									<div class="sa-fix"></div>
+								</div>
+							</div>
+							<p class="text-lg font-medium text-gray-700 dark:text-white">${message}</p>
+							<button id="ok-success-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 transition">
+								OK
+							</button>
+						</div>
+					</div>
+				`;
+					$('body').append(successModal);
+
+					// Close success modal
+					$(document)
+						.off('click', '#ok-success-btn')
+						.on('click', '#ok-success-btn', function (e) {
+							e.preventDefault();
+							$('#success-modal-overlay').fadeOut(
+								300,
+								function () {
+									$(this).remove();
+									window.dispatchEvent(
+										new Event('close-visit-modal')
+									);
+									$('#visit-form')[0].reset();
+								}
+							);
+						});
+				} else {
+					// Error messages
+					const errorMessages = response.data.messages || [
+						'An error occurred during visit registration',
+					];
+					const errorMessageHtml = errorMessages
+						.map(
+							(msg) =>
+								`<p class="text-lg font-medium text-gray-700 dark:text-white">${msg}</p>`
+						)
+						.join('');
+
+					const errorModal = `
+					<div id="visit-error-modal-overlay"
+						class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+						<div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+							<div class="check_mark mx-auto mb-4">
+								<div class="sa-icon sa-error animate">
+									<span class="sa-line sa-left animateXLeft"></span>
+									<span class="sa-line sa-right animateXRight"></span>
+									<div class="sa-placeholder"></div>
+								</div>
+							</div>
+							${errorMessageHtml}
+							<button id="ok-error-btn" type="button"
+								class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">
+								OK
+							</button>
+						</div>
+					</div>
+				`;
+					$('body').append(errorModal);
+
+					// Close error modal
+					$(document)
+						.off('click', '#ok-error-btn')
+						.on('click', '#ok-error-btn', function (e) {
+							e.preventDefault();
+							$('#visit-error-modal-overlay').fadeOut(
+								300,
+								function () {
+									$(this).remove();
+								}
+							);
+						});
+				}
+			},
+			error: function (xhr, status, error) {
+				const errorMessage =
+					xhr.responseJSON?.data?.messages?.join('<br>') ||
+					'An error occurred: ' + error;
+
+				const errorModal = `
+				<div id="visit-error-modal-overlay"
+					class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+					<div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+						<div class="check_mark mx-auto mb-4">
+							<div class="sa-icon sa-error animate">
+								<span class="sa-line sa-left animateXLeft"></span>
+								<span class="sa-line sa-right animateXRight"></span>
+								<div class="sa-placeholder"></div>
+							</div>
+						</div>
+						<p class="text-lg font-medium text-gray-700 dark:text-white">${errorMessage}</p>
+						<button id="ok-error-btn" type="button"
+							class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">
+							OK
+						</button>
+					</div>
+				</div>
+			`;
+				$('body').append(errorModal);
+
+				// Close error modal
+				$(document)
+					.off('click', '#ok-error-btn')
+					.on('click', '#ok-error-btn', function (e) {
+						e.preventDefault();
+						$('#visit-error-modal-overlay').fadeOut(
+							300,
+							function () {
+								$(this).remove();
+							}
+						);
+					});
+			},
+			complete: function () {
+				$('#submit-visit-form')
+					.prop('disabled', false)
+					.text('Register Visit');
+			},
+		});
+	});
+
 	// Edit Guest Button Handler
 	$(document).on('click', '[id^="edit-guest-button-"]', function (e) {
 		e.preventDefault();
@@ -910,7 +1123,10 @@ jQuery(document).ready(function ($) {
 
 		// Redirect to edit page
 		window.location.href =
-			vms_script_ajax.admin_url + 'guest-details/?guest_id=' + guestId;
+			vms_script_ajax.admin_url +
+			'guest-details/?guest_id=' +
+			guestId +
+			'&paged=1';
 	});
 
 	// Sign In Guest Button Handler
@@ -1107,7 +1323,7 @@ jQuery(document).ready(function ($) {
                 </button>
             </div>
         </div>
-    `;
+    	`;
 
 		$('body').append(successModal);
 
