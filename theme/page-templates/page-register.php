@@ -68,24 +68,44 @@ if ( isset( $_POST['signup'] ) ) {
 		$user_id = wp_insert_user( wp_slash( $data ) );
 
 		if ( ! is_wp_error( $user_id ) ) {
-			$success_message = 'The account for ' . $user_login . ' has been successfully registered.';
+            $success_message = 'The account for ' . $user_login . ' has been successfully registered.';
 
-			// send email to administrator to approve or deny the registration
-			$to      = get_option( 'admin_email' );
-			$subject = 'New user registration waiting for approval';
+            // ------------------------------------
+            // 1. Email to Administrator
+            // ------------------------------------
+            $admin_email   = get_option( 'admin_email' );
+            $admin_subject = 'New user registration waiting for approval';
 
-			$message  = 'Hello ' . $first_name . ",\n\n";
-			$message .= "Thank you for registering with us! Your account details are as follows:\n\n";
-			$message .= 'Username: ' . $user_login . "\n";
-			$message .= 'Email: ' . $user_email . "\n\n";
-			$message .= "Please note that your account is pending approval by our Managerial team. Once approved, you will receive an email notification confirming that you can log in and access your account.\n\n";
-			$message .= "Thank you for your patience, and welcome aboard!\n\n";
-			$message .= "Best regards,\n";
-			$message .= 'Nyeri Club Visitor Management System';
+            $admin_message  = "Hello Admin,\n\n";
+            $admin_message .= "A new user has registered and is pending approval:\n\n";
+            $admin_message .= "Name: " . $first_name . " " . $last_name . "\n";
+            $admin_message .= "Username: " . $user_login . "\n";
+            $admin_message .= "Email: " . $user_email . "\n\n";
+            $admin_message .= "Member Number: " . $member_number . "\n";
+            $admin_message .= "Please log into the system to approve or deny this registration.\n\n";
+            $admin_message .= "Nyeri Club Visitor Management System";
 
-			wp_mail( $to, $subject, $message );
+            wp_mail( $admin_email, $admin_subject, $admin_message );
 
-		} else {
+            // ------------------------------------
+            // 2. Email to the User
+            // ------------------------------------
+            $user_subject = 'Your registration is pending approval';
+
+            $user_message  = "Hello " . $first_name . ",\n\n";
+            $user_message .= "Thank you for registering with us!\n\n";
+            $user_message .= "Your account details are as follows:\n";
+            $user_message .= "Username: " . $user_login . "\n";
+            $user_message .= "Email: " . $user_email . "\n\n";
+            $user_message .= "Please note that your account is pending approval by our Managerial team. ";
+            $user_message .= "Once approved, you will receive an email notification confirming you can log in.\n\n";
+            $user_message .= "Thank you for your patience, and welcome aboard!\n\n";
+            $user_message .= "Best regards,\n";
+            $user_message .= "Nyeri Club Visitor Management System";
+
+            wp_mail( $user_email, $user_subject, $user_message );
+        }
+ else {
 			$error_code    = array_key_first( $user_id->errors );
 			$error_message = $user_id->errors[ $error_code ][0];
 			$errors[]      = $error_message;

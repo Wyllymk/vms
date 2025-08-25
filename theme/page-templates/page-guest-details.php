@@ -224,7 +224,7 @@ get_header();
                                                     <div class="mb-4">
                                                         <label for="pnumber"
                                                             class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                                            Phone Number:<?php esc_html_e( 'Email:', 'vms' ); ?>
+                                                            <?php esc_html_e( 'Phone Number:', 'vms' ); ?>
                                                         </label>
 
                                                         <div class="relative">
@@ -251,7 +251,7 @@ get_header();
                                                     <div class="mb-4">
                                                         <label for="id_number"
                                                             class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                                            ID Number:<?php esc_html_e( 'Email:', 'vms' ); ?>
+                                                            <?php esc_html_e( 'ID Number:', 'vms' ); ?>
                                                         </label>
                                                         <input type="number" id="id_number" name="id_number"
                                                             placeholder="33612365"
@@ -263,7 +263,7 @@ get_header();
                                                     <div class="mb-4">
                                                         <label for="courtesy"
                                                             class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                                            Courtesy:<?php esc_html_e( 'Email:', 'vms' ); ?>
+                                                            <?php esc_html_e( 'Courtesy:', 'vms' ); ?>
                                                         </label>
                                                         <input type="text" id="courtesy" name="courtesy"
                                                             placeholder="Chairman"
@@ -490,7 +490,7 @@ get_header();
                                                                 <div
                                                                     class="col-span-1 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
                                                                     <p
-                                                                        class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
+                                                                        class="whitespace-nowrap text-theme-xs font-medium text-gray-700 dark:text-gray-400">
                                                                         <?php esc_html_e( 'Sign In Time', 'vms' ); ?>
                                                                     </p>
                                                                 </div>
@@ -498,7 +498,7 @@ get_header();
                                                                 <div
                                                                     class="col-span-1 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
                                                                     <p
-                                                                        class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
+                                                                        class="whitespace-nowrap text-theme-xs font-medium text-gray-700 dark:text-gray-400">
                                                                         <?php esc_html_e( 'Sign Out Time', 'vms' ); ?>
                                                                     </p>
                                                                 </div>

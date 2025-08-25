@@ -144,7 +144,7 @@ get_header();
 
                                 <!-- Rest of your content -->
                             </div>
-                            <div class="p-5 border-t border-gray-100 dark:border-gray-800 sm:p-6">
+                            <div class="p-1 border-t border-gray-100 dark:border-gray-800 sm:p-6">
                                 <!-- ====== Table Six Start -->
                                 <?php get_template_part( 'template-parts/content/content', 'guests-table' ); ?>
                                 <!-- ====== Table Six End -->

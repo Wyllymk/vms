@@ -21,56 +21,56 @@ $guest_visits_table = $wpdb->prefix . 'vms_guest_visits';
             <!-- table header start -->
             <thead>
                 <tr class="border-b border-gray-100 dark:border-gray-800">
-                    <th class="px-5 py-3 sm:px-6">
+                    <th class="px-3 py-3 sm:px-6">
                         <div class="flex items-center">
                             <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
                                 <?php esc_html_e( '#', 'vms' ); ?>
                             </p>
                         </div>
                     </th>
-                    <th class="px-5 py-3 sm:px-6">
+                    <th class="px-3 py-3 sm:px-6">
                         <div class="flex items-center">
                             <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
                                 <?php esc_html_e( 'First Name', 'vms' ); ?>
                             </p>
                         </div>
                     </th>
-                    <th class="px-5 py-3 sm:px-6">
+                    <th class="px-3 py-3 sm:px-6">
                         <div class="flex items-center">
                             <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
                                 <?php esc_html_e( 'Last Name', 'vms' ); ?>
                             </p>
                         </div>
                     </th>
-                    <th class="px-5 py-3 sm:px-6">
+                    <th class="px-3 py-3 sm:px-6">
                         <div class="flex items-center">
                             <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
                                 <?php esc_html_e( 'Status', 'vms' ); ?>
                             </p>
                         </div>
                     </th>
-                    <th class="px-5 py-3 sm:px-6">
+                    <th class="px-3 py-3 sm:px-6">
                         <div class="flex items-center">
                             <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
                                 <?php esc_html_e( 'ID Number', 'vms' ); ?>
                             </p>
                         </div>
                     </th>
-                    <th class="px-5 py-3 sm:px-6">
+                    <th class="px-3 py-3 sm:px-6">
                         <div class="flex items-center">
                             <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
                                 <?php esc_html_e( 'Host Member', 'vms' ); ?>
                             </p>
                         </div>
                     </th>
-                    <th class="px-5 py-3 sm:px-6">
+                    <th class="px-3 py-3 sm:px-6">
                         <div class="flex items-center">
                             <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
                                 <?php esc_html_e( 'Visit Date', 'vms' ); ?>
                             </p>
                         </div>
                     </th>
-                    <th class="px-5 py-3 sm:px-6">
+                    <th class="px-3 py-3 sm:px-6">
                         <div class="flex items-center">
                             <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
                                 <?php esc_html_e( 'Actions', 'vms' ); ?>
@@ -143,26 +143,26 @@ $guest_visits_table = $wpdb->prefix . 'vms_guest_visits';
                 ?>
                 <tr data-guest-id="<?php echo esc_attr($guest->id); ?>"
                     data-visit-id="<?php echo esc_attr($guest->visit_id); ?>">
-                    <td class="px-5 py-4 sm:px-6">
+                    <td class="px-3 py-4 sm:px-6">
                         <p class="text-gray-500 text-theme-sm dark:text-gray-400">
                             <?php echo $counter++; ?>
                         </p>
                     </td>
-                    <td class="px-5 py-4 sm:px-6">
+                    <td class="px-3 py-4 sm:px-6">
                         <div class="flex items-center">
                             <p class="text-gray-800 text-theme-sm dark:text-white/90">
                                 <?php echo esc_html($guest->first_name); ?>
                             </p>
                         </div>
                     </td>
-                    <td class="px-5 py-4 sm:px-6">
+                    <td class="px-3 py-4 sm:px-6">
                         <div class="flex items-center">
                             <p class="text-gray-800 text-theme-sm dark:text-white/90">
                                 <?php echo esc_html($guest->last_name); ?>
                             </p>
                         </div>
                     </td>
-                    <td class="px-5 py-4 sm:px-6">
+                    <td class="px-3 py-4 sm:px-6">
                         <div class="flex items-center">
                             <span
                                 class="px-2 py-1 text-xs font-medium rounded-full <?php echo $status_classes[$status]; ?>">
@@ -170,28 +170,28 @@ $guest_visits_table = $wpdb->prefix . 'vms_guest_visits';
                             </span>
                         </div>
                     </td>
-                    <td class="px-5 py-4 sm:px-6">
+                    <td class="px-3 py-4 sm:px-6">
                         <div class="flex items-center">
                             <p class="text-gray-500 text-theme-sm dark:text-gray-400">
                                 <?php echo esc_html($guest->id_number); ?>
                             </p>
                         </div>
                     </td>
-                    <td class="px-5 py-4 sm:px-6">
+                    <td class="px-3 py-4 sm:px-6">
                         <div class="flex items-center">
                             <p class="text-gray-500 text-theme-sm dark:text-gray-400">
                                 <?php echo esc_html($host_name); ?>
                             </p>
                         </div>
                     </td>
-                    <td class="px-5 py-4 sm:px-6">
+                    <td class="px-3 py-4 sm:px-6">
                         <div class="flex items-center">
                             <p class="text-gray-500 text-theme-sm dark:text-gray-400">
                                 <?php echo esc_html($visit_date); ?>
                             </p>
                         </div>
                     </td>
-                    <td class="px-5 py-4 sm:px-6">
+                    <td class="px-3 py-4 sm:px-6">
                         <div class="flex items-center gap-2">
                             <button id="edit-guest-button-<?php echo $guest->id; ?>"
                                 class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 transition bg-white border border-gray-300 rounded-lg cursor-pointer whitespace-nowrap dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
@@ -202,64 +202,80 @@ $guest_visits_table = $wpdb->prefix . 'vms_guest_visits';
                             <?php
                             // Get current date in WordPress timezone (EAT)
                             $current_date = current_time('Y-m-d');
-                            
+
                             // Validate guest data
                             if (!isset($guest->visit_date) || !isset($guest->status)) {
                                 error_log("Guest table error: Missing visit_date or status for guest ID {$guest->id}");
-                                $is_button_disabled = true; // Disable buttons if data is missing
-                                $is_missed = false;
-                                $is_scheduled = false;
+                                $is_button_disabled = true;
+                                $visit_status = 'invalid';
                             } else {
                                 // Normalize visit_date to YYYY-MM-DD
-                                $normalized_visit_date = substr($guest->visit_date, 0, 10); // Extract YYYY-MM-DD from YYYY-MM-DD HH:MM:SS
-                                
+                                $normalized_visit_date = substr($guest->visit_date, 0, 10);
+
                                 if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $normalized_visit_date)) {
                                     error_log("Guest table error: Invalid visit_date format for guest ID {$guest->id}: {$guest->visit_date}");
                                     $is_button_disabled = true;
-                                    $is_missed = false;
-                                    $is_scheduled = false;
+                                    $visit_status = 'invalid';
                                 } else {
-                                    // Disable buttons if current date is before visit_date or status is not approved
-                                    $is_button_disabled = $current_date < $normalized_visit_date || $guest->status !== 'approved';
-                                    
-                                    // Check if visit was missed (no sign-in and visit date has passed)
-                                    $is_missed = empty($guest->sign_in_time) && $current_date > $normalized_visit_date;
-                                    $is_scheduled = $current_date > $normalized_visit_date;
+                                    // Default: disable if not approved
+                                    $is_button_disabled = $guest->status !== 'approved';
+
+                                    if ($current_date < $normalized_visit_date) {
+                                        $visit_status = 'scheduled'; // future
+                                    } elseif ($current_date === $normalized_visit_date) {
+                                        if (!empty($guest->sign_in_time) && !empty($guest->sign_out_time)) {
+                                            $visit_status = 'completed';
+                                        } elseif (!empty($guest->sign_in_time)) {
+                                            $visit_status = 'signout';
+                                        } else {
+                                            $visit_status = 'signin';
+                                        }
+                                    } else { // past date
+                                        if (!empty($guest->sign_in_time) && !empty($guest->sign_out_time)) {
+                                            $visit_status = 'completed';
+                                        } elseif (empty($guest->sign_in_time)) {
+                                            $visit_status = 'missed';
+                                        } else {
+                                            $visit_status = 'signout'; // signed in but not signed out
+                                        }
+                                    }
                                 }
                             }
-                            
+
                             // Common button classes
                             $base_button_classes = 'inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition rounded-lg whitespace-nowrap shadow-theme-xs';
-                            $disabled_classes = 'opacity-50 cursor-not-allowed';
+                            $disabled_classes = 'bg-brand-500 opacity-50 cursor-not-allowed';
                             ?>
 
-                            <?php if ($is_missed): ?>
-                            <!-- Missed status -->
+                            <?php if ($visit_status === 'missed'): ?>
                             <span
                                 class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-warning-600 bg-warning-50 rounded-lg dark:bg-warning-500/15 dark:text-orange-500">
                                 <?php esc_html_e('Missed', 'vms'); ?>
                             </span>
-                            <?php elseif (empty($guest->sign_in_time)): ?>
-                            <!-- Scheduled status -->
+
+                            <?php elseif ($visit_status === 'scheduled'): ?>
                             <span
                                 class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-light-500 bg-blue-light-50 rounded-lg dark:bg-blue-light-500/15 dark:text-blue-light-500">
                                 <?php esc_html_e('Scheduled', 'vms'); ?>
                             </span>
-                            <?php elseif (empty($guest->sign_in_time)): ?>
+
+                            <?php elseif ($visit_status === 'signin'): ?>
                             <button id="sign-in-button-<?php echo esc_attr($guest->id); ?>"
                                 class="<?php echo esc_attr($base_button_classes . ' bg-brand-500 ' . ($is_button_disabled ? $disabled_classes : 'cursor-pointer hover:bg-brand-600')); ?>"
                                 data-visit-id="<?php echo esc_attr($guest->visit_id); ?>"
                                 <?php echo $is_button_disabled ? 'disabled' : ''; ?>>
                                 <?php esc_html_e('Sign In', 'vms'); ?>
                             </button>
-                            <?php elseif (empty($guest->sign_out_time)): ?>
+
+                            <?php elseif ($visit_status === 'signout'): ?>
                             <button id="sign-out-button-<?php echo esc_attr($guest->id); ?>"
                                 class="<?php echo esc_attr($base_button_classes . ' bg-purple-500 ' . ($is_button_disabled ? $disabled_classes : 'cursor-pointer hover:bg-purple-600')); ?>"
                                 data-visit-id="<?php echo esc_attr($guest->visit_id); ?>"
                                 <?php echo $is_button_disabled ? 'disabled' : ''; ?>>
                                 <?php esc_html_e('Sign Out', 'vms'); ?>
                             </button>
-                            <?php else: ?>
+
+                            <?php elseif ($visit_status === 'completed'): ?>
                             <div class="flex flex-col items-center justify-center text-xs px-4">
                                 <span
                                     class="text-green-600 dark:text-green-400"><?php echo esc_html($sign_in_time); ?></span>
@@ -267,6 +283,7 @@ $guest_visits_table = $wpdb->prefix . 'vms_guest_visits';
                                     class="text-red-600 dark:text-red-400"><?php echo esc_html($sign_out_time); ?></span>
                             </div>
                             <?php endif; ?>
+
                         </div>
                     </td>
                 </tr>

@@ -174,24 +174,26 @@ defined( 'ABSPATH' ) || exit;
     <?php
     // Get member statistics (users with member role)
     function get_member_statistics() {
-        // Get total members count
-        $member_users = get_users(['role' => 'member']);
+        // Get all users with 'member' or 'chairman' role
+        $member_users = get_users([
+            'role__in' => ['member', 'chairman'],
+        ]);
         $total_members = count($member_users);
         
         // Get current date info
-        $current_month = date('n');
-        $current_year = date('Y');
+        $current_month  = date('n');
+        $current_year   = date('Y');
         $previous_month = $current_month == 1 ? 12 : $current_month - 1;
-        $previous_year = $current_month == 1 ? $current_year - 1 : $current_year;
+        $previous_year  = $current_month == 1 ? $current_year - 1 : $current_year;
         
-        // Get current month members count
-        $current_month_count = 0;
+        // Initialize counts
+        $current_month_count  = 0;
         $previous_month_count = 0;
         
         foreach ($member_users as $user) {
             $registered_date = strtotime($user->user_registered);
-            $reg_month = date('n', $registered_date);
-            $reg_year = date('Y', $registered_date);
+            $reg_month       = date('n', $registered_date);
+            $reg_year        = date('Y', $registered_date);
             
             if ($reg_month == $current_month && $reg_year == $current_year) {
                 $current_month_count++;
@@ -211,12 +213,13 @@ defined( 'ABSPATH' ) || exit;
         }
         
         return [
-            'total_members' => $total_members,
-            'current_month' => $current_month_count,
-            'previous_month' => $previous_month_count,
-            'percentage_change' => $percentage_change
+            'total_members'     => $total_members,
+            'current_month'     => $current_month_count,
+            'previous_month'    => $previous_month_count,
+            'percentage_change' => $percentage_change,
         ];
     }
+
     // Get the statistics
     $member_stats = get_member_statistics();
     ?>
