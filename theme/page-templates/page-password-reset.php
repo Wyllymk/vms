@@ -29,7 +29,7 @@ if ( ! empty( $key ) && ! empty( $login ) ) {
 		// Validate and reset the password
 		if ( $password === $confirm_password ) {
 			reset_password( $user, sanitize_text_field( $password ) );
-			$success = 'Your password has been reset successfully. You can now <a href="' . esc_url( site_url( '/login/' ) ) . '">log in</a>.';
+			$success = 'Your password has been reset successfully. You can now <a href="' . esc_url( home_url( '/login' ) ) . '">log in</a>.';
 		} else {
 			$errors[] = 'Passwords do not match.';
 		}
@@ -46,7 +46,7 @@ if ( ! empty( $key ) && ! empty( $login ) ) {
             <!-- Form -->
             <div class="flex flex-col flex-1 w-full lg:w-1/2">
                 <div class="w-full max-w-md pt-10 mx-auto">
-                    <a href="<?php echo esc_url( site_url( '/dashboard' ) ); ?>"
+                    <a href="<?php echo esc_url( home_url( '/dashboard' ) ); ?>"
                         class="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
                         <svg class="stroke-current" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
                             viewBox="0 0 20 20" fill="none">
@@ -119,7 +119,7 @@ if ( ! empty( $key ) && ! empty( $login ) ) {
                                 <p
                                     class="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
                                     <?php esc_html_e( ' Already have an account?', 'vms' ); ?>
-                                    <a href="<?php echo esc_url( site_url( '/login' ) ); ?>"
+                                    <a href="<?php echo esc_url( home_url( '/login' ) ); ?>"
                                         class="text-brand-500 hover:text-brand-600 dark:text-brand-400">
                                         <?php esc_html_e( 'Sign In', 'vms' ); ?>
                                     </a>
@@ -137,7 +137,7 @@ if ( ! empty( $key ) && ! empty( $login ) ) {
                     <!-- ===== Common Grid Shape Start ===== -->
                     <?php get_template_part( 'template-parts/content/content', 'grid' ); ?>
                     <div class="flex flex-col items-center max-w-sm">
-                        <a href="<?php echo esc_url( site_url(  ) ); ?>" class="block mb-4">
+                        <a href="<?php echo esc_url( home_url(  ) ); ?>" class="block mb-4">
                             <img src="<?php echo get_template_directory_uri(); ?>/assets/images/logo/logo.png"
                                 alt="Logo" />
                         </a>

@@ -154,7 +154,7 @@ get_header();
                                             class="flex items-center justify-between px-6 py-4 cursor-pointer">
                                             <h3
                                                 class="text-lg font-semibold font-oswald text-regal-blue dark:text-white">
-                                                Personal Information
+                                                <?php esc_html_e( 'Personal Information', 'vms' ); ?>
                                             </h3>
                                             <!-- SVG arrow icon -->
                                             <svg :class="{'rotate-180': open}"
@@ -177,7 +177,7 @@ get_header();
                                                     <div class="mb-4">
                                                         <label for="fname"
                                                             class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                                            First Name:
+                                                            <?php esc_html_e( 'First Name:', 'vms' ); ?>
                                                         </label>
                                                         <input type="text" id="fname" name="first_name"
                                                             placeholder="First Name"
@@ -189,7 +189,7 @@ get_header();
                                                     <div class="mb-4">
                                                         <label for="lname"
                                                             class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                                            Last Name:
+                                                            <?php esc_html_e( 'Last Name:', 'vms' ); ?>
                                                         </label>
                                                         <input type="text" id="lname" name="last_name"
                                                             placeholder="Last Name"
@@ -201,7 +201,7 @@ get_header();
                                                     <div class="mb-4">
                                                         <label for="email"
                                                             class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                                            Email:
+                                                            <?php esc_html_e( 'Email:', 'vms' ); ?>
                                                         </label>
                                                         <div class="relative">
                                                             <span
@@ -224,7 +224,7 @@ get_header();
                                                     <div class="mb-4">
                                                         <label for="pnumber"
                                                             class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                                            Phone Number:
+                                                            Phone Number:<?php esc_html_e( 'Email:', 'vms' ); ?>
                                                         </label>
 
                                                         <div class="relative">
@@ -251,7 +251,7 @@ get_header();
                                                     <div class="mb-4">
                                                         <label for="id_number"
                                                             class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                                            ID Number:
+                                                            ID Number:<?php esc_html_e( 'Email:', 'vms' ); ?>
                                                         </label>
                                                         <input type="number" id="id_number" name="id_number"
                                                             placeholder="33612365"
@@ -263,7 +263,7 @@ get_header();
                                                     <div class="mb-4">
                                                         <label for="courtesy"
                                                             class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                                            Courtesy:
+                                                            Courtesy:<?php esc_html_e( 'Email:', 'vms' ); ?>
                                                         </label>
                                                         <input type="text" id="courtesy" name="courtesy"
                                                             placeholder="Chairman"
@@ -275,7 +275,7 @@ get_header();
                                                     <div class="mb-4">
                                                         <label for="guest_status"
                                                             class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                                            Status:
+                                                            <?php esc_html_e( 'Status:', 'vms' ); ?>
                                                         </label>
                                                         <div x-data="{ isOptionSelected: false }"
                                                             class="relative z-20 bg-transparent">
@@ -285,15 +285,15 @@ get_header();
                                                                 @change="isOptionSelected = true">
                                                                 <option value="active"
                                                                     <?php selected($guest->guest_status ?? '', 'active'); ?>>
-                                                                    Active
+                                                                    <?php esc_html_e( 'Active', 'vms' ); ?>
                                                                 </option>
                                                                 <option value="suspended"
                                                                     <?php selected($guest->guest_status ?? '', 'suspended'); ?>>
-                                                                    Suspended
+                                                                    <?php esc_html_e( 'Suspended', 'vms' ); ?>
                                                                 </option>
                                                                 <option value="banned"
                                                                     <?php selected($guest->guest_status ?? '', 'banned'); ?>>
-                                                                    Banned
+                                                                    <?php esc_html_e( 'Banned', 'vms' ); ?>
                                                                 </option>
                                                             </select>
                                                             <span
@@ -337,7 +337,7 @@ get_header();
                                                                         :class="switcherToggle ? 'translate-x-full' : 'translate-x-0'">
                                                                     </div>
                                                                 </div>
-                                                                Receive Messages?
+                                                                <?php esc_html_e( 'Receive Messages?', 'vms' ); ?>
                                                             </label>
                                                         </div>
 
@@ -363,7 +363,7 @@ get_header();
                                                                         :class="switcherToggle ? 'translate-x-full' : 'translate-x-0'">
                                                                     </div>
                                                                 </div>
-                                                                Receive Emails?
+                                                                <?php esc_html_e( 'Receive Emails?', 'vms' ); ?>
                                                             </label>
                                                         </div>
                                                     </div>
@@ -374,15 +374,15 @@ get_header();
                                                         value="<?php echo esc_attr($guest_id); ?>">
                                                     <button type="submit" name="update_guest" id="update-guest-btn"
                                                         class="px-4 py-2 font-semibold text-white bg-brand-500 rounded-lg hover:bg-brand-600">
-                                                        Update Guest
+                                                        <?php esc_html_e( 'Update Guest', 'vms' ); ?>
                                                     </button>
                                                     <button type="reset"
                                                         class="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-3 text-gray-700 shadow-theme-xs ring-1 ring-inset ring-gray-300 transition hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-white/[0.03] cursor-pointer">
-                                                        Reset
+                                                        <?php esc_html_e( 'Reset', 'vms' ); ?>
                                                     </button>
                                                     <button type="submit" name="delete_guest" id="delete-guest-btn"
                                                         class="px-4 py-2 font-semibold text-white bg-error-500 rounded-lg hover:bg-error-600">
-                                                        Delete Guest
+                                                        <?php esc_html_e( 'Delete Guest', 'vms' ); ?>
                                                     </button>
                                                 </div>
                                             </form>
@@ -467,54 +467,62 @@ get_header();
                                                                     class="col-span-1 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
                                                                     <p
                                                                         class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
-                                                                        #</p>
+                                                                        <?php esc_html_e( '#', 'vms' ); ?>
+                                                                    </p>
                                                                 </div>
                                                                 <!-- Host Member -->
                                                                 <div
                                                                     class="col-span-2 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
                                                                     <p
                                                                         class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
-                                                                        Host Member</p>
+                                                                        <?php esc_html_e( 'Host Member', 'vms' ); ?>
+                                                                    </p>
                                                                 </div>
                                                                 <!-- Visit Date -->
                                                                 <div
                                                                     class="col-span-2 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
                                                                     <p
                                                                         class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
-                                                                        Visit Date</p>
+                                                                        <?php esc_html_e( 'Visit Date', 'vms' ); ?>
+                                                                    </p>
                                                                 </div>
                                                                 <!-- Sign In Time -->
                                                                 <div
                                                                     class="col-span-1 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
                                                                     <p
                                                                         class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
-                                                                        Sign In Time</p>
+                                                                        <?php esc_html_e( 'Sign In Time', 'vms' ); ?>
+                                                                    </p>
                                                                 </div>
                                                                 <!-- Sign Out Time -->
                                                                 <div
                                                                     class="col-span-1 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
                                                                     <p
                                                                         class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
-                                                                        Sign Out Time</p>
+                                                                        <?php esc_html_e( 'Sign Out Time', 'vms' ); ?>
+                                                                    </p>
                                                                 </div>
                                                                 <!-- Duration -->
                                                                 <div
                                                                     class="col-span-1 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
                                                                     <p
                                                                         class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
-                                                                        Duration</p>
+                                                                        <?php esc_html_e( 'Duration', 'vms' ); ?>
+                                                                    </p>
                                                                 </div>
                                                                 <!-- Status -->
                                                                 <div class="col-span-2 flex items-center px-4 py-3">
                                                                     <p
                                                                         class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
-                                                                        Status</p>
+                                                                        <?php esc_html_e( 'Status', 'vms' ); ?>
+                                                                    </p>
                                                                 </div>
                                                                 <!-- Action -->
                                                                 <div class="col-span-2 flex items-center px-4 py-3">
                                                                     <p
                                                                         class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
-                                                                        Action</p>
+                                                                        <?php esc_html_e( 'Action', 'vms' ); ?>
+                                                                    </p>
                                                                 </div>
                                                             </div>
 
@@ -612,7 +620,7 @@ get_header();
                                                                             <?php wp_nonce_field('delete_visit_action', 'delete_visit_nonce'); ?>
                                                                             <button type="submit" name="delete_visit"
                                                                                 class="px-3 py-1 text-xs font-medium text-white bg-red-500 rounded-lg hover:bg-red-600">
-                                                                                Delete
+                                                                                <?php esc_html_e( 'Delete', 'vms' ); ?>
                                                                             </button>
                                                                         </form>
                                                                     </div>
@@ -621,8 +629,9 @@ get_header();
                                                                 <?php else: ?>
                                                                 <div id="no-visits-div"
                                                                     class="border-t border-gray-100 px-4 py-8 text-center dark:border-gray-800">
-                                                                    <p class="text-gray-500 dark:text-gray-400">No
-                                                                        visits found</p>
+                                                                    <p class="text-gray-500 dark:text-gray-400">
+                                                                        <?php esc_html_e( 'No visits found', 'vms' ); ?>
+                                                                    </p>
                                                                 </div>
                                                                 <?php endif; ?>
                                                             </div>

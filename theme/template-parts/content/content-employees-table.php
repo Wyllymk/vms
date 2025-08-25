@@ -160,7 +160,7 @@ defined( 'ABSPATH' ) || exit;
                         </div>
                     </td>
                     <td class="px-5 py-4 sm:px-6">
-                        <form action="<?php echo esc_url(site_url('/employee-details')); ?>" method="get">
+                        <form action="<?php echo esc_url(home_url('/details')); ?>" method="get">
                             <input type="hidden" name="user_id" value="<?php echo esc_attr($user_id); ?>">
                             <button type="submit"
                                 class="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg whitespace-nowrap bg-brand-500 shadow-theme-xs hover:bg-brand-60">
@@ -243,7 +243,7 @@ defined( 'ABSPATH' ) || exit;
                         </div>
                     </td>
                     <td class="px-5 py-4 sm:px-6">
-                        <form action="<?php echo esc_url(site_url('/employee-details')); ?>" method="get">
+                        <form action="<?php echo esc_url(home_url('/details')); ?>" method="get">
                             <input type="hidden" name="user_id" value="<?php echo esc_attr($user_id); ?>">
                             <button type="submit"
                                 class="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg cursor-pointer whitespace-nowrap bg-brand-500 shadow-theme-xs hover:bg-brand-60">

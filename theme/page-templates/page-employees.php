@@ -81,7 +81,7 @@ get_header();
 
                                 <!-- Register Button -->
                                 <div class="flex items-center justify-end w-full md:w-1/2">
-                                    <a href="<?php echo esc_url( site_url( '/register' ) ); ?>"
+                                    <a href="<?php echo esc_url( home_url( '/register' ) ); ?>"
                                         class="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600">
                                         <?php esc_html_e( 'Register', 'vms' ); ?>
                                     </a>

@@ -134,7 +134,8 @@ function clubvms_scripts() {
         array(
             'ajaxurl' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('vms_script_ajax_nonce'),
-			'admin_url' => admin_url()  
+			'admin_url' => admin_url() ,
+			'home_url' => home_url()  
         )
     );
 

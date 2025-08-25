@@ -100,7 +100,7 @@ if ( isset( $_POST['signup'] ) ) {
             <!-- Form -->
             <div class="flex flex-col flex-1 w-full lg:w-1/2">
                 <div class="w-full max-w-md pt-5 mx-auto sm:py-10">
-                    <a href="<?php echo esc_url( site_url( '/dashboard' ) ); ?>"
+                    <a href="<?php echo esc_url( home_url( '/dashboard' ) ); ?>"
                         class="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
                         <svg class="stroke-current" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
                             viewBox="0 0 20 20" fill="none">
@@ -292,7 +292,7 @@ if ( isset( $_POST['signup'] ) ) {
                         <div class="mt-5">
                             <p class="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
                                 <?php esc_html_e( ' Already have an account?', 'vms' ); ?>
-                                <a href="<?php echo esc_url( site_url( '/login' ) ); ?>"
+                                <a href="<?php echo esc_url( home_url( '/login' ) ); ?>"
                                     class="text-brand-500 hover:text-brand-600 dark:text-brand-400">
                                     <?php esc_html_e( 'Sign In', 'vms' ); ?>
                                 </a>
@@ -306,7 +306,7 @@ if ( isset( $_POST['signup'] ) ) {
                     <!-- ===== Common Grid Shape Start ===== -->
                     <?php get_template_part( 'template-parts/content/content', 'grid' ); ?>
                     <div class="flex flex-col items-center max-w-sm">
-                        <a href="<?php echo esc_url( site_url(  ) ); ?>" class="block mb-4">
+                        <a href="<?php echo esc_url( home_url(  ) ); ?>" class="block mb-4">
                             <img src="<?php echo get_template_directory_uri(); ?>/assets/images/logo/logo.png"
                                 alt="Logo" />
                         </a>

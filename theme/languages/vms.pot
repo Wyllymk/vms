@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-08-25T13:01:16+00:00\n"
+"POT-Creation-Date: 2025-08-25T15:39:25+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.11.0\n"
 "X-Domain: vms\n"
@@ -212,7 +212,8 @@ msgstr ""
 msgid "Older posts"
 msgstr ""
 
-#: theme/page-templates/page-employee-details.php:306
+#: theme/page-templates/page-details.php:354
+#: theme/page-templates/page-guest-details.php:157
 #: theme/page-templates/page-profile.php:167
 #: theme/template-parts/content/content-guest-modal.php:43
 #: theme/template-parts/content/content-info-modal.php:52
@@ -220,70 +221,73 @@ msgstr ""
 msgid "Personal Information"
 msgstr ""
 
-#: theme/page-templates/page-employee-details.php:409
+#: theme/page-templates/page-details.php:457
 msgid "User Name:"
 msgstr ""
 
-#: theme/page-templates/page-employee-details.php:417
+#: theme/page-templates/page-details.php:465
 msgid "Usernames cannot be changed."
 msgstr ""
 
-#: theme/page-templates/page-employee-details.php:424
+#: theme/page-templates/page-details.php:472
 msgid "Email (required):"
 msgstr ""
 
-#: theme/page-templates/page-employee-details.php:433
+#: theme/page-templates/page-details.php:481
 msgid "If you change this, an email will be sent to confirm it."
 msgstr ""
 
-#: theme/page-templates/page-employee-details.php:440
+#: theme/page-templates/page-details.php:488
+#: theme/page-templates/page-guest-details.php:180
 msgid "First Name:"
 msgstr ""
 
-#: theme/page-templates/page-employee-details.php:453
+#: theme/page-templates/page-details.php:501
+#: theme/page-templates/page-guest-details.php:192
 msgid "Last Name:"
 msgstr ""
 
-#: theme/page-templates/page-employee-details.php:466
+#: theme/page-templates/page-details.php:514
 #: theme/page-templates/page-register.php:199
 msgid "Member Number"
 msgstr ""
 
-#: theme/page-templates/page-employee-details.php:479
+#: theme/page-templates/page-details.php:527
 msgid "Phone Number:"
 msgstr ""
 
-#: theme/page-templates/page-employee-details.php:492
+#: theme/page-templates/page-details.php:540
 msgid "Account Status:"
 msgstr ""
 
-#: theme/page-templates/page-employee-details.php:551
+#: theme/page-templates/page-details.php:599
 msgid "Receive Communication Messages?"
 msgstr ""
 
-#: theme/page-templates/page-employee-details.php:567
+#: theme/page-templates/page-details.php:615
 msgid "Receive Communication Emails?"
 msgstr ""
 
-#: theme/page-templates/page-employee-details.php:589
+#: theme/page-templates/page-details.php:637
 msgid "Update Details"
 msgstr ""
 
-#: theme/page-templates/page-employee-details.php:593
+#: theme/page-templates/page-details.php:641
+#: theme/page-templates/page-guest-details.php:381
 #: theme/template-parts/content/content-guest-modal.php:175
 #: theme/template-parts/content/content-visit-modal.php:93
 msgid "Reset"
 msgstr ""
 
-#: theme/page-templates/page-employee-details.php:598
+#: theme/page-templates/page-details.php:646
 msgid "Delete Account"
 msgstr ""
 
-#: theme/page-templates/page-employee-details.php:612
+#: theme/page-templates/page-details.php:660
 msgid "Invited Guests"
 msgstr ""
 
-#: theme/page-templates/page-employee-details.php:617
+#: theme/page-templates/page-details.php:665
 #: theme/page-templates/page-guest-details.php:406
 msgid "Register New Visit"
 msgstr ""
@@ -297,8 +301,103 @@ msgstr ""
 msgid "Register"
 msgstr ""
 
+#: theme/page-templates/page-guest-details.php:204
+#: theme/page-templates/page-guest-details.php:227
+#: theme/page-templates/page-guest-details.php:254
+#: theme/page-templates/page-guest-details.php:266
+msgid "Email:"
+msgstr ""
+
+#: theme/page-templates/page-guest-details.php:278
+msgid "Status:"
+msgstr ""
+
+#: theme/page-templates/page-guest-details.php:288
+msgid "Active"
+msgstr ""
+
+#: theme/page-templates/page-guest-details.php:292
+msgid "Suspended"
+msgstr ""
+
+#: theme/page-templates/page-guest-details.php:296
+msgid "Banned"
+msgstr ""
+
+#: theme/page-templates/page-guest-details.php:340
+msgid "Receive Messages?"
+msgstr ""
+
+#: theme/page-templates/page-guest-details.php:366
+msgid "Receive Emails?"
+msgstr ""
+
+#: theme/page-templates/page-guest-details.php:377
+msgid "Update Guest"
+msgstr ""
+
+#: theme/page-templates/page-guest-details.php:385
+msgid "Delete Guest"
+msgstr ""
+
 #: theme/page-templates/page-guest-details.php:400
 msgid "Guest Visits -"
+msgstr ""
+
+#: theme/page-templates/page-guest-details.php:470
+#: theme/template-parts/content/content-employees-table.php:23
+#: theme/template-parts/content/content-guests-table.php:27
+#: theme/template-parts/content/content-members-table.php:23
+#: theme/template-parts/content/content-table.php:45
+msgid "#"
+msgstr ""
+
+#: theme/page-templates/page-guest-details.php:478
+#: theme/template-parts/content/content-guest-modal.php:112
+#: theme/template-parts/content/content-guests-table.php:62
+#: theme/template-parts/content/content-table.php:80
+#: theme/template-parts/content/content-visit-modal.php:50
+msgid "Host Member"
+msgstr ""
+
+#: theme/page-templates/page-guest-details.php:486
+#: theme/template-parts/content/content-guest-modal.php:139
+#: theme/template-parts/content/content-guests-table.php:69
+#: theme/template-parts/content/content-table.php:87
+#: theme/template-parts/content/content-visit-modal.php:77
+msgid "Visit Date"
+msgstr ""
+
+#: theme/page-templates/page-guest-details.php:494
+msgid "Sign In Time"
+msgstr ""
+
+#: theme/page-templates/page-guest-details.php:502
+msgid "Sign Out Time"
+msgstr ""
+
+#: theme/page-templates/page-guest-details.php:510
+msgid "Duration"
+msgstr ""
+
+#: theme/page-templates/page-guest-details.php:517
+#: theme/template-parts/content/content-employees-table.php:65
+#: theme/template-parts/content/content-guests-table.php:48
+#: theme/template-parts/content/content-members-table.php:65
+#: theme/template-parts/content/content-table.php:66
+msgid "Status"
+msgstr ""
+
+#: theme/page-templates/page-guest-details.php:524
+msgid "Action"
+msgstr ""
+
+#: theme/page-templates/page-guest-details.php:623
+msgid "Delete"
+msgstr ""
+
+#: theme/page-templates/page-guest-details.php:633
+msgid "No visits found"
 msgstr ""
 
 #: theme/page-templates/page-guests.php:52
@@ -328,6 +427,7 @@ msgstr ""
 
 #: theme/page-templates/page-login.php:59
 #: theme/page-templates/page-lostpassword.php:49
+#: theme/page-templates/page-password-reset.php:56
 #: theme/page-templates/page-register.php:110
 msgid "Back to dashboard"
 msgstr ""
@@ -341,8 +441,9 @@ msgstr ""
 #: theme/page-templates/page-login.php:82
 #: theme/page-templates/page-login.php:164
 #: theme/page-templates/page-lostpassword.php:128
+#: theme/page-templates/page-password-reset.php:124
 #: theme/page-templates/page-register.php:297
-#: theme/template-parts/content/content-guests-table.php:244
+#: theme/template-parts/content/content-guests-table.php:253
 #: theme/template-parts/content/content-table.php:272
 msgid "Sign In"
 msgstr ""
@@ -380,11 +481,15 @@ msgid "Sign Up"
 msgstr ""
 
 #: theme/page-templates/page-login.php:194
+#: theme/page-templates/page-lostpassword.php:147
+#: theme/page-templates/page-password-reset.php:145
 #: theme/page-templates/page-register.php:314
 msgid "Nyeri Club Visitor Management System"
 msgstr ""
 
 #: theme/page-templates/page-login.php:197
+#: theme/page-templates/page-lostpassword.php:150
+#: theme/page-templates/page-password-reset.php:148
 #: theme/page-templates/page-register.php:317
 msgid "Secure access to manage visitors, members, and reciprocating members — anytime, anywhere."
 msgstr ""
@@ -398,20 +503,34 @@ msgid "Enter your username or email address and we'll send you a link to reset y
 msgstr ""
 
 #: theme/page-templates/page-lostpassword.php:117
+#: theme/page-templates/page-password-reset.php:113
 msgid "Reset Password"
 msgstr ""
 
 #: theme/page-templates/page-lostpassword.php:125
+#: theme/page-templates/page-password-reset.php:121
 #: theme/page-templates/page-register.php:294
 msgid " Already have an account?"
 msgstr ""
 
-#: theme/page-templates/page-lostpassword.php:147
-msgid "Free and Open-Source Tailwind CSS Admin Dashboard Template"
-msgstr ""
-
 #: theme/page-templates/page-members.php:53
 msgid "Members List"
+msgstr ""
+
+#: theme/page-templates/page-password-reset.php:77
+msgid "Reset Your Password"
+msgstr ""
+
+#: theme/page-templates/page-password-reset.php:80
+msgid "Enter your new password."
+msgstr ""
+
+#: theme/page-templates/page-password-reset.php:91
+msgid "New Password"
+msgstr ""
+
+#: theme/page-templates/page-password-reset.php:101
+msgid "Confirm New Password"
 msgstr ""
 
 #: theme/page-templates/page-profile.php:74
@@ -516,6 +635,43 @@ msgstr ""
 msgid "Privacy Policy"
 msgstr ""
 
+#: theme/page-templates/page-settings.php:62
+#: theme/template-parts/content/content-sidebar.php:191
+msgid "Settings"
+msgstr ""
+
+#: theme/page-templates/page-settings.php:95
+msgid "Update SMS Information"
+msgstr ""
+
+#: theme/page-templates/page-settings.php:107
+msgid "Sender ID:"
+msgstr ""
+
+#: theme/page-templates/page-settings.php:116
+msgid "Please enter a valid Sender ID."
+msgstr ""
+
+#: theme/page-templates/page-settings.php:124
+msgid "SMS Balance:"
+msgstr ""
+
+#: theme/page-templates/page-settings.php:132
+msgid "Last Checked:"
+msgstr ""
+
+#: theme/page-templates/page-settings.php:143
+msgid "API Token:"
+msgstr ""
+
+#: theme/page-templates/page-settings.php:151
+msgid "Please enter your API Token."
+msgstr ""
+
+#: theme/page-templates/page-settings.php:159
+msgid "Update Settings"
+msgstr ""
+
 #: theme/search.php:25
 msgid "Search results for:"
 msgstr ""
@@ -540,23 +696,9 @@ msgstr ""
 msgid "Home"
 msgstr ""
 
-#: theme/template-parts/content/content-employees-table.php:23
-#: theme/template-parts/content/content-guests-table.php:27
-#: theme/template-parts/content/content-members-table.php:23
-#: theme/template-parts/content/content-table.php:45
-msgid "#"
-msgstr ""
-
 #: theme/template-parts/content/content-employees-table.php:30
 #: theme/template-parts/content/content-members-table.php:30
 msgid "User Name"
-msgstr ""
-
-#: theme/template-parts/content/content-employees-table.php:65
-#: theme/template-parts/content/content-guests-table.php:48
-#: theme/template-parts/content/content-members-table.php:65
-#: theme/template-parts/content/content-table.php:66
-msgid "Status"
 msgstr ""
 
 #: theme/template-parts/content/content-employees-table.php:72
@@ -582,23 +724,9 @@ msgstr ""
 msgid "ID Number"
 msgstr ""
 
-#: theme/template-parts/content/content-guest-modal.php:112
-#: theme/template-parts/content/content-guests-table.php:62
-#: theme/template-parts/content/content-table.php:80
-#: theme/template-parts/content/content-visit-modal.php:50
-msgid "Host Member"
-msgstr ""
-
 #: theme/template-parts/content/content-guest-modal.php:117
 #: theme/template-parts/content/content-visit-modal.php:55
 msgid "Select Host Member"
-msgstr ""
-
-#: theme/template-parts/content/content-guest-modal.php:139
-#: theme/template-parts/content/content-guests-table.php:69
-#: theme/template-parts/content/content-table.php:87
-#: theme/template-parts/content/content-visit-modal.php:77
-msgid "Visit Date"
 msgstr ""
 
 #: theme/template-parts/content/content-guest-modal.php:179
@@ -610,14 +738,26 @@ msgstr ""
 msgid "Actions"
 msgstr ""
 
-#: theme/template-parts/content/content-guests-table.php:237
+#: theme/template-parts/content/content-guests-table.php:240
 #: theme/template-parts/content/content-table.php:265
 msgid "Missed"
 msgstr ""
 
-#: theme/template-parts/content/content-guests-table.php:251
+#: theme/template-parts/content/content-guests-table.php:246
+msgid "Scheduled"
+msgstr ""
+
+#: theme/template-parts/content/content-guests-table.php:260
 #: theme/template-parts/content/content-table.php:279
 msgid "Sign Out"
+msgstr ""
+
+#: theme/template-parts/content/content-header.php:450
+msgid "Edit profile"
+msgstr ""
+
+#: theme/template-parts/content/content-header.php:462
+msgid "Sign out"
 msgstr ""
 
 #: theme/template-parts/content/content-info-modal.php:40
@@ -676,13 +816,17 @@ msgstr ""
 msgid "Support"
 msgstr ""
 
-#: theme/template-parts/content/content-sidebar.php:191
-msgid "Settings"
-msgstr ""
-
 #. translators: %s: Name of current post. Only visible to screen readers.
 #: theme/template-parts/content/content-single.php:34
 msgid "Continue reading<span class=\"sr-only\"> \"%s\"</span>"
+msgstr ""
+
+#: theme/template-parts/content/content-table.php:23
+msgid "Today's Guests"
+msgstr ""
+
+#: theme/template-parts/content/content-table.php:30
+msgid "View All Guests"
 msgstr ""
 
 #: theme/template-parts/content/content-visit-modal.php:30

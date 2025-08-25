@@ -49,7 +49,7 @@ if ( isset( $_POST['login'] ) ) {
             <!-- Form -->
             <div class="flex flex-col flex-1 w-full lg:w-1/2">
                 <div class="w-full max-w-md pt-10 mx-auto">
-                    <a href="<?php echo esc_url( site_url( '/dashboard' ) ); ?>"
+                    <a href="<?php echo esc_url( home_url( '/dashboard' ) ); ?>"
                         class="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
                         <svg class="stroke-current" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
                             viewBox="0 0 20 20" fill="none">
@@ -152,7 +152,7 @@ if ( isset( $_POST['login'] ) ) {
                                                 <?php esc_html_e( 'Keep me logged in', 'vms' ); ?>
                                             </label>
                                         </div>
-                                        <a href="<?php echo esc_url( site_url( '/lost-password' ) ); ?>"
+                                        <a href="<?php echo esc_url( home_url( '/lost-password' ) ); ?>"
                                             class="text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400">
                                             <?php esc_html_e( 'Forgot password?', 'vms' ); ?>
                                         </a>
@@ -170,7 +170,7 @@ if ( isset( $_POST['login'] ) ) {
                                 <p
                                     class="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
                                     <?php esc_html_e( "Don't have an account?", 'vms' ); ?>
-                                    <a href="<?php echo esc_url( site_url( '/register' ) ); ?>"
+                                    <a href="<?php echo esc_url( home_url( '/register' ) ); ?>"
                                         class="text-brand-500 hover:text-brand-600 dark:text-brand-400">
                                         <?php esc_html_e( 'Sign Up', 'vms' ); ?>
                                     </a>
@@ -186,7 +186,7 @@ if ( isset( $_POST['login'] ) ) {
                     <!-- ===== Common Grid Shape Start ===== -->
                     <?php get_template_part( 'template-parts/content/content', 'grid' ); ?>
                     <div class="flex flex-col items-center max-w-sm">
-                        <a href="<?php echo esc_url( site_url(  ) ); ?>" class="block mb-4">
+                        <a href="<?php echo esc_url( home_url(  ) ); ?>" class="block mb-4">
                             <img src="<?php echo get_template_directory_uri(); ?>/assets/images/logo/logo.png"
                                 alt="Logo" />
                         </a>

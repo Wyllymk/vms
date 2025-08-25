@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
     <!-- SIDEBAR HEADER -->
     <div :class="sidebarToggle ? 'justify-center' : 'justify-between'"
         class="flex items-center gap-2 pt-8 sidebar-header pb-7">
-        <a href="<?php echo esc_url( site_url( ) ); ?>">
+        <a href="<?php echo esc_url( home_url( ) ); ?>">
             <span class="flex items-center justify-center gap-4" :class="sidebarToggle ? 'hidden' : ''">
                 <img class="h-12" loading="lazy"
                     src="<?php echo get_template_directory_uri(); ?>/assets/images/logo/logo.png" alt="Logo" />
@@ -53,7 +53,7 @@ defined( 'ABSPATH' ) || exit;
                 <ul class="flex flex-col gap-4 mb-6">
                     <!-- Menu Item Dashboard -->
                     <li>
-                        <a href="<?php echo esc_url( site_url( '/dashboard/' ) ); ?>"
+                        <a href="<?php echo esc_url( home_url( '/dashboard/' ) ); ?>"
                             @click="selected = (selected === 'Dashboard' ? '':'Dashboard')"
                             class="<?php echo ( is_page( 'dashboard' ) ) ? 'menu-item group menu-item-active' : 'menu-item group menu-item-inactive'; ?>">
                             <svg class="<?php echo ( is_page( 'Dashboard' ) ) ? 'menu-item-icon-active' : 'menu-item-icon-inactive'; ?>"
@@ -73,7 +73,7 @@ defined( 'ABSPATH' ) || exit;
 
                     <!-- Menu Item Profile -->
                     <li>
-                        <a href="<?php echo esc_url( site_url( '/profile/' ) ); ?>"
+                        <a href="<?php echo esc_url( home_url( '/profile/' ) ); ?>"
                             @click="selected = (selected === 'Profile' ? '':'Profile')"
                             class="<?php echo ( is_page( 'profile' ) ) ? 'menu-item group menu-item-active' : 'menu-item group menu-item-inactive'; ?>">
                             <svg class="<?php echo ( is_page( 'profile' ) ) ? 'menu-item-icon-active' : 'menu-item-icon-inactive'; ?>"
@@ -94,7 +94,7 @@ defined( 'ABSPATH' ) || exit;
                     <!-- Menu Item Members -->
                     <?php if ( ( current_user_can( 'administrator' ) || current_user_can( 'chairman' ) || current_user_can( 'general_manager' ) || current_user_can( 'reception' ) ) ) : ?>
                     <li>
-                        <a href="<?php echo esc_url( site_url( '/members' ) ); ?>"
+                        <a href="<?php echo esc_url( home_url( '/members' ) ); ?>"
                             @click="selected = (selected === 'Members' ? '':'Members')"
                             class="<?php echo ( is_page( 'members' ) ) ? 'menu-item group menu-item-active' : 'menu-item group menu-item-inactive'; ?>">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1"
@@ -113,7 +113,7 @@ defined( 'ABSPATH' ) || exit;
                     <!-- Menu Item Employees -->
                     <?php if ( ( current_user_can( 'administrator' ) || current_user_can( 'general_manager' ) || current_user_can( 'reception' ) || current_user_can( 'chairman' ) ) ) : ?>
                     <li>
-                        <a href="<?php echo esc_url( site_url( '/employees' ) ); ?>"
+                        <a href="<?php echo esc_url( home_url( '/employees' ) ); ?>"
                             @click="selected = (selected === 'Employees' ? '':'Employees')"
                             class="<?php echo ( is_page( 'employees' ) ) ? 'menu-item group menu-item-active' : 'menu-item group menu-item-inactive'; ?>">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
@@ -135,7 +135,7 @@ defined( 'ABSPATH' ) || exit;
                     <!-- Menu Item Guests -->
                     <?php if ( ( current_user_can( 'administrator' ) || current_user_can( 'general_manager' ) || current_user_can( 'chairman' ) || current_user_can( 'reception' ) || current_user_can( 'gate' ) ) ) : ?>
                     <li>
-                        <a href="<?php echo esc_url( site_url( '/guests' ) ); ?>"
+                        <a href="<?php echo esc_url( home_url( '/guests' ) ); ?>"
                             @click="selected = (selected === 'Guests' ? '':'Guests')"
                             class="<?php echo ( is_page( 'guests' ) ) ? 'menu-item group menu-item-active' : 'menu-item group menu-item-inactive'; ?>">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
@@ -177,7 +177,7 @@ defined( 'ABSPATH' ) || exit;
 
                     <!-- Menu Item Settings -->
                     <li>
-                        <a href="<?php echo esc_url( site_url( '/settings' ) ); ?>"
+                        <a href="<?php echo esc_url( home_url( '/settings' ) ); ?>"
                             @click="selected = (selected === 'Settings' ? '':'Settings')"
                             class="<?php echo ( is_page( 'settings' ) ) ? 'menu-item group menu-item-active' : 'menu-item group menu-item-inactive'; ?>">
                             <svg class="<?php echo ( is_page( 'settings' ) ) ? 'menu-item-icon-active' : 'menu-item-icon-inactive'; ?>"

@@ -16,7 +16,7 @@ $guest_visits_table = $wpdb->prefix . 'vms_guest_visits';
 
 <div class="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
     <div class="max-w-full overflow-x-auto" id="guests-table"
-        data-guest-details-url="<?php echo esc_url(site_url('/guest-details')); ?>">
+        data-guest-details-url="<?php echo esc_url(home_url('/guest-details')); ?>">
         <table class="min-w-full">
             <!-- table header start -->
             <thead>
@@ -208,6 +208,7 @@ $guest_visits_table = $wpdb->prefix . 'vms_guest_visits';
                                 error_log("Guest table error: Missing visit_date or status for guest ID {$guest->id}");
                                 $is_button_disabled = true; // Disable buttons if data is missing
                                 $is_missed = false;
+                                $is_scheduled = false;
                             } else {
                                 // Normalize visit_date to YYYY-MM-DD
                                 $normalized_visit_date = substr($guest->visit_date, 0, 10); // Extract YYYY-MM-DD from YYYY-MM-DD HH:MM:SS
@@ -216,12 +217,14 @@ $guest_visits_table = $wpdb->prefix . 'vms_guest_visits';
                                     error_log("Guest table error: Invalid visit_date format for guest ID {$guest->id}: {$guest->visit_date}");
                                     $is_button_disabled = true;
                                     $is_missed = false;
+                                    $is_scheduled = false;
                                 } else {
                                     // Disable buttons if current date is before visit_date or status is not approved
                                     $is_button_disabled = $current_date < $normalized_visit_date || $guest->status !== 'approved';
                                     
                                     // Check if visit was missed (no sign-in and visit date has passed)
                                     $is_missed = empty($guest->sign_in_time) && $current_date > $normalized_visit_date;
+                                    $is_scheduled = $current_date > $normalized_visit_date;
                                 }
                             }
                             
@@ -233,8 +236,14 @@ $guest_visits_table = $wpdb->prefix . 'vms_guest_visits';
                             <?php if ($is_missed): ?>
                             <!-- Missed status -->
                             <span
-                                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-yellow-800 bg-yellow-100 rounded-lg dark:bg-yellow-900 dark:text-yellow-200">
+                                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-warning-600 bg-warning-50 rounded-lg dark:bg-warning-500/15 dark:text-orange-500">
                                 <?php esc_html_e('Missed', 'vms'); ?>
+                            </span>
+                            <?php elseif (empty($guest->sign_in_time)): ?>
+                            <!-- Scheduled status -->
+                            <span
+                                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-light-500 bg-blue-light-50 rounded-lg dark:bg-blue-light-500/15 dark:text-blue-light-500">
+                                <?php esc_html_e('Scheduled', 'vms'); ?>
                             </span>
                             <?php elseif (empty($guest->sign_in_time)): ?>
                             <button id="sign-in-button-<?php echo esc_attr($guest->id); ?>"

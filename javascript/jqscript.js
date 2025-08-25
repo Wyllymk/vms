@@ -276,6 +276,7 @@ jQuery(document).ready(function ($) {
 							!guest.sign_in_time &&
 							normalizedVisitDate &&
 							currentDate > normalizedVisitDate;
+						const isScheduled = currentDate > normalizedVisitDate;
 
 						const baseButtonClasses =
 							'inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition rounded-lg whitespace-nowrap shadow-theme-xs';
@@ -287,8 +288,15 @@ jQuery(document).ready(function ($) {
 
 						if (isMissed) {
 							return `
-							<span class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-yellow-800 bg-yellow-100 rounded-lg dark:bg-yellow-900 dark:text-yellow-200">
+							<span class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-warning-600 bg-warning-50 rounded-lg dark:bg-warning-500/15 dark:text-orange-500">
 								Missed
+							</span>
+						`;
+						}
+						if (isScheduled) {
+							return `
+							<span class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-light-500 bg-blue-light-50 rounded-lg dark:bg-blue-light-500/15 dark:text-blue-light-500">
+								Scheduled
 							</span>
 						`;
 						}
@@ -1123,8 +1131,8 @@ jQuery(document).ready(function ($) {
 
 		// Redirect to edit page
 		window.location.href =
-			vms_script_ajax.admin_url +
-			'guest-details/?guest_id=' +
+			vms_script_ajax.home_url +
+			'/guest-details/?guest_id=' +
 			guestId +
 			'&paged=1';
 	});

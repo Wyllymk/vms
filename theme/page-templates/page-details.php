@@ -110,7 +110,7 @@ if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
                         $message  = "Hello {$first_name},\n\n";
                         $message .= "Good news! Your account has been activated.\n\n";
                         $message .= "You can now log in using your username: {$user_login}\n";
-                        $message .= "Login here: " . esc_url( site_url( '/login' )) . "\n\n";
+                        $message .= "Login here: " . esc_url( home_url( '/login' )) . "\n\n";
                         $message .= "Welcome aboard!\n\n";
                         $message .= "Best regards,\nNyeri Club Visitor Management System";
                         break;
@@ -203,7 +203,7 @@ if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
         set_transient('lawyer_u_success_' . get_current_user_id(), $lawyer_u_success, 60);
         set_transient('lawyer_u_error_' . get_current_user_id(), $lawyer_u_error, 60);
 
-        wp_safe_redirect(add_query_arg(['user_id' => $user_id], site_url('/employee-details/')));
+        wp_safe_redirect(add_query_arg(['user_id' => $user_id], home_url('/details')));
         exit;
     }
 
@@ -222,7 +222,7 @@ if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
                 wp_logout();
             }
 
-            wp_safe_redirect(site_url('/employees/'));
+            wp_safe_redirect(home_url('/employees/'));
             exit;
         }
     }    
@@ -305,10 +305,15 @@ if (isset($_POST['delete_visit']) && isset($_POST['visit_id'])) {
     }
 }
 
+$page_name = 'Employee-Details'; // default
+if ($user_data && in_array('member', (array) $user_data->roles, true)) {
+    $page_name = 'Member-Details';
+}
+
 get_header();
 ?>
 
-<section id="primary" x-data="{ page: 'employee-details', 'isVisitInfoModal': false}"
+<section id="primary" x-data="{ page: 'details', 'isVisitInfoModal': false}"
     @close-guest-modal.window="isVisitInfoModal = false">
     <main id="main">
         <!-- ===== Page Wrapper Start ===== -->
@@ -331,7 +336,7 @@ get_header();
                 <main>
                     <div class="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
                         <!-- Breadcrumb Start -->
-                        <div x-data="{ pageName: `Employee-Details`}">
+                        <div x-data="{ pageName: '<?php echo esc_js( $page_name ); ?>' }">
                             <?php get_template_part( 'template-parts/content/content', 'breadcrumb' ); ?>
                         </div>
                         <!-- Breadcrumb End -->

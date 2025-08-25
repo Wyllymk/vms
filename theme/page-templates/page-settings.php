@@ -58,7 +58,9 @@ $last_checked_time = get_option( 'mobilesasa_last_check', 'N/A' );
                                         <!-- Card Header -->
                                         <div
                                             class="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                                            <h4 class="text-lg font-semibold">Settings</h4>
+                                            <h4 class="text-lg font-semibold">
+                                                <?php esc_html_e( 'Settings', 'vms' ); ?>
+                                            </h4>
                                         </div>
 
                                         <!-- Card Body -->
@@ -90,7 +92,7 @@ $last_checked_time = get_option( 'mobilesasa_last_check', 'N/A' );
                                             <div class="overflow-auto">
                                                 <h3
                                                     class="mb-4 text-lg font-semibold text-gray-700 border-b border-gray-200 dark:text-gray-300 dark:border-gray-700">
-                                                    Update SMS Information
+                                                    <?php esc_html_e( 'Update SMS Information', 'vms' ); ?>
                                                 </h3>
                                                 <form action="" method="post" enctype="multipart/form-data">
                                                     <?php wp_nonce_field( 'update_account_data', '_wpnonce_update_account_data' ); ?>
@@ -102,7 +104,7 @@ $last_checked_time = get_option( 'mobilesasa_last_check', 'N/A' );
                                                                 <div class="w-1/2">
                                                                     <label for="uname"
                                                                         class="block text-gray-700 dark:text-gray-300">
-                                                                        Sender ID:
+                                                                        <?php esc_html_e( 'Sender ID:', 'vms' ); ?>
                                                                     </label>
                                                                     <input type="text"
                                                                         class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
@@ -111,8 +113,7 @@ $last_checked_time = get_option( 'mobilesasa_last_check', 'N/A' );
                                                                         name="sender_id" placeholder="Enter Sender ID">
                                                                     <small
                                                                         class="text-sm text-gray-600 dark:text-gray-400">
-                                                                        Please enter a valid Sender ID by
-                                                                        MobileSasa.
+                                                                        <?php esc_html_e( 'Please enter a valid Sender ID.', 'vms' ); ?>
                                                                     </small>
                                                                 </div>
 
@@ -120,7 +121,7 @@ $last_checked_time = get_option( 'mobilesasa_last_check', 'N/A' );
                                                                 <div class="w-1/2">
                                                                     <label for="sms_balance"
                                                                         class="block text-gray-700 dark:text-gray-300">
-                                                                        SMS Balance:
+                                                                        <?php esc_html_e( 'SMS Balance:', 'vms' ); ?>
                                                                     </label>
                                                                     <input type="text"
                                                                         class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
@@ -128,7 +129,7 @@ $last_checked_time = get_option( 'mobilesasa_last_check', 'N/A' );
                                                                         readonly>
                                                                     <small
                                                                         class="text-sm text-gray-600 dark:text-gray-400">
-                                                                        Last Checked:
+                                                                        <?php esc_html_e( 'Last Checked:', 'vms' ); ?>
                                                                         <?php echo esc_attr( $last_checked_time ); ?>
                                                                     </small>
                                                                 </div>
@@ -139,7 +140,7 @@ $last_checked_time = get_option( 'mobilesasa_last_check', 'N/A' );
                                                         <div class="mb-4">
                                                             <label for="api_token"
                                                                 class="block text-gray-700 dark:text-gray-300">
-                                                                API Token:
+                                                                <?php esc_html_e( 'API Token:', 'vms' ); ?>
                                                             </label>
                                                             <input type="text"
                                                                 class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
@@ -147,7 +148,7 @@ $last_checked_time = get_option( 'mobilesasa_last_check', 'N/A' );
                                                                 value="<?php echo esc_attr( get_option( 'mobilesasa_api_token', '' ) ); ?>"
                                                                 name="api_token" placeholder="Enter API Token">
                                                             <small class="text-sm text-gray-600 dark:text-gray-400">
-                                                                Please enter your API Token.
+                                                                <?php esc_html_e( 'Please enter your API Token.', 'vms' ); ?>
                                                             </small>
                                                         </div>
                                                         <!-- End of API Token -->
@@ -155,7 +156,7 @@ $last_checked_time = get_option( 'mobilesasa_last_check', 'N/A' );
                                                     <div class="flex justify-center mt-4 space-x-2">
                                                         <a type="submit" name="update_details"
                                                             class="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-white transition rounded-lg cursor-pointer bg-brand-500 shadow-theme-xs hover:bg-brand-600">
-                                                            Update Settings
+                                                            <?php esc_html_e( 'Update Settings', 'vms' ); ?>
                                                         </a>
                                                     </div>
                                                 </form>
