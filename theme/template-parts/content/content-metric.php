@@ -255,28 +255,81 @@ defined( 'ABSPATH' ) || exit;
     <!-- Members End -->
 
     <!-- Metric Item Start -->
+    <?php 
+    function vms_get_monthly_guest_visits($year, $month) {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'vms_guest_visits';
+
+        $start_date = sprintf('%04d-%02d-01', $year, $month);
+        $end_date   = date('Y-m-t', strtotime($start_date));
+
+        $count = $wpdb->get_var(
+            $wpdb->prepare(
+                "SELECT COUNT(*) FROM $table_name 
+                WHERE visit_date BETWEEN %s AND %s",
+                $start_date,
+                $end_date
+            )
+        );
+
+        return (int) $count;
+    }
+
+    function vms_get_guest_visit_stats() {
+        $year  = date('Y');
+        $month = date('n');
+
+        $this_month  = vms_get_monthly_guest_visits($year, $month);
+
+        // last month
+        $last_month = ($month == 1) ? 12 : $month - 1;
+        $last_year  = ($month == 1) ? $year - 1 : $year;
+
+        $prev_month = vms_get_monthly_guest_visits($last_year, $last_month);
+
+        $percentage = 0;
+        if ($prev_month > 0) {
+            $percentage = (($this_month - $prev_month) / $prev_month) * 100;
+        }
+
+        return [
+            'this_month' => $this_month,
+            'last_month' => $prev_month,
+            'percentage' => round($percentage, 1),
+        ];
+    }
+
+
+    $stats = vms_get_guest_visit_stats(); 
+    ?>
+
+    <!-- Metric Item Start -->
     <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
-        <p class="text-theme-sm text-gray-500 dark:text-gray-400">Visit Duration</p>
+        <p class="text-theme-sm text-gray-500 dark:text-gray-400">Guest Visits (This Month)</p>
 
         <div class="mt-3 flex items-end justify-between">
             <div>
                 <h4 class="text-2xl font-bold text-gray-800 dark:text-white/90">
-                    2m 56s
+                    <?php echo esc_html($stats['this_month']); ?>
                 </h4>
             </div>
 
             <div class="flex items-center gap-1">
-                <span
-                    class="flex items-center gap-1 rounded-full bg-success-50 px-2 py-0.5 text-theme-xs font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">
-                    +7%
+                <span class="flex items-center gap-1 rounded-full 
+                <?php echo $stats['percentage'] >= 0 
+                    ? 'bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-500' 
+                    : 'bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500'; ?>
+                px-2 py-0.5 text-theme-xs font-medium">
+                    <?php echo ($stats['percentage'] >= 0 ? '+' : '') . esc_html($stats['percentage']); ?>%
                 </span>
 
                 <span class="text-theme-xs text-gray-500 dark:text-gray-400">
-                    Vs last month
+                    Vs last month (<?php echo esc_html($stats['last_month']); ?>)
                 </span>
             </div>
         </div>
     </div>
     <!-- Metric Item End -->
+
 </div>
 <!-- Metric Group Two -->

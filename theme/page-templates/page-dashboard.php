@@ -65,18 +65,6 @@ get_header();
                                 <!-- ====== Chart Two End -->
                             </div>
 
-                            <div class="col-span-12">
-                                <!-- ====== Chart Three Start -->
-                                <!-- <?php get_template_part( 'template-parts/content/content', 'chart-03' ); ?> -->
-                                <!-- ====== Chart Three End -->
-                            </div>
-
-                            <div class="col-span-12 xl:col-span-5">
-                                <!-- ====== Map One Start -->
-                                <!-- <?php get_template_part( 'template-parts/content/content', 'map' ); ?> -->
-                                <!-- ====== Map One End -->
-                            </div>
-
                             <div class="col-span-12 ">
                                 <!-- ====== Table One Start -->
                                 <?php get_template_part( 'template-parts/content/content', 'table' ); ?>

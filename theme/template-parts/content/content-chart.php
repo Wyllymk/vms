@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
     <div class="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
             <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">
-                Impression &amp; Data Traffic
+                Impression &amp; Visitor Traffic
             </h3>
             <p class="mt-1 text-gray-500 text-theme-sm dark:text-gray-400">
                 Jun 1, 2024 - Dec 1, 2025
@@ -26,7 +26,7 @@ defined( 'ABSPATH' ) || exit;
         <div class="flex flex-row-reverse items-center justify-end gap-0.5 sm:flex-col sm:items-start">
             <div class="flex flex-row-reverse items-center gap-3 sm:flex-row sm:gap-2">
                 <h4 class="text-2xl font-bold text-gray-800 dark:text-white/90">
-                    $9,758.00
+                    1,200
                 </h4>
 
                 <span
@@ -36,7 +36,7 @@ defined( 'ABSPATH' ) || exit;
             </div>
 
             <span class="text-gray-500 text-theme-xs dark:text-gray-400">
-                Total Revenue
+                Total Visits
             </span>
         </div>
     </div>

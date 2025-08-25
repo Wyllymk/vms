@@ -9,6 +9,10 @@
 // Exit if accessed directly
 defined( 'ABSPATH' ) || exit;
 
+global $wpdb;
+$guests_table = $wpdb->prefix . 'vms_guests'; 
+$guest_visits_table = $wpdb->prefix . 'vms_guest_visits';
+
 ?>
 
 <div
@@ -16,323 +20,283 @@ defined( 'ABSPATH' ) || exit;
     <div class="flex flex-col gap-2 mb-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
             <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">
-                Recent Case Activity
+                Today's Guests
             </h3>
         </div>
 
         <div class="flex items-center gap-3">
-            <button
+            <button href="<?php echo esc_url( site_url( '/guests' ) ); ?>"
                 class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-theme-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200">
-                <svg class="stroke-current fill-white dark:fill-gray-800" width="20" height="20" viewBox="0 0 20 20"
-                    fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M2.29004 5.90393H17.7067" stroke="" stroke-width="1.5" stroke-linecap="round"
-                        stroke-linejoin="round" />
-                    <path d="M17.7075 14.0961H2.29085" stroke="" stroke-width="1.5" stroke-linecap="round"
-                        stroke-linejoin="round" />
-                    <path
-                        d="M12.0826 3.33331C13.5024 3.33331 14.6534 4.48431 14.6534 5.90414C14.6534 7.32398 13.5024 8.47498 12.0826 8.47498C10.6627 8.47498 9.51172 7.32398 9.51172 5.90415C9.51172 4.48432 10.6627 3.33331 12.0826 3.33331Z"
-                        fill="" stroke="" stroke-width="1.5" />
-                    <path
-                        d="M7.91745 11.525C6.49762 11.525 5.34662 12.676 5.34662 14.0959C5.34661 15.5157 6.49762 16.6667 7.91745 16.6667C9.33728 16.6667 10.4883 15.5157 10.4883 14.0959C10.4883 12.676 9.33728 11.525 7.91745 11.525Z"
-                        fill="" stroke="" stroke-width="1.5" />
-                </svg>
-                Filter
-            </button>
-
-            <button
-                class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-theme-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200">
-                View All Cases
+                View All Guests
             </button>
         </div>
     </div>
 
-    <div class="w-full overflow-x-auto">
-        <table class="min-w-full">
-            <!-- table header start -->
-            <thead>
-                <tr class="border-gray-100 border-y dark:border-gray-800">
-                    <th class="py-3">
-                        <div class="flex items-center">
-                            <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
-                                Case Name
-                            </p>
-                        </div>
-                    </th>
-                    <th class="py-3">
-                        <div class="flex items-center">
-                            <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
-                                Case Type
-                            </p>
-                        </div>
-                    </th>
-                    <th class="py-3">
-                        <div class="flex items-center">
-                            <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
-                                Client
-                            </p>
-                        </div>
-                    </th>
-                    <th class="py-3">
-                        <div class="flex items-center col-span-2">
-                            <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
-                                Status
-                            </p>
-                        </div>
-                    </th>
-                </tr>
-            </thead>
-            <!-- table header end -->
-
-            <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
-                <tr>
-                    <td class="py-3">
-                        <div class="flex items-center">
-                            <div class="flex items-center gap-3">
-                                <div
-                                    class="h-[50px] w-[50px] overflow-hidden rounded-md bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z">
-                                        </path>
-                                        <polyline points="14 2 14 8 20 8"></polyline>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p class="font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                                        Johnson v. Smith
-                                    </p>
-                                    <span class="text-gray-500 text-theme-xs dark:text-gray-400">
-                                        Case #2023-0456
-                                    </span>
-                                </div>
+    <div class="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+        <div class="max-w-full overflow-x-auto" id="guests-table"
+            data-guest-details-url="<?php echo esc_url(site_url('/guest-details')); ?>">
+            <table class="min-w-full">
+                <!-- table header start -->
+                <thead>
+                    <tr class="border-b border-gray-100 dark:border-gray-800">
+                        <th class="px-5 py-3 sm:px-6">
+                            <div class="flex items-center">
+                                <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
+                                    <?php esc_html_e( '#', 'vms' ); ?>
+                                </p>
                             </div>
-                        </div>
-                    </td>
-                    <td class="py-3">
-                        <div class="flex items-center">
-                            <p class="text-gray-500 text-theme-sm dark:text-gray-400">
-                                Civil Litigation
-                            </p>
-                        </div>
-                    </td>
-                    <td class="py-3">
-                        <div class="flex items-center">
-                            <p class="text-gray-500 text-theme-sm dark:text-gray-400">
-                                Robert Johnson
-                            </p>
-                        </div>
-                    </td>
-                    <td class="py-3">
-                        <div class="flex items-center">
-                            <p
-                                class="rounded-full bg-success-50 px-2 py-0.5 text-theme-xs font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">
-                                Active
-                            </p>
-                        </div>
-                    </td>
-                </tr>
-
-                <!-- table item -->
-                <tr>
-                    <td class="py-3">
-                        <div class="flex items-center">
-                            <div class="flex items-center gap-3">
-                                <div
-                                    class="h-[50px] w-[50px] overflow-hidden rounded-md bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z">
-                                        </path>
-                                        <polyline points="14 2 14 8 20 8"></polyline>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p class="font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                                        Estate of Williams
-                                    </p>
-                                    <span class="text-gray-500 text-theme-xs dark:text-gray-400">
-                                        Case #2023-0789
-                                    </span>
-                                </div>
+                        </th>
+                        <th class="px-5 py-3 sm:px-6">
+                            <div class="flex items-center">
+                                <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
+                                    <?php esc_html_e( 'First Name', 'vms' ); ?>
+                                </p>
                             </div>
-                        </div>
-                    </td>
-                    <td class="py-3">
-                        <div class="flex items-center">
-                            <p class="text-gray-500 text-theme-sm dark:text-gray-400">
-                                Probate
-                            </p>
-                        </div>
-                    </td>
-                    <td class="py-3">
-                        <div class="flex items-center">
-                            <p class="text-gray-500 text-theme-sm dark:text-gray-400">
-                                Sarah Williams
-                            </p>
-                        </div>
-                    </td>
-                    <td class="py-3">
-                        <div class="flex items-center">
-                            <p
-                                class="rounded-full bg-warning-50 px-2 py-0.5 text-theme-xs font-medium text-warning-600 dark:bg-warning-500/15 dark:text-orange-400">
-                                Pending Review
-                            </p>
-                        </div>
-                    </td>
-                </tr>
-
-                <!-- table item -->
-                <tr>
-                    <td class="py-3">
-                        <div class="flex items-center">
-                            <div class="flex items-center gap-3">
-                                <div
-                                    class="h-[50px] w-[50px] overflow-hidden rounded-md bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z">
-                                        </path>
-                                        <polyline points="14 2 14 8 20 8"></polyline>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p class="font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                                        Davis Contract Dispute
-                                    </p>
-                                    <span class="text-gray-500 text-theme-xs dark:text-gray-400">
-                                        Case #2023-1011
-                                    </span>
-                                </div>
+                        </th>
+                        <th class="px-5 py-3 sm:px-6">
+                            <div class="flex items-center">
+                                <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
+                                    <?php esc_html_e( 'Last Name', 'vms' ); ?>
+                                </p>
                             </div>
-                        </div>
-                    </td>
-                    <td class="py-3">
-                        <div class="flex items-center">
-                            <p class="text-gray-500 text-theme-sm dark:text-gray-400">
-                                Contract Law
-                            </p>
-                        </div>
-                    </td>
-                    <td class="py-3">
-                        <div class="flex items-center">
-                            <p class="text-gray-500 text-theme-sm dark:text-gray-400">
-                                Davis Enterprises
-                            </p>
-                        </div>
-                    </td>
-                    <td class="py-3">
-                        <div class="flex items-center">
-                            <p
-                                class="rounded-full bg-success-50 px-2 py-0.5 text-theme-xs font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">
-                                In Court
-                            </p>
-                        </div>
-                    </td>
-                </tr>
-
-                <!-- table item -->
-                <tr>
-                    <td class="py-3">
-                        <div class="flex items-center">
-                            <div class="flex items-center gap-3">
-                                <div
-                                    class="h-[50px] w-[50px] overflow-hidden rounded-md bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z">
-                                        </path>
-                                        <polyline points="14 2 14 8 20 8"></polyline>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p class="font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                                        Miller Divorce
-                                    </p>
-                                    <span class="text-gray-500 text-theme-xs dark:text-gray-400">
-                                        Case #2023-1213
-                                    </span>
-                                </div>
+                        </th>
+                        <th class="px-5 py-3 sm:px-6">
+                            <div class="flex items-center">
+                                <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
+                                    <?php esc_html_e( 'Status', 'vms' ); ?>
+                                </p>
                             </div>
-                        </div>
-                    </td>
-                    <td class="py-3">
-                        <div class="flex items-center">
-                            <p class="text-gray-500 text-theme-sm dark:text-gray-400">
-                                Family Law
-                            </p>
-                        </div>
-                    </td>
-                    <td class="py-3">
-                        <div class="flex items-center">
-                            <p class="text-gray-500 text-theme-sm dark:text-gray-400">
-                                Jennifer Miller
-                            </p>
-                        </div>
-                    </td>
-                    <td class="py-3">
-                        <div class="flex items-center">
-                            <p
-                                class="rounded-full bg-error-50 px-2 py-0.5 text-theme-xs font-medium text-error-600 dark:bg-error-500/15 dark:text-error-500">
-                                Closed
-                            </p>
-                        </div>
-                    </td>
-                </tr>
-
-                <!-- table item -->
-                <tr>
-                    <td class="py-3">
-                        <div class="flex items-center">
-                            <div class="flex items-center gap-3">
-                                <div
-                                    class="h-[50px] w-[50px] overflow-hidden rounded-md bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z">
-                                        </path>
-                                        <polyline points="14 2 14 8 20 8"></polyline>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p class="font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                                        Thompson IP Case
-                                    </p>
-                                    <span class="text-gray-500 text-theme-xs dark:text-gray-400">
-                                        Case #2023-1415
-                                    </span>
-                                </div>
+                        </th>
+                        <th class="px-5 py-3 sm:px-6">
+                            <div class="flex items-center">
+                                <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
+                                    <?php esc_html_e( 'ID Number', 'vms' ); ?>
+                                </p>
                             </div>
-                        </div>
-                    </td>
-                    <td class="py-3">
-                        <div class="flex items-center">
+                        </th>
+                        <th class="px-5 py-3 sm:px-6">
+                            <div class="flex items-center">
+                                <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
+                                    <?php esc_html_e( 'Host Member', 'vms' ); ?>
+                                </p>
+                            </div>
+                        </th>
+                        <th class="px-5 py-3 sm:px-6">
+                            <div class="flex items-center">
+                                <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
+                                    <?php esc_html_e( 'Visit Date', 'vms' ); ?>
+                                </p>
+                            </div>
+                        </th>
+                        <th class="px-5 py-3 sm:px-6">
+                            <div class="flex items-center">
+                                <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
+                                    <?php esc_html_e( 'Actions', 'vms' ); ?>
+                                </p>
+                            </div>
+                        </th>
+                    </tr>
+                </thead>
+                <!-- table header end -->
+                <!-- table body start -->
+                <tbody id="guests-table-body" class="divide-y divide-gray-100 dark:divide-gray-800">
+                    <?php 
+                    // Initialize counter
+                    $counter = 1;
+
+                    // Get today's date in WordPress timezone
+                    $today = current_time('Y-m-d');
+
+                    // We need to join with usermeta to get first and last names
+                    // Note: host_member_id is in the guest_visits table, not the guests table
+                    // Base query - join guests with guest_visits and users tables
+                    $query = "
+                        SELECT g.*, v.id as visit_id, v.visit_date, v.sign_in_time, v.sign_out_time, v.host_member_id,
+                            u.display_name,
+                            MAX(CASE WHEN um1.meta_key = 'first_name' THEN um1.meta_value END) as host_first_name,
+                            MAX(CASE WHEN um2.meta_key = 'last_name' THEN um2.meta_value END) as host_last_name
+                        FROM {$guests_table} g
+                        LEFT JOIN {$guest_visits_table} v ON g.id = v.guest_id
+                        LEFT JOIN {$wpdb->users} u ON v.host_member_id = u.ID
+                        LEFT JOIN {$wpdb->usermeta} um1 ON (u.ID = um1.user_id AND um1.meta_key = 'first_name')
+                        LEFT JOIN {$wpdb->usermeta} um2 ON (u.ID = um2.user_id AND um2.meta_key = 'last_name')
+                        WHERE DATE(v.visit_date) = %s
+                    ";
+
+                    // Add search filter if present
+                    if (isset($_GET['search_users']) && !empty($_GET['user_search'])) {
+                        $search_term = '%' . $wpdb->esc_like(sanitize_text_field($_GET['user_search'])) . '%';
+                        $query .= $wpdb->prepare(
+                            " AND (g.first_name LIKE %s OR g.last_name LIKE %s OR g.id_number LIKE %s OR g.email LIKE %s OR g.phone_number LIKE %s OR u.display_name LIKE %s OR um1.meta_value LIKE %s OR um2.meta_value LIKE %s)",
+                            $search_term,
+                            $search_term,
+                            $search_term,
+                            $search_term,
+                            $search_term,
+                            $search_term,
+                            $search_term,
+                            $search_term
+                        );
+                    } else {
+                        $query = $wpdb->prepare($query, $today);
+                    }
+
+                    // Add grouping, ordering, and limit 10
+                    $query .= " GROUP BY g.id, v.id ORDER BY v.sign_in_time ASC, v.sign_out_time ASC LIMIT 10";
+
+                    // Get guests from custom tables
+                    $guests = $wpdb->get_results($query);
+
+                    $status_classes = [
+                        'approved' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+                        'unapproved' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+                        'suspended' => 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
+                        'banned' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                    ];
+
+                    if (!empty($guests)) {
+                        foreach ($guests as $guest) {
+                            $visit_date = !empty($guest->visit_date) ? date('M j, Y', strtotime($guest->visit_date)) : 'N/A';
+                            $sign_in_time = !empty($guest->sign_in_time) ? date('g:i a', strtotime($guest->sign_in_time)) : null;
+                            $sign_out_time = !empty($guest->sign_out_time) ? date('g:i a', strtotime($guest->sign_out_time)) : null;
+                            $status = isset($guest->status) ? $guest->status : 'approved';
+                            
+                            // Get host name - use first and last name if available, otherwise fallback to display name
+                            $host_name = 'N/A';
+                            if (!empty($guest->host_first_name) || !empty($guest->host_last_name)) {
+                                $host_name = trim($guest->host_first_name . ' ' . $guest->host_last_name);
+                            } elseif (!empty($guest->display_name)) {
+                                $host_name = $guest->display_name;
+                            }
+                    ?>
+                    <tr data-guest-id="<?php echo esc_attr($guest->id); ?>"
+                        data-visit-id="<?php echo esc_attr($guest->visit_id); ?>">
+                        <td class="px-5 py-4 sm:px-6">
                             <p class="text-gray-500 text-theme-sm dark:text-gray-400">
-                                Intellectual Property
+                                <?php echo $counter++; ?>
                             </p>
-                        </div>
-                    </td>
-                    <td class="py-3">
-                        <div class="flex items-center">
-                            <p class="text-gray-500 text-theme-sm dark:text-gray-400">
-                                Thompson Tech
-                            </p>
-                        </div>
-                    </td>
-                    <td class="py-3">
-                        <div class="flex items-center">
-                            <p
-                                class="rounded-full bg-success-50 px-2 py-0.5 text-theme-xs font-medium text-success-700 dark:bg-success-500/15 dark:text-success-500">
-                                Settlement Reached
-                            </p>
-                        </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+                        </td>
+                        <td class="px-5 py-4 sm:px-6">
+                            <div class="flex items-center">
+                                <p class="text-gray-800 text-theme-sm dark:text-white/90">
+                                    <?php echo esc_html($guest->first_name); ?>
+                                </p>
+                            </div>
+                        </td>
+                        <td class="px-5 py-4 sm:px-6">
+                            <div class="flex items-center">
+                                <p class="text-gray-800 text-theme-sm dark:text-white/90">
+                                    <?php echo esc_html($guest->last_name); ?>
+                                </p>
+                            </div>
+                        </td>
+                        <td class="px-5 py-4 sm:px-6">
+                            <div class="flex items-center">
+                                <span
+                                    class="px-2 py-1 text-xs font-medium rounded-full <?php echo $status_classes[$status]; ?>">
+                                    <?php echo ucfirst($status); ?>
+                                </span>
+                            </div>
+                        </td>
+                        <td class="px-5 py-4 sm:px-6">
+                            <div class="flex items-center">
+                                <p class="text-gray-500 text-theme-sm dark:text-gray-400">
+                                    <?php echo esc_html($guest->id_number); ?>
+                                </p>
+                            </div>
+                        </td>
+                        <td class="px-5 py-4 sm:px-6">
+                            <div class="flex items-center">
+                                <p class="text-gray-500 text-theme-sm dark:text-gray-400">
+                                    <?php echo esc_html($host_name); ?>
+                                </p>
+                            </div>
+                        </td>
+                        <td class="px-5 py-4 sm:px-6">
+                            <div class="flex items-center">
+                                <p class="text-gray-500 text-theme-sm dark:text-gray-400">
+                                    <?php echo esc_html($visit_date); ?>
+                                </p>
+                            </div>
+                        </td>
+                        <td class="px-5 py-4 sm:px-6">
+                            <div class="flex items-center gap-2">
+                                <button id="edit-guest-button-<?php echo $guest->id; ?>"
+                                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 transition bg-white border border-gray-300 rounded-lg cursor-pointer whitespace-nowrap dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                    data-guest-id="<?php echo $guest->id; ?>"
+                                    data-visit-id="<?php echo $guest->visit_id; ?>">
+                                    <?php esc_html_e( 'Edit', 'vms' ); ?>
+                                </button>
+                                <?php
+                            // Get current date in WordPress timezone (EAT)
+                            $current_date = current_time('Y-m-d');
+                            
+                            // Validate guest data
+                            if (!isset($guest->visit_date) || !isset($guest->status)) {
+                                error_log("Guest table error: Missing visit_date or status for guest ID {$guest->id}");
+                                $is_button_disabled = true; // Disable buttons if data is missing
+                                $is_missed = false;
+                            } else {
+                                // Normalize visit_date to YYYY-MM-DD
+                                $normalized_visit_date = substr($guest->visit_date, 0, 10); // Extract YYYY-MM-DD from YYYY-MM-DD HH:MM:SS
+                                
+                                if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $normalized_visit_date)) {
+                                    error_log("Guest table error: Invalid visit_date format for guest ID {$guest->id}: {$guest->visit_date}");
+                                    $is_button_disabled = true;
+                                    $is_missed = false;
+                                } else {
+                                    // Disable buttons if current date is before visit_date or status is not approved
+                                    $is_button_disabled = $current_date < $normalized_visit_date || $guest->status !== 'approved';
+                                    
+                                    // Check if visit was missed (no sign-in and visit date has passed)
+                                    $is_missed = empty($guest->sign_in_time) && $current_date > $normalized_visit_date;
+                                }
+                            }
+                            
+                            // Common button classes
+                            $base_button_classes = 'inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition rounded-lg whitespace-nowrap shadow-theme-xs';
+                            $disabled_classes = 'opacity-50 cursor-not-allowed';
+                            ?>
+
+                                <?php if ($is_missed): ?>
+                                <!-- Missed status -->
+                                <span
+                                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-yellow-800 bg-yellow-100 rounded-lg dark:bg-yellow-900 dark:text-yellow-200">
+                                    <?php esc_html_e('Missed', 'vms'); ?>
+                                </span>
+                                <?php elseif (empty($guest->sign_in_time)): ?>
+                                <button id="sign-in-button-<?php echo esc_attr($guest->id); ?>"
+                                    class="<?php echo esc_attr($base_button_classes . ' bg-brand-500 ' . ($is_button_disabled ? $disabled_classes : 'cursor-pointer hover:bg-brand-600')); ?>"
+                                    data-visit-id="<?php echo esc_attr($guest->visit_id); ?>"
+                                    <?php echo $is_button_disabled ? 'disabled' : ''; ?>>
+                                    <?php esc_html_e('Sign In', 'vms'); ?>
+                                </button>
+                                <?php elseif (empty($guest->sign_out_time)): ?>
+                                <button id="sign-out-button-<?php echo esc_attr($guest->id); ?>"
+                                    class="<?php echo esc_attr($base_button_classes . ' bg-purple-500 ' . ($is_button_disabled ? $disabled_classes : 'cursor-pointer hover:bg-purple-600')); ?>"
+                                    data-visit-id="<?php echo esc_attr($guest->visit_id); ?>"
+                                    <?php echo $is_button_disabled ? 'disabled' : ''; ?>>
+                                    <?php esc_html_e('Sign Out', 'vms'); ?>
+                                </button>
+                                <?php else: ?>
+                                <div class="flex flex-col items-center justify-center text-xs px-4">
+                                    <span
+                                        class="text-green-600 dark:text-green-400"><?php echo esc_html($sign_in_time); ?></span>
+                                    <span
+                                        class="text-red-600 dark:text-red-400"><?php echo esc_html($sign_out_time); ?></span>
+                                </div>
+                                <?php endif; ?>
+                            </div>
+                        </td>
+                    </tr>
+                    <?php 
+                    } 
+                } else {
+                    echo '<tr id="no-guests-row"><td colspan="11" class="px-4 py-4 text-center text-gray-600 dark:text-white">No guests found.</td></tr>';
+                }
+                ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
