@@ -194,6 +194,70 @@ jQuery(document).ready(function ($) {
 		formData.append('action', 'guest_registration');
 		formData.append('nonce', vms_script_ajax.nonce);
 
+		// Action buttons generator
+		const actionButtons = (guest) => {
+			if (!guest) return '';
+
+			const today = new Date().toISOString().split('T')[0];
+			const normalizedVisitDate = guest.visit_date
+				? guest.visit_date.substring(0, 10)
+				: null;
+
+			const isButtonDisabled =
+				!normalizedVisitDate ||
+				!guest.status ||
+				!/^\d{4}-\d{2}-\d{2}$/.test(normalizedVisitDate) ||
+				guest.status !== 'approved';
+
+			const isFuture = normalizedVisitDate > today;
+			const isPast = normalizedVisitDate < today;
+			const isToday = normalizedVisitDate === today;
+
+			const isMissed = isPast && !guest.sign_in_time;
+			const isScheduled = isFuture;
+			const isCompleted = guest.sign_in_time && guest.sign_out_time;
+
+			const baseButtonClasses =
+				'inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition rounded-lg whitespace-nowrap shadow-theme-xs';
+			const disabledClasses = 'bg-blue-500 opacity-50 cursor-not-allowed';
+			const signInEnabledClasses =
+				'bg-blue-500 cursor-pointer hover:bg-blue-600';
+			const signOutEnabledClasses =
+				'bg-purple-500 cursor-pointer hover:bg-purple-600';
+
+			if (isMissed) {
+				return `<span class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-warning-600 bg-warning-50 rounded-lg dark:bg-warning-500/15 dark:text-orange-500">Missed</span>`;
+			}
+
+			if (isScheduled) {
+				return `<span class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-light-500 bg-blue-light-50 rounded-lg dark:bg-blue-light-500/15 dark:text-blue-light-500">Scheduled</span>`;
+			}
+
+			if (isToday) {
+				if (isCompleted) {
+					const signInTime = new Date(
+						guest.sign_in_time
+					).toLocaleTimeString([], {
+						hour: 'numeric',
+						minute: '2-digit',
+					});
+					const signOutTime = new Date(
+						guest.sign_out_time
+					).toLocaleTimeString([], {
+						hour: 'numeric',
+						minute: '2-digit',
+					});
+					return `<div class="flex flex-col items-center justify-center text-xs px-4"><span class="text-green-600 dark:text-green-400">${signInTime}</span><span class="text-red-600 dark:text-red-400">${signOutTime}</span></div>`;
+				} else if (!guest.sign_in_time) {
+					return `<button id="sign-in-button-${guest.id}" class="${baseButtonClasses} ${isButtonDisabled ? disabledClasses : signInEnabledClasses}" data-visit-id="${guest.visit_id}" ${isButtonDisabled ? 'disabled' : ''}>Sign In</button>`;
+				} else if (!guest.sign_out_time) {
+					return `<button id="sign-out-button-${guest.id}" class="${baseButtonClasses} ${isButtonDisabled ? disabledClasses : signOutEnabledClasses}" data-visit-id="${guest.visit_id}" ${isButtonDisabled ? 'disabled' : ''}>Sign Out</button>`;
+				}
+			}
+
+			return '';
+		};
+
 		// AJAX request
 		$.ajax({
 			url: vms_script_ajax.ajaxurl,
@@ -204,14 +268,10 @@ jQuery(document).ready(function ($) {
 			dataType: 'json',
 			success: function (response) {
 				if (response.success && response.data.guestData) {
-					// console.log('Guest creation response:', response);
-					// console.log('New guest data:', response.data.guestData);
-
 					const guest = response.data.guestData;
 
 					// Format visit date
 					let formattedDate = 'N/A';
-					let normalizedVisitDate = '';
 					if (guest.visit_date) {
 						const visitDate = new Date(guest.visit_date);
 						if (!isNaN(visitDate)) {
@@ -223,23 +283,14 @@ jQuery(document).ready(function ($) {
 									year: 'numeric',
 								}
 							);
-							normalizedVisitDate =
-								guest.visit_date.split(' ')[0];
 						}
 					}
 
 					// Host name
-					let hostName = 'N/A';
-					if (
-						(guest.host_first_name &&
-							guest.host_first_name.trim()) ||
-						(guest.host_last_name && guest.host_last_name.trim())
-					) {
-						hostName =
-							`${guest.host_first_name || ''} ${guest.host_last_name || ''}`.trim();
-					} else if (guest.display_name) {
+					let hostName = guest.host_name || 'N/A';
+					if (guest.host_name) {
 						// Split display_name "wilson.mbuthia" → "Wilson Mbuthia"
-						hostName = guest.display_name
+						hostName = guest.host_name
 							.split('.')
 							.map(
 								(part) =>
@@ -259,172 +310,27 @@ jQuery(document).ready(function ($) {
 						banned: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
 					};
 
-					// Action buttons / Missed logic
-					const actionButtons = (guest) => {
-						const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-						const normalizedVisitDate = guest.visit_date
-							? guest.visit_date.substring(0, 10) // strip time part
-							: null;
-
-						// Disable if invalid data
-						const isButtonDisabled =
-							!normalizedVisitDate ||
-							!guest.status ||
-							!/^\d{4}-\d{2}-\d{2}$/.test(normalizedVisitDate) ||
-							guest.status !== 'approved';
-
-						// Compare dates
-						const isFuture = normalizedVisitDate > today;
-						const isPast = normalizedVisitDate < today;
-						const isToday = normalizedVisitDate === today;
-
-						// States
-						const isMissed = isPast && !guest.sign_in_time; // Yesterday or earlier and no sign-in
-						const isScheduled = isFuture; // Upcoming visits
-						const isCompleted =
-							guest.sign_in_time && guest.sign_out_time; // Both done
-
-						// CSS
-						const baseButtonClasses =
-							'inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition rounded-lg whitespace-nowrap shadow-theme-xs';
-						const disabledClasses =
-							'bg-blue-500 opacity-50 cursor-not-allowed';
-						const signInEnabledClasses =
-							'bg-blue-500 cursor-pointer hover:bg-blue-600';
-						const signOutEnabledClasses =
-							'bg-purple-500 cursor-pointer hover:bg-purple-600';
-
-						// Output
-						if (isMissed) {
-							return `
-								<span class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-warning-600 bg-warning-50 rounded-lg dark:bg-warning-500/15 dark:text-orange-500">
-									Missed
-								</span>
-							`;
-						}
-
-						if (isScheduled) {
-							return `
-								<span class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-light-500 bg-blue-light-50 rounded-lg dark:bg-blue-light-500/15 dark:text-blue-light-500">
-									Scheduled
-								</span>
-							`;
-						}
-
-						if (isToday) {
-							if (isCompleted) {
-								// Completed (both sign in & out)
-								const signInTime = new Date(
-									guest.sign_in_time
-								).toLocaleTimeString([], {
-									hour: 'numeric',
-									minute: '2-digit',
-								});
-								const signOutTime = new Date(
-									guest.sign_out_time
-								).toLocaleTimeString([], {
-									hour: 'numeric',
-									minute: '2-digit',
-								});
-								return `
-									<div class="flex flex-col items-center justify-center text-xs px-4">
-										<span class="text-green-600 dark:text-green-400">${signInTime}</span>
-										<span class="text-red-600 dark:text-red-400">${signOutTime}</span>
-									</div>
-								`;
-							} else if (!guest.sign_in_time) {
-								// Show sign-in button
-								return `
-									<button id="sign-in-button-${guest.id}"
-										class="${baseButtonClasses} ${isButtonDisabled ? disabledClasses : signInEnabledClasses}"
-										data-visit-id="${guest.visit_id}"
-										${isButtonDisabled ? 'disabled' : ''}>
-										Sign In
-									</button>
-								`;
-							} else if (!guest.sign_out_time) {
-								// Show sign-out button
-								return `
-									<button id="sign-out-button-${guest.id}"
-										class="${baseButtonClasses} ${isButtonDisabled ? disabledClasses : signOutEnabledClasses}"
-										data-visit-id="${guest.visit_id}"
-										${isButtonDisabled ? 'disabled' : ''}>
-										Sign Out
-									</button>
-								`;
-							}
-						}
-
-						// Default (fallback)
-						return '';
-					};
-
 					// Build row
 					const newRow = `
-						<tr>
-							<td class="px-5 py-4 sm:px-6">
-								<p class="text-gray-500 text-theme-sm dark:text-gray-400">
-									${$('tbody tr').length + 1}
-								</p>
-							</td>
-							<td class="px-5 py-4 sm:px-6">
-								<div class="flex items-center">
-									<p class="text-gray-800 text-theme-sm dark:text-white/90">
-										${guest.first_name || 'N/A'}
-									</p>
-								</div>
-							</td>
-							<td class="px-5 py-4 sm:px-6">
-								<div class="flex items-center">
-									<p class="text-gray-800 text-theme-sm dark:text-white/90">
-										${guest.last_name || 'N/A'}
-									</p>
-								</div>
-							</td>                    
-							<td class="px-5 py-4 sm:px-6">
-								<div class="flex items-center">
-									<span class="px-2 py-1 text-xs font-medium rounded-full ${statusClasses[guest.status] || ''}">
-										${guest.status ? guest.status.charAt(0).toUpperCase() + guest.status.slice(1) : 'N/A'}
-									</span>
-								</div>
-							</td>
-							<td class="px-5 py-4 sm:px-6">
-								<div class="flex items-center">
-									<p class="text-gray-500 text-theme-sm dark:text-gray-400">
-										${guest.id_number || 'N/A'}
-									</p>
-								</div>
-							</td>
-							<td class="px-5 py-4 sm:px-6">
-								<div class="flex items-center">
-									<p class="text-gray-500 text-theme-sm dark:text-gray-400">
-										${hostName}
-									</p>
-								</div>
-							</td>
-							<td class="px-5 py-4 sm:px-6">
-								<div class="flex items-center">
-									<p class="text-gray-500 text-theme-sm dark:text-gray-400">
-										${formattedDate}
-									</p>
-								</div>
-							</td>
-							<td class="px-5 py-4 sm:px-6">
-								<div class="flex items-center gap-2">                            
-									<button id="edit-guest-button-${guest.id}"
-										class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 transition bg-white border border-gray-300 rounded-lg cursor-pointer whitespace-nowrap dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
-										Edit
-									</button>
-									${actionButtons()}
-								</div>
-							</td>
-						</tr>
-						`;
+                    <tr>
+                        <td class="px-5 py-4 sm:px-6"><p class="text-gray-500 text-theme-sm dark:text-gray-400">${$('tbody tr').length + 1}</p></td>
+                        <td class="px-5 py-4 sm:px-6"><p class="text-gray-800 text-theme-sm dark:text-white/90">${guest.first_name || 'N/A'}</p></td>
+                        <td class="px-5 py-4 sm:px-6"><p class="text-gray-800 text-theme-sm dark:text-white/90">${guest.last_name || 'N/A'}</p></td>
+                        <td class="px-5 py-4 sm:px-6"><span class="px-2 py-1 text-xs font-medium rounded-full ${statusClasses[guest.status] || ''}">${guest.status ? guest.status.charAt(0).toUpperCase() + guest.status.slice(1) : 'N/A'}</span></td>
+                        <td class="px-5 py-4 sm:px-6"><p class="text-gray-500 text-theme-sm dark:text-gray-400">${guest.id_number || 'N/A'}</p></td>
+                        <td class="px-5 py-4 sm:px-6"><p class="text-gray-500 text-theme-sm dark:text-gray-400">${hostName}</p></td>
+                        <td class="px-5 py-4 sm:px-6"><p class="text-gray-500 text-theme-sm dark:text-gray-400">${formattedDate}</p></td>
+                        <td class="px-5 py-4 sm:px-6">
+                            <div class="flex items-center gap-2">
+                                <button id="edit-guest-button-${guest.id}" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 transition bg-white border border-gray-300 rounded-lg cursor-pointer whitespace-nowrap dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">Edit</button>
+                                ${actionButtons(guest)}
+                            </div>
+                        </td>
+                    </tr>
+                `;
 
 					// Remove "no guests" row
-					if ($('#no-guests-row').length) {
-						$('#no-guests-row').remove();
-					}
+					$('#no-guests-row').remove();
 
 					// Prepend row
 					$('tbody').prepend(newRow);
@@ -436,31 +342,28 @@ jQuery(document).ready(function ($) {
 							.text(index + 1);
 					});
 
-					// Success modal
+					// Show success modal
 					const message =
-						response.data.messages[0] ||
+						response.data.messages?.[0] ||
 						'Guest registered successfully';
 					const successModal = `
-						<div id="success-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
-							<div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
-								<div class="check_mark mx-auto mb-4">
-									<div class="sa-icon sa-success animate">
-										<span class="sa-line sa-tip animateSuccessTip"></span>
-										<span class="sa-line sa-long animateSuccessLong"></span>
-										<div class="sa-placeholder"></div>
-										<div class="sa-fix"></div>
-									</div>
-								</div>
-								<p class="text-lg font-medium text-gray-700 dark:text-white">${message}</p>
-								<button id="ok-success-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 transition">
-									OK
-								</button>
-							</div>
-						</div>
-						`;
+                    <div id="success-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+                        <div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+                            <div class="check_mark mx-auto mb-4">
+                                <div class="sa-icon sa-success animate">
+                                    <span class="sa-line sa-tip animateSuccessTip"></span>
+                                    <span class="sa-line sa-long animateSuccessLong"></span>
+                                    <div class="sa-placeholder"></div>
+                                    <div class="sa-fix"></div>
+                                </div>
+                            </div>
+                            <p class="text-lg font-medium text-gray-700 dark:text-white">${message}</p>
+                            <button id="ok-success-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 transition">OK</button>
+                        </div>
+                    </div>
+                `;
 					$('body').append(successModal);
 
-					// Close modal
 					$(document)
 						.off('click', '#ok-success-btn')
 						.on('click', '#ok-success-btn', function (e) {
@@ -477,8 +380,8 @@ jQuery(document).ready(function ($) {
 							);
 						});
 				} else {
-					// Error modal
-					const errorMessages = response.data.messages || [
+					// Show error modal
+					const errorMessages = response.data?.messages || [
 						'An error occurred during guest registration',
 					];
 					const errorMessageHtml = errorMessages
@@ -487,26 +390,21 @@ jQuery(document).ready(function ($) {
 								`<p class="text-lg font-medium text-gray-700 dark:text-white">${msg}</p>`
 						)
 						.join('');
-
 					const errorModal = `
-						<div id="guest-error-modal-overlay"
-							class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
-							<div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
-								<div class="check_mark mx-auto mb-4">
-									<div class="sa-icon sa-error animate">
-										<span class="sa-line sa-left animateXLeft"></span>
-										<span class="sa-line sa-right animateXRight"></span>
-										<div class="sa-placeholder"></div>
-									</div>
-								</div>
-								${errorMessageHtml}
-								<button id="ok-error-btn" type="button"
-									class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">
-									OK
-								</button>
-							</div>
-						</div>
-						`;
+                    <div id="guest-error-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+                        <div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+                            <div class="check_mark mx-auto mb-4">
+                                <div class="sa-icon sa-error animate">
+                                    <span class="sa-line sa-left animateXLeft"></span>
+                                    <span class="sa-line sa-right animateXRight"></span>
+                                    <div class="sa-placeholder"></div>
+                                </div>
+                            </div>
+                            ${errorMessageHtml}
+                            <button id="ok-error-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">OK</button>
+                        </div>
+                    </div>
+                `;
 					$('body').append(errorModal);
 					$(document)
 						.off('click', '#ok-error-btn')
@@ -525,26 +423,21 @@ jQuery(document).ready(function ($) {
 				const errorMessage =
 					xhr.responseJSON?.data?.messages?.join('<br>') ||
 					'An error occurred: ' + error;
-
 				const errorModal = `
-					<div id="guest-error-modal-overlay"
-						class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
-						<div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
-							<div class="check_mark mx-auto mb-4">
-								<div class="sa-icon sa-error animate">
-									<span class="sa-line sa-left animateXLeft"></span>
-									<span class="sa-line sa-right animateXRight"></span>
-									<div class="sa-placeholder"></div>
-								</div>
-							</div>
-							<p class="text-lg font-medium text-gray-700 dark:text-white">${errorMessage}</p>
-							<button id="ok-error-btn" type="button"
-								class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">
-								OK
-							</button>
-						</div>
-					</div>
-					`;
+                <div id="guest-error-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+                    <div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+                        <div class="check_mark mx-auto mb-4">
+                            <div class="sa-icon sa-error animate">
+                                <span class="sa-line sa-left animateXLeft"></span>
+                                <span class="sa-line sa-right animateXRight"></span>
+                                <div class="sa-placeholder"></div>
+                            </div>
+                        </div>
+                        <p class="text-lg font-medium text-gray-700 dark:text-white">${errorMessage}</p>
+                        <button id="ok-error-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">OK</button>
+                    </div>
+                </div>
+            `;
 				$('body').append(errorModal);
 				$(document)
 					.off('click', '#ok-error-btn')

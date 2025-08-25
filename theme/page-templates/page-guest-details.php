@@ -112,6 +112,39 @@ if ($total_pages > 0) {
     sort($pages_to_show);
 }
 
+// Handle deleting a guest visit
+if ( isset($_POST['delete_visit']) && isset($_POST['visit_id']) ) {
+    
+    // Verify nonce for security
+    if ( ! isset($_POST['delete_visit_nonce']) || 
+         ! wp_verify_nonce($_POST['delete_visit_nonce'], 'delete_visit_action') ) {
+        wp_die(__('Security check failed. Please try again.', 'vms'));
+    }
+
+    $visit_id = intval($_POST['visit_id']);
+
+    if ( $visit_id > 0 ) {
+        global $wpdb;
+
+        // Delete visit from table
+        $deleted = $wpdb->delete(
+            $guest_visits_table,
+            array( 'id' => $visit_id ),
+            array( '%d' )
+        );
+
+        if ( $deleted ) {
+            // Success message or redirect
+            wp_safe_redirect( add_query_arg('visit_deleted', '1', wp_get_referer()) );
+            exit;
+        } else {
+            wp_die(__('Failed to delete visit. It may not exist.', 'vms'));
+        }
+    } else {
+        wp_die(__('Invalid visit ID.', 'vms'));
+    }
+}
+
 get_header();
 ?>
 
@@ -616,8 +649,8 @@ get_header();
                                                                         <form method="post"
                                                                             onsubmit="return confirm('Are you sure you want to delete this visit?');">
                                                                             <input type="hidden" name="visit_id"
-                                                                                value="<?php echo esc_attr($guest->id); ?>">
-                                                                            <?php wp_nonce_field('delete_visit_action', 'delete_visit_nonce'); ?>
+                                                                                value="<?php echo esc_attr( $visit->visit_id ); ?>">
+                                                                            <?php wp_nonce_field( 'delete_visit_action', 'delete_visit_nonce' ); ?>
                                                                             <button type="submit" name="delete_visit"
                                                                                 class="px-3 py-1 text-xs font-medium text-white bg-red-500 rounded-lg hover:bg-red-600">
                                                                                 <?php esc_html_e( 'Delete', 'vms' ); ?>

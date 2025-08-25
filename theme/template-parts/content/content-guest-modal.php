@@ -116,11 +116,18 @@ defined( 'ABSPATH' ) || exit;
                                 class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800">
                                 <option value=""><?php esc_html_e('Select Host Member', 'vms'); ?></option>
                                 <?php
-                                // Get all members who are either 'member' or 'chairman'
+                                // Get all members who are either 'member' or 'chairman' AND have registration_status = active
                                 $members = get_users(array(
-                                    'role__in' => array('member', 'chairman'),
-                                    'orderby'  => 'display_name',
-                                    'fields'   => array('ID', 'display_name', 'user_email')
+                                    'role__in'   => array('member', 'chairman'),
+                                    'orderby'    => 'display_name',
+                                    'fields'     => array('ID', 'display_name', 'user_email'),
+                                    'meta_query' => array(
+                                        array(
+                                            'key'     => 'registration_status',
+                                            'value'   => 'active',
+                                            'compare' => '='
+                                        )
+                                    )
                                 ));
 
                                 foreach ($members as $member) {
@@ -130,8 +137,8 @@ defined( 'ABSPATH' ) || exit;
                                         . '</option>';
                                 }
                                 ?>
-
                             </select>
+
                         </div>
 
                         <!-- Visit Date -->

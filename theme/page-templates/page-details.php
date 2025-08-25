@@ -59,14 +59,6 @@ if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
             $lawyer_u_success[] = 'Last name updated successfully.';
         }
 
-        // // Update display name if changed
-        // $new_display_name = sanitize_text_field($_POST['display_name']);
-        // if ($new_display_name !== $user_data->display_name) {
-        //     $user_data->display_name = $new_display_name;
-        //     wp_update_user($user_data);
-        //     $lawyer_u_success[] = 'Display name updated successfully.';
-        // }
-
         // Update phone number if changed
         if (isset($_POST['pnumber'])) {
             $new_phone_number = sanitize_text_field($_POST['pnumber']);
@@ -99,7 +91,7 @@ if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
                         $subject = 'Your account is pending approval';
                         $message  = "Hello {$first_name},\n\n";
                         $message .= "Your account status has been changed to *Pending Approval*. Our Managerial team will review it shortly.\n\n";
-                        $message .= "You’ll receive another email once your account is activated.\n\n";
+                        $message .= "You'll receive another email once your account is activated.\n\n";
                         $message .= "Best regards,\nNyeri Club Visitor Management System";
                         break;
 
@@ -151,7 +143,6 @@ if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
             }
         }
 
-
         // Update receive messages preference
         $new_receive_messages = isset($_POST['receive_messages']) ? 'yes' : 'no';
         $current_receive_messages = get_user_meta($user_id, 'receive_messages', true);
@@ -175,7 +166,6 @@ if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
             }
             update_user_meta($user_id, 'receive_emails', $new_receive_emails);
         }
-
 
         // Handle avatar upload
         if (isset($_FILES['profile_picture']) && !empty($_FILES['profile_picture']['name'])) {
@@ -203,7 +193,12 @@ if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
         set_transient('lawyer_u_success_' . get_current_user_id(), $lawyer_u_success, 60);
         set_transient('lawyer_u_error_' . get_current_user_id(), $lawyer_u_error, 60);
 
-        wp_safe_redirect(add_query_arg(['user_id' => $user_id], home_url('/details')));
+        // Preserve per_page when redirecting
+        $redirect_args = ['user_id' => $user_id];
+        if (isset($_GET['per_page'])) {
+            $redirect_args['per_page'] = intval($_GET['per_page']);
+        }
+        wp_safe_redirect(add_query_arg($redirect_args, home_url('/details')));
         exit;
     }
 
@@ -225,7 +220,46 @@ if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
             wp_safe_redirect(home_url('/employees/'));
             exit;
         }
-    }    
+    }
+
+    // Handle visit deletion
+    if (isset($_POST['delete_visit'], $_POST['visit_id'])) {
+        if (!isset($_POST['delete_visit_nonce']) || !wp_verify_nonce($_POST['delete_visit_nonce'], 'delete_visit_action')) {
+            wp_die(__('Security check failed. Please try again.', 'vms'));
+        }
+
+        $visit_id = intval($_POST['visit_id']);
+        if ($visit_id > 0) {
+            global $wpdb;
+            $guest_visits_table = $wpdb->prefix . 'vms_guest_visits';
+
+            $deleted = $wpdb->delete(
+                $guest_visits_table,
+                ['id' => $visit_id],
+                ['%d']
+            );
+
+            if ($deleted) {
+                // Set success message
+                $delete_success = ['Visit deleted successfully'];
+                set_transient('visit_delete_success_' . get_current_user_id(), $delete_success, 60);
+            } else {
+                $delete_error = ['Failed to delete visit. It may not exist.'];
+                set_transient('visit_delete_error_' . get_current_user_id(), $delete_error, 60);
+            }
+            
+            // Preserve per_page and paged when redirecting after delete
+            $redirect_args = ['user_id' => $user_id];
+            if (isset($_GET['per_page'])) {
+                $redirect_args['per_page'] = intval($_GET['per_page']);
+            }
+            if (isset($_GET['paged'])) {
+                $redirect_args['paged'] = intval($_GET['paged']);
+            }
+            wp_safe_redirect(add_query_arg($redirect_args, home_url('/details')));
+            exit;
+        }
+    }
 
     // Get user data
     $user_data = get_userdata($user_id);
@@ -247,35 +281,22 @@ if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
     delete_transient('lawyer_d_error_' . get_current_user_id());
 }
 
-$guests = VMS_CoreManager::get_guests_by_host($user_id);
+// Get pagination params - per_page now supports 10, 25, or 50
+$valid_per_page = [10, 25, 50];
+$per_page = isset($_GET['per_page']) && in_array(intval($_GET['per_page']), $valid_per_page) ? intval($_GET['per_page']) : 10;
+$paged = isset($_GET['paged']) ? max(1, intval($_GET['paged'])) : 1;
+$offset = ($paged - 1) * $per_page;
 
-// Get pagination params
-$paged     = isset($_GET['paged']) ? max(1, intval($_GET['paged'])) : 1;
-$per_page  = isset($_GET['per_page']) ? intval($_GET['per_page']) : 10;
-$offset    = ($paged - 1) * $per_page;
-
-// Count total visits for this member
-global $wpdb;
-$total_visits = (int) $wpdb->get_var($wpdb->prepare(
-    "SELECT COUNT(*) FROM {$wpdb->prefix}vms_visits WHERE member_id = %d",
-    $member_id
-));
-
+// Get total visits count and paginated visits
+$total_visits = VMS_CoreManager::count_guest_visits($user_id);
 $total_pages = ceil($total_visits / $per_page);
-
-// Fetch paginated visits
-$member_visits = $wpdb->get_results($wpdb->prepare(
-    "SELECT * FROM {$wpdb->prefix}vms_visits WHERE member_id = %d ORDER BY visit_date DESC LIMIT %d OFFSET %d",
-    $member_id,
-    $per_page,
-    $offset
-));
+$guests = VMS_CoreManager::get_paginated_guest_visits($user_id, $per_page, $offset);
 
 // Calculate row numbers for display
 $current_start = $total_visits > 0 ? ($paged - 1) * $per_page + 1 : 0;
 $row_number = $current_start;
 
-// Build compact pagination array (1, ..., current-1, current, current+1, ..., last)
+// Build compact pagination array
 $pages_to_show = [];
 if ($total_pages > 0) {
     $pages_to_show = [1];
@@ -295,26 +316,24 @@ if ($total_pages > 0) {
     sort($pages_to_show);
 }
 
-if (isset($_POST['delete_visit']) && isset($_POST['visit_id'])) {
-    if (check_admin_referer('delete_visit_action', 'delete_visit_nonce')) {
-        $visit_id = intval($_POST['visit_id']);
-        global $wpdb;
-        $wpdb->delete("{$wpdb->prefix}vms_visits", ['id' => $visit_id], ['%d']);
-        wp_safe_redirect(remove_query_arg('paged')); // reload without pagination param
-        exit;
-    }
-}
+// Get delete messages from transients
+$delete_success = get_transient('visit_delete_success_' . get_current_user_id()) ?: [];
+$delete_error = get_transient('visit_delete_error_' . get_current_user_id()) ?: [];
+
+// Clear the transients after getting them
+delete_transient('visit_delete_success_' . get_current_user_id());
+delete_transient('visit_delete_error_' . get_current_user_id());
 
 $page_name = 'Employee-Details'; // default
-if ($user_data && in_array('member', (array) $user_data->roles, true)) {
+if ($user_data && array_intersect(['member', 'chairman'], (array) $user_data->roles)) {
     $page_name = 'Member-Details';
 }
 
 get_header();
 ?>
 
-<section id="primary" x-data="{ page: 'details', 'isVisitInfoModal': false}"
-    @close-guest-modal.window="isVisitInfoModal = false">
+<section id="primary" x-data="{ page: 'details', 'isGuestInfoModal': false}"
+    @close-guest-modal.window="isGuestInfoModal = false">
     <main id="main">
         <!-- ===== Page Wrapper Start ===== -->
         <div class="flex h-screen overflow-hidden">
@@ -526,7 +545,7 @@ get_header();
                                                             class="block text-gray-700 dark:text-gray-300">
                                                             <?php esc_html_e( 'Phone Number:', 'vms' ); ?>
                                                         </label>
-                                                        <input type="number"
+                                                        <input type="tel"
                                                             class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
                                                             id="number"
                                                             value="<?php echo esc_attr($user_phone_number); ?>"
@@ -657,15 +676,39 @@ get_header();
                                             class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
                                             <div class="flex items-center justify-between px-5 py-4 sm:px-6 sm:py-5">
                                                 <h3 class="text-base font-medium text-gray-800 dark:text-white/90">
-                                                    <?php esc_html_e('Invited Guests', 'vms'); ?>
+                                                    <?php esc_html_e('Guest Visits', 'vms'); ?>
                                                 </h3>
+                                                <?php
+                                                $registration_status = get_user_meta($user_id, 'registration_status', true);
+                                                $is_active = ($registration_status === 'active');
+                                                ?>
                                                 <div class="flex items-center justify-end w-full md:w-1/2">
-                                                    <a @click="isVisitInfoModal = true"
-                                                        class="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg cursor-pointer bg-brand-500 shadow-theme-xs hover:bg-brand-600">
+                                                    <a <?php if ($is_active) : ?> @click="isGuestInfoModal = true"
+                                                        <?php endif; ?>
+                                                        class="cursor-pointer inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg shadow-theme-xs bg-brand-500 hover:bg-brand-600 <?php echo $is_active ? '' : 'opacity-50 cursor-not-allowed hover:bg-brand-500'; ?>">
                                                         <?php esc_html_e('Register New Visit', 'vms'); ?>
                                                     </a>
                                                 </div>
                                             </div>
+
+                                            <!-- Display delete messages -->
+                                            <?php if (!empty($delete_success)): ?>
+                                            <div
+                                                class="mb-4 mx-5 rounded-lg bg-success-50 p-4 text-success-800 dark:bg-success-500/15 dark:text-success-400">
+                                                <?php foreach ($delete_success as $message): ?>
+                                                <p><?php echo esc_html($message); ?></p>
+                                                <?php endforeach; ?>
+                                            </div>
+                                            <?php endif; ?>
+
+                                            <?php if (!empty($delete_error)): ?>
+                                            <div
+                                                class="mb-4 mx-5 rounded-lg bg-error-50 p-4 text-error-800 dark:bg-error-500/15 dark:text-error-400">
+                                                <?php foreach ($delete_error as $message): ?>
+                                                <p><?php echo esc_html($message); ?></p>
+                                                <?php endforeach; ?>
+                                            </div>
+                                            <?php endif; ?>
 
                                             <div class="border-t border-gray-100 p-5 dark:border-gray-800 sm:p-6">
                                                 <div
@@ -679,13 +722,13 @@ get_header();
                                                             <div class="relative z-20 bg-transparent">
                                                                 <select
                                                                     class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-9 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none py-2 pr-8 pl-3 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
-                                                                    onchange="window.location.href = '<?php echo VMS_CoreManager::build_per_page_url(''); ?>' + this.value">
+                                                                    onchange="window.location.href = '<?php echo esc_url(add_query_arg(['user_id' => $user_id, 'per_page' => ''], remove_query_arg(['paged'], $_SERVER['REQUEST_URI']))); ?>' + this.value">
                                                                     <option value="10"
                                                                         <?php selected($per_page, 10); ?>>10</option>
-                                                                    <option value="8" <?php selected($per_page, 8); ?>>8
-                                                                    </option>
-                                                                    <option value="5" <?php selected($per_page, 5); ?>>5
-                                                                    </option>
+                                                                    <option value="25"
+                                                                        <?php selected($per_page, 25); ?>>25</option>
+                                                                    <option value="50"
+                                                                        <?php selected($per_page, 50); ?>>50</option>
                                                                 </select>
                                                                 <span
                                                                     class="absolute top-1/2 right-2 z-30 -translate-y-1/2 text-gray-500 dark:text-gray-400">
@@ -712,7 +755,6 @@ get_header();
                                                             <!-- Table Header -->
                                                             <div id="guests-header"
                                                                 class="grid grid-cols-12 border-t border-gray-200 dark:border-gray-800">
-                                                                <!-- # -->
                                                                 <div
                                                                     class="col-span-1 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
                                                                     <p
@@ -749,7 +791,8 @@ get_header();
                                                                         class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
                                                                         Duration</p>
                                                                 </div>
-                                                                <div class="col-span-2 flex items-center px-4 py-3">
+                                                                <div
+                                                                    class="col-span-2 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
                                                                     <p
                                                                         class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
                                                                         Status</p>
@@ -765,7 +808,7 @@ get_header();
                                                             <div id="guests-body">
                                                                 <?php if (!empty($guests)): ?>
                                                                 <?php foreach ($guests as $guest): ?>
-                                                                <div id="guest-div-<?php echo esc_attr($guest->id); ?>"
+                                                                <div id="guest-div-<?php echo esc_attr($guest->visit_id); ?>"
                                                                     class="grid grid-cols-12 border-t border-gray-100 dark:border-gray-800">
                                                                     <!-- Row Number -->
                                                                     <div
@@ -775,12 +818,13 @@ get_header();
                                                                             <?php echo esc_html($row_number++); ?>
                                                                         </p>
                                                                     </div>
+
                                                                     <!-- Guest Name -->
                                                                     <div
                                                                         class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
                                                                         <p
                                                                             class="text-theme-sm text-gray-700 dark:text-gray-400">
-                                                                            <?php echo esc_html($guest->first_name . ' ' . $guest->last_name); ?>
+                                                                            <?php echo esc_html(($guest->first_name ?: 'N/A') . ' ' . ($guest->last_name ?: '')); ?>
                                                                         </p>
                                                                     </div>
 
@@ -821,11 +865,12 @@ get_header();
                                                                     </div>
 
                                                                     <!-- Status -->
-                                                                    <div class="col-span-2 flex items-center px-4 py-3">
+                                                                    <div
+                                                                        class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
                                                                         <?php
                                                                         $status = VMS_CoreManager::get_visit_status($guest->visit_date, $guest->sign_in_time, $guest->sign_out_time);
                                                                         $status_class = VMS_CoreManager::get_status_class($status);
-                                                                        $status_text  = VMS_CoreManager::get_status_text($status);
+                                                                        $status_text = VMS_CoreManager::get_status_text($status);
                                                                         ?>
                                                                         <span
                                                                             class="<?php echo esc_attr($status_class); ?> inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-sm font-medium">
@@ -838,11 +883,11 @@ get_header();
                                                                         <form method="post"
                                                                             onsubmit="return confirm('Are you sure you want to delete this visit?');">
                                                                             <input type="hidden" name="visit_id"
-                                                                                value="<?php echo esc_attr($guest->id); ?>">
+                                                                                value="<?php echo esc_attr($guest->visit_id); ?>">
                                                                             <?php wp_nonce_field('delete_visit_action', 'delete_visit_nonce'); ?>
                                                                             <button type="submit" name="delete_visit"
-                                                                                class="px-3 py-1 text-xs font-medium text-white bg-red-500 rounded-lg hover:bg-red-600">
-                                                                                Delete
+                                                                                class="px-3 py-1 text-xs font-medium text-white bg-red-500 rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-colors">
+                                                                                <?php esc_html_e('Delete', 'vms'); ?>
                                                                             </button>
                                                                         </form>
                                                                     </div>
@@ -851,8 +896,8 @@ get_header();
                                                                 <?php else: ?>
                                                                 <div id="no-guests-div"
                                                                     class="border-t border-gray-100 px-4 py-8 text-center dark:border-gray-800">
-                                                                    <p class="text-gray-500 dark:text-gray-400">No
-                                                                        guests found</p>
+                                                                    <p class="text-gray-500 dark:text-gray-400">No guest
+                                                                        visits found</p>
                                                                 </div>
                                                                 <?php endif; ?>
                                                             </div>
@@ -865,7 +910,7 @@ get_header();
                                                         class="flex items-center justify-between gap-8 px-6 py-4 sm:justify-normal">
                                                         <!-- Previous Button -->
                                                         <?php if ($paged > 1): ?>
-                                                        <a href="<?php echo esc_url(VMS_CoreManager::build_pagination_url($paged - 1)); ?>"
+                                                        <a href="<?php echo esc_url(add_query_arg(['user_id' => $user_id, 'paged' => $paged - 1, 'per_page' => $per_page], remove_query_arg(['paged'], $_SERVER['REQUEST_URI']))); ?>"
                                                             class="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 sm:px-3.5 sm:py-2.5">
                                                             <svg class="fill-current" width="20" height="20"
                                                                 viewBox="0 0 20 20" fill="none"
@@ -918,7 +963,7 @@ get_header();
                                                                     <?php echo esc_html($page_num); ?>
                                                                 </span>
                                                                 <?php else: ?>
-                                                                <a href="<?php echo esc_url(VMS_CoreManager::build_pagination_url($page_num)); ?>"
+                                                                <a href="<?php echo esc_url(add_query_arg(['user_id' => $user_id, 'paged' => $page_num, 'per_page' => $per_page], remove_query_arg(['paged'], $_SERVER['REQUEST_URI']))); ?>"
                                                                     class="flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium text-gray-700 hover:bg-brand-500 hover:text-white dark:text-gray-400 dark:hover:text-white">
                                                                     <?php echo esc_html($page_num); ?>
                                                                 </a>
@@ -929,7 +974,7 @@ get_header();
 
                                                         <!-- Next Button -->
                                                         <?php if ($paged < $total_pages): ?>
-                                                        <a href="<?php echo esc_url(VMS_CoreManager::build_pagination_url($paged + 1)); ?>"
+                                                        <a href="<?php echo esc_url(add_query_arg(['user_id' => $user_id, 'paged' => $paged + 1, 'per_page' => $per_page], remove_query_arg(['paged'], $_SERVER['REQUEST_URI']))); ?>"
                                                             class="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 sm:px-3.5 sm:py-2.5">
                                                             <span class="hidden sm:inline">Next</span>
                                                             <svg class="fill-current" width="20" height="20"
@@ -971,14 +1016,13 @@ get_header();
                                         </div>
                                     </div>
                                     <!-- End of Guests Section -->
-
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- BEGIN MODAL -->
-                    <?php get_template_part( 'template-parts/content/content', 'visit-modal' ); ?>
+                    <?php get_template_part( 'template-parts/content/content', 'guest-modal' ); ?>
                     <!-- END MODAL -->
 
                     <!-- Footer -->
