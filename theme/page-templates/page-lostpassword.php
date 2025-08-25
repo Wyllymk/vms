@@ -39,7 +39,7 @@ if ( isset( $_POST['lostpassword'] ) ) {
             <!-- Form -->
             <div class="flex flex-col flex-1 w-full lg:w-1/2">
                 <div class="w-full max-w-md pt-10 mx-auto">
-                    <a href="<?php echo esc_url( site_url( '/dashboard/' ) ); ?>"
+                    <a href="<?php echo esc_url( site_url( '/dashboard' ) ); ?>"
                         class="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
                         <svg class="stroke-current" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
                             viewBox="0 0 20 20" fill="none">
@@ -123,7 +123,7 @@ if ( isset( $_POST['lostpassword'] ) ) {
                                 <p
                                     class="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
                                     <?php esc_html_e( ' Already have an account?', 'vms' ); ?>
-                                    <a href="<?php echo esc_url( site_url( '/login/' ) ); ?>"
+                                    <a href="<?php echo esc_url( site_url( '/login' ) ); ?>"
                                         class="text-brand-500 hover:text-brand-600 dark:text-brand-400">
                                         <?php esc_html_e( 'Sign In', 'vms' ); ?>
                                     </a>
@@ -138,17 +138,21 @@ if ( isset( $_POST['lostpassword'] ) ) {
                 <div class="flex items-center justify-center z-1">
                     <!-- ===== Common Grid Shape Start ===== -->
                     <?php get_template_part( 'template-parts/content/content', 'grid' ); ?>
-                    <div class="flex flex-col items-center max-w-xs">
+                    <div class="flex flex-col items-center max-w-sm">
                         <a href="<?php echo esc_url( site_url(  ) ); ?>" class="block mb-4">
-                            <img src="<?php echo get_template_directory_uri(); ?>/assets/images/logo/logo-white.png"
+                            <img src="<?php echo get_template_directory_uri(); ?>/assets/images/logo/logo.png"
                                 alt="Logo" />
                         </a>
-                        <p class="text-center text-gray-400 dark:text-white/60">
-                            <?php esc_html_e( 'Free and Open-Source Tailwind CSS Admin Dashboard Template', 'vms' ); ?>
+                        <h2 class="text-center text-2xl font-bold font-oswald text-gray-300 dark:text-gray-100 mb-2">
+                            <?php esc_html_e( 'Nyeri Club Visitor Management System', 'vms' ); ?>
+                        </h2>
+                        <p class="text-center text-gray-500 dark:text-white/60">
+                            <?php esc_html_e( 'Secure access to manage visitors, members, and reciprocating members — anytime, anywhere.', 'vms' ); ?>
                         </p>
                     </div>
                 </div>
             </div>
+
             <!-- Toggler -->
             <div class="fixed z-50 hidden bottom-6 right-6 sm:block">
                 <button

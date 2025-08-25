@@ -14,6 +14,16 @@ $user_id      = $current_user->ID;
 $user_data    = get_userdata( $user_id );
 $user_avatar  = get_avatar_url( $user_id );
 
+// Get first and last name
+$first_name = get_user_meta( $user_id, 'first_name', true );
+$last_name  = get_user_meta( $user_id, 'last_name', true );
+
+// Or fallback to display_name if empty
+$full_name = trim( $first_name . ' ' . $last_name );
+if ( empty( $full_name ) ) {
+    $full_name = $user_data->display_name;
+}
+
 ?>
 
 <header x-data="{menuToggle: false}"
@@ -404,7 +414,7 @@ $user_avatar  = get_avatar_url( $user_id );
                     </span>
 
                     <span class="block mr-1 font-medium text-theme-sm">
-                        <?php echo ucwords( esc_html( $current_user->display_name ) ); ?>
+                        <?php echo ucwords( esc_html( $full_name ) ); ?>
                     </span>
 
                     <svg :class="dropdownOpen && 'rotate-180'" class="stroke-gray-500 dark:stroke-gray-400" width="18"
@@ -419,16 +429,7 @@ $user_avatar  = get_avatar_url( $user_id );
                     class="shadow-theme-lg dark:bg-gray-dark absolute right-0 mt-[17px] flex w-[260px] flex-col rounded-2xl border border-gray-200 bg-white p-3 dark:border-gray-800">
                     <div>
                         <span class="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
-                            <?php 
-                            $first_name = esc_html( $current_user->first_name );
-                            $last_name = esc_html( $current_user->last_name );
-                            
-                            if ( ! empty( $first_name ) || ! empty( $last_name ) ) {
-                                echo ucwords( trim( $first_name . ' ' . $last_name ) );
-                            } else {
-                                echo ucwords( esc_html( $current_user->display_name ) );
-                            }
-                            ?>
+                            <?php echo esc_html( $full_name ); ?>
                         </span>
                         <span class="text-theme-xs mt-0.5 block text-gray-500 dark:text-gray-400">
                             <?php echo esc_html( $current_user->user_email ); ?>

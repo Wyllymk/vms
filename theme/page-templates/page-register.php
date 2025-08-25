@@ -81,7 +81,7 @@ if ( isset( $_POST['signup'] ) ) {
 			$message .= "Please note that your account is pending approval by our Managerial team. Once approved, you will receive an email notification confirming that you can log in and access your account.\n\n";
 			$message .= "Thank you for your patience, and welcome aboard!\n\n";
 			$message .= "Best regards,\n";
-			$message .= 'The Team';
+			$message .= 'Nyeri Club Visitor Management System';
 
 			wp_mail( $to, $subject, $message );
 

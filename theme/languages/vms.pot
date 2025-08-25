@@ -9,13 +9,14 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-08-14T13:06:59+00:00\n"
+"POT-Creation-Date: 2025-08-25T13:01:16+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.11.0\n"
-"X-Domain: clubvms\n"
+"X-Domain: vms\n"
 
 #. Theme Name of the theme
 #: theme
+#: theme/front-page.php:37
 msgid "Visitor Management System"
 msgstr ""
 
@@ -37,4 +38,661 @@ msgstr ""
 #. Author URI of the theme
 #: theme
 msgid "https://wilsondevops.com/"
+msgstr ""
+
+#: theme/404.php:33
+msgid "ERROR"
+msgstr ""
+
+#: theme/404.php:41
+msgid "We can't seem to find the page you are looking for!"
+msgstr ""
+
+#: theme/404.php:46
+msgid "Back to Home Page"
+msgstr ""
+
+#: theme/404.php:72
+#: theme/template-parts/content/content-sidebar.php:24
+msgid "Nyeri Club"
+msgstr ""
+
+#. translators: 1: title.
+#: theme/comments.php:36
+msgid "One comment on &ldquo;%1$s&rdquo;"
+msgstr ""
+
+#. translators: 1: comment count number, 2: title.
+#: theme/comments.php:44
+msgctxt "comments title"
+msgid "%1$s comment on &ldquo;%2$s&rdquo;"
+msgid_plural "%1$s comments on &ldquo;%2$s&rdquo;"
+msgstr[0] ""
+msgstr[1] ""
+
+#: theme/comments.php:74
+msgid "Comments are closed."
+msgstr ""
+
+#: theme/front-page.php:33
+msgid "Welcome to Nyeri Club"
+msgstr ""
+
+#: theme/front-page.php:41
+msgid "A secure and streamlined platform for managing club visitors, members, and reciprocating members — all in one place."
+msgstr ""
+
+#: theme/front-page.php:53
+msgid "Login"
+msgstr ""
+
+#: theme/front-page.php:64
+#: theme/template-parts/content/content-sidebar.php:68
+msgid "Dashboard"
+msgstr ""
+
+#: theme/header.php:46
+msgid "Skip to content"
+msgstr ""
+
+#: theme/inc/template-functions.php:42
+msgid "Category Archives: "
+msgstr ""
+
+#: theme/inc/template-functions.php:44
+msgid "Tag Archives: "
+msgstr ""
+
+#: theme/inc/template-functions.php:46
+msgid "Author Archives: "
+msgstr ""
+
+#: theme/inc/template-functions.php:48
+msgid "Yearly Archives: "
+msgstr ""
+
+#: theme/inc/template-functions.php:48
+msgctxt "yearly archives date format"
+msgid "Y"
+msgstr ""
+
+#: theme/inc/template-functions.php:50
+msgid "Monthly Archives: "
+msgstr ""
+
+#: theme/inc/template-functions.php:50
+msgctxt "monthly archives date format"
+msgid "F Y"
+msgstr ""
+
+#: theme/inc/template-functions.php:52
+msgid "Daily Archives: "
+msgstr ""
+
+#. translators: %s: Post type singular name
+#. translators: %s: Taxonomy singular name
+#: theme/inc/template-functions.php:57
+#: theme/inc/template-functions.php:64
+msgid "%s Archives"
+msgstr ""
+
+#: theme/inc/template-functions.php:68
+msgid "Archives:"
+msgstr ""
+
+#. translators: %s: Name of current post.
+#: theme/inc/template-functions.php:98
+msgid "Continue reading %s"
+msgstr ""
+
+#: theme/inc/template-functions.php:132
+msgid "Your comment is awaiting moderation."
+msgstr ""
+
+#: theme/inc/template-functions.php:134
+msgid "Your comment is awaiting moderation. This is a preview; your comment will be visible after it has been approved."
+msgstr ""
+
+#. translators: %s: Comment author link.
+#: theme/inc/template-functions.php:156
+msgid "%s <span class=\"says\">says:</span>"
+msgstr ""
+
+#. translators: 1: Comment date, 2: Comment time.
+#: theme/inc/template-functions.php:171
+msgid "%1$s at %2$s"
+msgstr ""
+
+#: theme/inc/template-functions.php:178
+#: theme/page-templates/page-profile.php:282
+#: theme/template-parts/content/content-guests-table.php:200
+#: theme/template-parts/content/content-table.php:228
+msgid "Edit"
+msgstr ""
+
+#: theme/inc/template-tags.php:46
+msgid "Posted by"
+msgstr ""
+
+#. translators: %s: Name of current post. Only visible to screen readers.
+#: theme/inc/template-tags.php:60
+msgid "Leave a comment<span class=\"sr-only\"> on %s</span>"
+msgstr ""
+
+#. translators: used between list items, there is a space after the comma.
+#: theme/inc/template-tags.php:82
+#: theme/inc/template-tags.php:93
+#: theme/inc/template-tags.php:143
+#: theme/inc/template-tags.php:154
+msgid ", "
+msgstr ""
+
+#: theme/inc/template-tags.php:87
+#: theme/inc/template-tags.php:148
+msgid "Posted in"
+msgstr ""
+
+#: theme/inc/template-tags.php:98
+#: theme/inc/template-tags.php:159
+msgid "Tags:"
+msgstr ""
+
+#. translators: %s: Name of current post. Only visible to screen readers.
+#: theme/inc/template-tags.php:114
+#: theme/inc/template-tags.php:175
+#: theme/template-parts/content/content-page.php:48
+msgid "Edit <span class=\"sr-only\">%s</span>"
+msgstr ""
+
+#: theme/inc/template-tags.php:266
+msgid "Newer posts"
+msgstr ""
+
+#: theme/inc/template-tags.php:267
+msgid "Older posts"
+msgstr ""
+
+#: theme/page-templates/page-employee-details.php:306
+#: theme/page-templates/page-profile.php:167
+#: theme/template-parts/content/content-guest-modal.php:43
+#: theme/template-parts/content/content-info-modal.php:52
+#: theme/template-parts/content/content-visit-modal.php:43
+msgid "Personal Information"
+msgstr ""
+
+#: theme/page-templates/page-employee-details.php:409
+msgid "User Name:"
+msgstr ""
+
+#: theme/page-templates/page-employee-details.php:417
+msgid "Usernames cannot be changed."
+msgstr ""
+
+#: theme/page-templates/page-employee-details.php:424
+msgid "Email (required):"
+msgstr ""
+
+#: theme/page-templates/page-employee-details.php:433
+msgid "If you change this, an email will be sent to confirm it."
+msgstr ""
+
+#: theme/page-templates/page-employee-details.php:440
+msgid "First Name:"
+msgstr ""
+
+#: theme/page-templates/page-employee-details.php:453
+msgid "Last Name:"
+msgstr ""
+
+#: theme/page-templates/page-employee-details.php:466
+#: theme/page-templates/page-register.php:199
+msgid "Member Number"
+msgstr ""
+
+#: theme/page-templates/page-employee-details.php:479
+msgid "Phone Number:"
+msgstr ""
+
+#: theme/page-templates/page-employee-details.php:492
+msgid "Account Status:"
+msgstr ""
+
+#: theme/page-templates/page-employee-details.php:551
+msgid "Receive Communication Messages?"
+msgstr ""
+
+#: theme/page-templates/page-employee-details.php:567
+msgid "Receive Communication Emails?"
+msgstr ""
+
+#: theme/page-templates/page-employee-details.php:589
+msgid "Update Details"
+msgstr ""
+
+#: theme/page-templates/page-employee-details.php:593
+#: theme/template-parts/content/content-guest-modal.php:175
+#: theme/template-parts/content/content-visit-modal.php:93
+msgid "Reset"
+msgstr ""
+
+#: theme/page-templates/page-employee-details.php:598
+msgid "Delete Account"
+msgstr ""
+
+#: theme/page-templates/page-employee-details.php:612
+msgid "Invited Guests"
+msgstr ""
+
+#: theme/page-templates/page-employee-details.php:617
+#: theme/page-templates/page-guest-details.php:406
+msgid "Register New Visit"
+msgstr ""
+
+#: theme/page-templates/page-employees.php:53
+msgid "Employees List"
+msgstr ""
+
+#: theme/page-templates/page-employees.php:86
+#: theme/page-templates/page-members.php:86
+msgid "Register"
+msgstr ""
+
+#: theme/page-templates/page-guest-details.php:400
+msgid "Guest Visits -"
+msgstr ""
+
+#: theme/page-templates/page-guests.php:52
+msgid "Guests List"
+msgstr ""
+
+#: theme/page-templates/page-guests.php:84
+#: theme/template-parts/content/content-guest-modal.php:30
+msgid "Register Guest"
+msgstr ""
+
+#: theme/page-templates/page-guests.php:100
+#: theme/page-templates/page-profile.php:84
+#: theme/page-templates/page-register.php:133
+msgid "Success!"
+msgstr ""
+
+#: theme/page-templates/page-guests.php:106
+#: theme/page-templates/page-guests.php:134
+#: theme/template-parts/content/content-info-modal.php:124
+msgid "Close"
+msgstr ""
+
+#: theme/page-templates/page-guests.php:128
+msgid "Error!"
+msgstr ""
+
+#: theme/page-templates/page-login.php:59
+#: theme/page-templates/page-lostpassword.php:49
+#: theme/page-templates/page-register.php:110
+msgid "Back to dashboard"
+msgstr ""
+
+#: theme/page-templates/page-login.php:69
+#: theme/page-templates/page-profile.php:109
+#: theme/page-templates/page-register.php:119
+msgid "Warning!"
+msgstr ""
+
+#: theme/page-templates/page-login.php:82
+#: theme/page-templates/page-login.php:164
+#: theme/page-templates/page-lostpassword.php:128
+#: theme/page-templates/page-register.php:297
+#: theme/template-parts/content/content-guests-table.php:244
+#: theme/template-parts/content/content-table.php:272
+msgid "Sign In"
+msgstr ""
+
+#: theme/page-templates/page-login.php:85
+msgid "Enter your email and password to sign in!"
+msgstr ""
+
+#: theme/page-templates/page-login.php:95
+#: theme/page-templates/page-lostpassword.php:105
+msgid "Email/ Username"
+msgstr ""
+
+#: theme/page-templates/page-login.php:106
+#: theme/page-templates/page-register.php:224
+msgid "Password"
+msgstr ""
+
+#: theme/page-templates/page-login.php:152
+msgid "Keep me logged in"
+msgstr ""
+
+#: theme/page-templates/page-login.php:157
+msgid "Forgot password?"
+msgstr ""
+
+#: theme/page-templates/page-login.php:172
+msgid "Don't have an account?"
+msgstr ""
+
+#: theme/page-templates/page-login.php:175
+#: theme/page-templates/page-register.php:143
+#: theme/page-templates/page-register.php:286
+msgid "Sign Up"
+msgstr ""
+
+#: theme/page-templates/page-login.php:194
+#: theme/page-templates/page-register.php:314
+msgid "Nyeri Club Visitor Management System"
+msgstr ""
+
+#: theme/page-templates/page-login.php:197
+#: theme/page-templates/page-register.php:317
+msgid "Secure access to manage visitors, members, and reciprocating members — anytime, anywhere."
+msgstr ""
+
+#: theme/page-templates/page-lostpassword.php:92
+msgid "Password Reset"
+msgstr ""
+
+#: theme/page-templates/page-lostpassword.php:95
+msgid "Enter your username or email address and we'll send you a link to reset your password."
+msgstr ""
+
+#: theme/page-templates/page-lostpassword.php:117
+msgid "Reset Password"
+msgstr ""
+
+#: theme/page-templates/page-lostpassword.php:125
+#: theme/page-templates/page-register.php:294
+msgid " Already have an account?"
+msgstr ""
+
+#: theme/page-templates/page-lostpassword.php:147
+msgid "Free and Open-Source Tailwind CSS Admin Dashboard Template"
+msgstr ""
+
+#: theme/page-templates/page-members.php:53
+msgid "Members List"
+msgstr ""
+
+#: theme/page-templates/page-profile.php:74
+msgid "Profile"
+msgstr ""
+
+#: theme/page-templates/page-profile.php:155
+msgid "No Role Provided"
+msgstr ""
+
+#: theme/page-templates/page-profile.php:173
+#: theme/page-templates/page-register.php:157
+#: theme/template-parts/content/content-employees-table.php:37
+#: theme/template-parts/content/content-guest-modal.php:50
+#: theme/template-parts/content/content-guests-table.php:34
+#: theme/template-parts/content/content-info-modal.php:58
+#: theme/template-parts/content/content-members-table.php:37
+#: theme/template-parts/content/content-table.php:52
+msgid "First Name"
+msgstr ""
+
+#: theme/page-templates/page-profile.php:177
+#: theme/page-templates/page-profile.php:187
+#: theme/page-templates/page-profile.php:197
+#: theme/page-templates/page-profile.php:207
+msgid "Not provided"
+msgstr ""
+
+#: theme/page-templates/page-profile.php:183
+#: theme/page-templates/page-register.php:169
+#: theme/template-parts/content/content-employees-table.php:44
+#: theme/template-parts/content/content-guest-modal.php:62
+#: theme/template-parts/content/content-guests-table.php:41
+#: theme/template-parts/content/content-info-modal.php:67
+#: theme/template-parts/content/content-members-table.php:44
+#: theme/template-parts/content/content-table.php:59
+msgid "Last Name"
+msgstr ""
+
+#: theme/page-templates/page-profile.php:193
+#: theme/template-parts/content/content-guest-modal.php:74
+#: theme/template-parts/content/content-info-modal.php:76
+msgid "Email address"
+msgstr ""
+
+#: theme/page-templates/page-profile.php:203
+#: theme/template-parts/content/content-guest-modal.php:85
+#: theme/template-parts/content/content-info-modal.php:85
+msgid "Phone"
+msgstr ""
+
+#: theme/page-templates/page-profile.php:232
+#: theme/template-parts/content/content-guest-modal.php:154
+#: theme/template-parts/content/content-info-modal.php:105
+msgid "Receive messages"
+msgstr ""
+
+#: theme/page-templates/page-profile.php:257
+#: theme/template-parts/content/content-guest-modal.php:164
+#: theme/template-parts/content/content-info-modal.php:115
+msgid "Receive emails"
+msgstr ""
+
+#: theme/page-templates/page-profile.php:264
+#: theme/template-parts/content/content-info-modal.php:93
+msgid "Bio"
+msgstr ""
+
+#: theme/page-templates/page-profile.php:268
+msgid "No bio provided"
+msgstr ""
+
+#: theme/page-templates/page-register.php:146
+msgid "Enter your details to sign up!"
+msgstr ""
+
+#: theme/page-templates/page-register.php:184
+#: theme/template-parts/content/content-employees-table.php:58
+#: theme/template-parts/content/content-members-table.php:58
+msgid "Phone Number"
+msgstr ""
+
+#: theme/page-templates/page-register.php:214
+#: theme/template-parts/content/content-employees-table.php:51
+#: theme/template-parts/content/content-members-table.php:51
+msgid "Email"
+msgstr ""
+
+#: theme/page-templates/page-register.php:270
+msgid "By creating an account means you agree to the"
+msgstr ""
+
+#: theme/page-templates/page-register.php:272
+msgid "Terms and Conditions,"
+msgstr ""
+
+#: theme/page-templates/page-register.php:274
+msgid "and our"
+msgstr ""
+
+#: theme/page-templates/page-register.php:276
+msgid "Privacy Policy"
+msgstr ""
+
+#: theme/search.php:25
+msgid "Search results for:"
+msgstr ""
+
+#: theme/single.php:28
+msgid "Next Post"
+msgstr ""
+
+#: theme/single.php:29
+msgid "Next post:"
+msgstr ""
+
+#: theme/single.php:31
+msgid "Previous Post"
+msgstr ""
+
+#: theme/single.php:32
+msgid "Previous post:"
+msgstr ""
+
+#: theme/template-parts/content/content-breadcrumb.php:22
+msgid "Home"
+msgstr ""
+
+#: theme/template-parts/content/content-employees-table.php:23
+#: theme/template-parts/content/content-guests-table.php:27
+#: theme/template-parts/content/content-members-table.php:23
+#: theme/template-parts/content/content-table.php:45
+msgid "#"
+msgstr ""
+
+#: theme/template-parts/content/content-employees-table.php:30
+#: theme/template-parts/content/content-members-table.php:30
+msgid "User Name"
+msgstr ""
+
+#: theme/template-parts/content/content-employees-table.php:65
+#: theme/template-parts/content/content-guests-table.php:48
+#: theme/template-parts/content/content-members-table.php:65
+#: theme/template-parts/content/content-table.php:66
+msgid "Status"
+msgstr ""
+
+#: theme/template-parts/content/content-employees-table.php:72
+#: theme/template-parts/content/content-employees-table.php:167
+#: theme/template-parts/content/content-employees-table.php:250
+#: theme/template-parts/content/content-members-table.php:72
+#: theme/template-parts/content/content-members-table.php:181
+#: theme/template-parts/content/content-members-table.php:278
+msgid "View Details"
+msgstr ""
+
+#: theme/template-parts/content/content-guest-modal.php:33
+msgid "Create a Guests Account."
+msgstr ""
+
+#: theme/template-parts/content/content-guest-modal.php:93
+msgid "Format: +254700123456 or 0700123456"
+msgstr ""
+
+#: theme/template-parts/content/content-guest-modal.php:100
+#: theme/template-parts/content/content-guests-table.php:55
+#: theme/template-parts/content/content-table.php:73
+msgid "ID Number"
+msgstr ""
+
+#: theme/template-parts/content/content-guest-modal.php:112
+#: theme/template-parts/content/content-guests-table.php:62
+#: theme/template-parts/content/content-table.php:80
+#: theme/template-parts/content/content-visit-modal.php:50
+msgid "Host Member"
+msgstr ""
+
+#: theme/template-parts/content/content-guest-modal.php:117
+#: theme/template-parts/content/content-visit-modal.php:55
+msgid "Select Host Member"
+msgstr ""
+
+#: theme/template-parts/content/content-guest-modal.php:139
+#: theme/template-parts/content/content-guests-table.php:69
+#: theme/template-parts/content/content-table.php:87
+#: theme/template-parts/content/content-visit-modal.php:77
+msgid "Visit Date"
+msgstr ""
+
+#: theme/template-parts/content/content-guest-modal.php:179
+msgid "Create Guest"
+msgstr ""
+
+#: theme/template-parts/content/content-guests-table.php:76
+#: theme/template-parts/content/content-table.php:94
+msgid "Actions"
+msgstr ""
+
+#: theme/template-parts/content/content-guests-table.php:237
+#: theme/template-parts/content/content-table.php:265
+msgid "Missed"
+msgstr ""
+
+#: theme/template-parts/content/content-guests-table.php:251
+#: theme/template-parts/content/content-table.php:279
+msgid "Sign Out"
+msgstr ""
+
+#: theme/template-parts/content/content-info-modal.php:40
+msgid "Edit Personal Information"
+msgstr ""
+
+#: theme/template-parts/content/content-info-modal.php:43
+msgid "Update your details to keep your profile up-to-date."
+msgstr ""
+
+#: theme/template-parts/content/content-info-modal.php:128
+msgid "Save Changes"
+msgstr ""
+
+#: theme/template-parts/content/content-metric.php:63
+msgid "Total Guests"
+msgstr ""
+
+#: theme/template-parts/content/content-metric.php:87
+#: theme/template-parts/content/content-metric.php:166
+#: theme/template-parts/content/content-metric.php:250
+msgid "Vs last month"
+msgstr ""
+
+#: theme/template-parts/content/content-metric.php:142
+msgid "Reciprocating Members"
+msgstr ""
+
+#: theme/template-parts/content/content-metric.php:226
+#: theme/template-parts/content/content-sidebar.php:106
+msgid "Members"
+msgstr ""
+
+#: theme/template-parts/content/content-page.php:34
+#: theme/template-parts/content/content-single.php:47
+msgid "Pages:"
+msgstr ""
+
+#: theme/template-parts/content/content-sidebar.php:41
+msgid "MENU"
+msgstr ""
+
+#: theme/template-parts/content/content-sidebar.php:88
+msgid "User Profile"
+msgstr ""
+
+#: theme/template-parts/content/content-sidebar.php:128
+msgid "Employees"
+msgstr ""
+
+#: theme/template-parts/content/content-sidebar.php:151
+msgid "Guests"
+msgstr ""
+
+#: theme/template-parts/content/content-sidebar.php:164
+msgid "Support"
+msgstr ""
+
+#: theme/template-parts/content/content-sidebar.php:191
+msgid "Settings"
+msgstr ""
+
+#. translators: %s: Name of current post. Only visible to screen readers.
+#: theme/template-parts/content/content-single.php:34
+msgid "Continue reading<span class=\"sr-only\"> \"%s\"</span>"
+msgstr ""
+
+#: theme/template-parts/content/content-visit-modal.php:30
+msgid "Register Visit"
+msgstr ""
+
+#: theme/template-parts/content/content-visit-modal.php:33
+msgid "Create a New Visit."
+msgstr ""
+
+#: theme/template-parts/content/content-visit-modal.php:97
+msgid "Create Visit"
 msgstr ""

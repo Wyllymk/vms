@@ -59,13 +59,13 @@ if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
             $lawyer_u_success[] = 'Last name updated successfully.';
         }
 
-        // Update display name if changed
-        $new_display_name = sanitize_text_field($_POST['display_name']);
-        if ($new_display_name !== $user_data->display_name) {
-            $user_data->display_name = $new_display_name;
-            wp_update_user($user_data);
-            $lawyer_u_success[] = 'Display name updated successfully.';
-        }
+        // // Update display name if changed
+        // $new_display_name = sanitize_text_field($_POST['display_name']);
+        // if ($new_display_name !== $user_data->display_name) {
+        //     $user_data->display_name = $new_display_name;
+        //     wp_update_user($user_data);
+        //     $lawyer_u_success[] = 'Display name updated successfully.';
+        // }
 
         // Update phone number if changed
         if (isset($_POST['pnumber'])) {
@@ -82,21 +82,57 @@ if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
             $current_registration_status = get_user_meta($user_id, 'registration_status', true);
 
             if ($new_registration_status !== $current_registration_status) {
+
+                // Get user data
+                $user_data  = get_userdata($user_id);
+                $user_email = $user_data->user_email;
+                $user_login = $user_data->user_login;
+                $first_name = get_user_meta($user_id, 'first_name', true);
+
+                $subject = '';
+                $message = '';
+
                 switch ($new_registration_status) {
                     case 'pending':
                         $lawyer_u_success[] = 'This account is now marked as pending.';
+
+                        $subject = 'Your account is pending approval';
+                        $message  = "Hello {$first_name},\n\n";
+                        $message .= "Your account status has been changed to *Pending Approval*. Our Managerial team will review it shortly.\n\n";
+                        $message .= "You’ll receive another email once your account is activated.\n\n";
+                        $message .= "Best regards,\nNyeri Club Visitor Management System";
                         break;
 
                     case 'active':
                         $lawyer_u_success[] = 'This account has been activated and the user can now login successfully.';
+
+                        $subject = 'Your account has been activated';
+                        $message  = "Hello {$first_name},\n\n";
+                        $message .= "Good news! Your account has been activated.\n\n";
+                        $message .= "You can now log in using your username: {$user_login}\n";
+                        $message .= "Login here: " . esc_url( site_url( '/login' )) . "\n\n";
+                        $message .= "Welcome aboard!\n\n";
+                        $message .= "Best regards,\nNyeri Club Visitor Management System";
                         break;
 
                     case 'suspended':
                         $lawyer_u_error[] = 'This account has been suspended and the user cannot login until reactivated.';
+
+                        $subject = 'Your account has been suspended';
+                        $message  = "Hello {$first_name},\n\n";
+                        $message .= "Your account has been temporarily suspended. You will not be able to log in until reactivated by the Managerial team.\n\n";
+                        $message .= "If you believe this is an error, please contact support.\n\n";
+                        $message .= "Best regards,\nNyeri Club Visitor Management System";
                         break;
 
                     case 'banned':
                         $lawyer_u_error[] = 'This account has been banned and the user cannot login permanently.';
+
+                        $subject = 'Your account has been banned';
+                        $message  = "Hello {$first_name},\n\n";
+                        $message .= "We regret to inform you that your account has been permanently banned. You will no longer be able to access our system.\n\n";
+                        $message .= "If you have questions, please reach out to our administration.\n\n";
+                        $message .= "Best regards,\nNyeri Club Visitor Management System";
                         break;
 
                     default:
@@ -105,11 +141,18 @@ if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
                         break;
                 }
 
+                // Save new status
                 update_user_meta($user_id, 'registration_status', $new_registration_status);
+
+                // Send email only if subject/message are set
+                if ($subject && $message) {
+                    wp_mail($user_email, $subject, $message);
+                }
             }
         }
 
-                // Update receive messages preference
+
+        // Update receive messages preference
         $new_receive_messages = isset($_POST['receive_messages']) ? 'yes' : 'no';
         $current_receive_messages = get_user_meta($user_id, 'receive_messages', true);
         if ($new_receive_messages !== $current_receive_messages) {
