@@ -6,14 +6,13 @@
  *
  * @package Visitor_Management_System
  */
-// Exit if accessed directly
 defined( 'ABSPATH' ) || exit;
 
 global $wpdb;
 $guests_table = $wpdb->prefix . 'vms_guests'; 
 $guest_visits_table = $wpdb->prefix . 'vms_guest_visits'; 
 
-// Get per_page from URL or default to 25
+// Pagination
 $guests_per_page = isset($_GET['per_page']) ? max(1, intval($_GET['per_page'])) : 25;
 $current_page = isset($_GET['paged']) ? max(1, intval($_GET['paged'])) : 1;
 $offset = ($current_page - 1) * $guests_per_page;
@@ -23,43 +22,49 @@ $search_term = '';
 $where_clause = '';
 if (isset($_GET['search_users']) && !empty($_GET['user_search'])) {
     $search_term = sanitize_text_field($_GET['user_search']);
-    $where_clause = $wpdb->prepare(" WHERE (g.first_name LIKE %s OR g.last_name LIKE %s OR g.id_number LIKE %s OR g.email LIKE %s OR g.phone_number LIKE %s OR u.display_name LIKE %s OR um1.meta_value LIKE %s OR um2.meta_value LIKE %s)",
-        '%' . $wpdb->esc_like($search_term) . '%',
-        '%' . $wpdb->esc_like($search_term) . '%',
-        '%' . $wpdb->esc_like($search_term) . '%',
-        '%' . $wpdb->esc_like($search_term) . '%',
-        '%' . $wpdb->esc_like($search_term) . '%',
-        '%' . $wpdb->esc_like($search_term) . '%',
-        '%' . $wpdb->esc_like($search_term) . '%',
-        '%' . $wpdb->esc_like($search_term) . '%');
+    $like = '%' . $wpdb->esc_like($search_term) . '%';
+    $where_clause = $wpdb->prepare(
+        " WHERE (g.first_name LIKE %s OR g.last_name LIKE %s OR g.id_number LIKE %s OR g.email LIKE %s OR g.phone_number LIKE %s)",
+        $like, $like, $like, $like, $like
+    );
 }
 
-// Count total guests for pagination
-$count_query = "SELECT COUNT(DISTINCT CONCAT(g.id, '-', COALESCE(v.id, 0))) as total
-                FROM {$guests_table} g 
-                LEFT JOIN {$guest_visits_table} v ON g.id = v.guest_id 
-                LEFT JOIN {$wpdb->users} u ON v.host_member_id = u.ID
-                LEFT JOIN {$wpdb->usermeta} um1 ON (u.ID = um1.user_id AND um1.meta_key = 'first_name')
-                LEFT JOIN {$wpdb->usermeta} um2 ON (u.ID = um2.user_id AND um2.meta_key = 'last_name')" . $where_clause;
-
+// Count total guests
+$count_query = "SELECT COUNT(DISTINCT g.id) FROM {$guests_table} g" . $where_clause;
 $total_guests = $wpdb->get_var($count_query);
 $total_pages = ceil($total_guests / $guests_per_page);
 
-// Base query for guests with pagination
-$query = "SELECT g.*, v.id as visit_id, v.visit_date, v.sign_in_time, v.sign_out_time, v.host_member_id,
-                u.display_name,
-                MAX(CASE WHEN um1.meta_key = 'first_name' THEN um1.meta_value END) as host_first_name,
-                MAX(CASE WHEN um2.meta_key = 'last_name' THEN um2.meta_value END) as host_last_name
-        FROM {$guests_table} g 
-        LEFT JOIN {$guest_visits_table} v ON g.id = v.guest_id 
+// Fetch guests with latest visit
+// Fetch guests with latest visit including visit status
+$query = "SELECT 
+            g.*, 
+            v.id AS visit_id, 
+            v.visit_date, 
+            v.sign_in_time, 
+            v.sign_out_time, 
+            v.host_member_id,
+            v.status AS visit_status,
+            u.display_name,
+            MAX(CASE WHEN um1.meta_key = 'first_name' THEN um1.meta_value END) AS host_first_name,
+            MAX(CASE WHEN um2.meta_key = 'last_name' THEN um2.meta_value END) AS host_last_name
+        FROM {$guests_table} g
+        LEFT JOIN {$guest_visits_table} v ON g.id = v.guest_id
         LEFT JOIN {$wpdb->users} u ON v.host_member_id = u.ID
         LEFT JOIN {$wpdb->usermeta} um1 ON (u.ID = um1.user_id AND um1.meta_key = 'first_name')
-        LEFT JOIN {$wpdb->usermeta} um2 ON (u.ID = um2.user_id AND um2.meta_key = 'last_name')" . $where_clause . "
-        GROUP BY g.id, v.id 
-        ORDER BY v.visit_date ASC, g.id DESC 
+        LEFT JOIN {$wpdb->usermeta} um2 ON (u.ID = um2.user_id AND um2.meta_key = 'last_name')
+        " . $where_clause . "
+        GROUP BY g.id, v.id
+        ORDER BY v.visit_date ASC, g.id DESC
         LIMIT {$guests_per_page} OFFSET {$offset}";
 
 $guests = $wpdb->get_results($query);
+
+$status_classes = [
+    'approved'   => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+    'unapproved' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+    'suspended'  => 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
+    'banned'     => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+];
 ?>
 
 <div class="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]"
@@ -171,31 +176,32 @@ $guests = $wpdb->get_results($query);
             <!-- table header end -->
             <!-- table body start -->
             <tbody id="guests-table-body" class="divide-y divide-gray-100 dark:divide-gray-800">
-                <?php 
-                // Initialize counter for pagination
+                <?php
                 $counter = $offset + 1;
-
-                $status_classes = [
-                    'approved' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-                    'unapproved' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-                    'suspended' => 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
-                    'banned' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                ];
-
-                if (!empty($guests)) {
-                    foreach ($guests as $guest) {
+                if (!empty($guests)) :
+                    foreach ($guests as $guest) :
                         $visit_date = !empty($guest->visit_date) ? date('M j, Y', strtotime($guest->visit_date)) : 'N/A';
                         $sign_in_time = !empty($guest->sign_in_time) ? date('g:i a', strtotime($guest->sign_in_time)) : null;
                         $sign_out_time = !empty($guest->sign_out_time) ? date('g:i a', strtotime($guest->sign_out_time)) : null;
-                        $status = isset($guest->status) ? $guest->status : 'approved';
-                        
-                        // Get host name - use first and last name if available, otherwise fallback to display name
-                        $host_name = 'N/A';
-                        if (!empty($guest->host_first_name) || !empty($guest->host_last_name)) {
-                            $host_name = trim($guest->host_first_name . ' ' . $guest->host_last_name);
-                        } elseif (!empty($guest->display_name)) {
-                            $host_name = $guest->display_name;
+
+                        // Determine visit status
+                        $current_date = current_time('Y-m-d');
+                        $normalized_visit_date = substr($guest->visit_date ?? '', 0, 10);
+                        $is_button_disabled = false;
+                        $visit_status = strtolower($guest->status ?? 'approved'); // fallback to approved                        
+
+                        if ($normalized_visit_date && $normalized_visit_date > $current_date) {
+                            $visit_status = 'scheduled';
+                        } elseif ($normalized_visit_date && $normalized_visit_date === $current_date) {
+                            $visit_status = !empty($guest->sign_in_time) ? (!empty($guest->sign_out_time) ? 'completed' : 'signout') : 'signin';
+                        } elseif ($normalized_visit_date && $normalized_visit_date < $current_date) {
+                            $visit_status = !empty($guest->sign_in_time) ? (!empty($guest->sign_out_time) ? 'completed' : 'signout') : 'missed';
                         }
+
+                        // Host name
+                        $host_name = !empty($guest->host_first_name) || !empty($guest->host_last_name)
+                            ? trim($guest->host_first_name . ' ' . $guest->host_last_name)
+                            : ($guest->display_name ?? 'N/A');
                 ?>
                 <tr data-guest-id="<?php echo esc_attr($guest->id); ?>"
                     data-visit-id="<?php echo esc_attr($guest->visit_id); ?>">
@@ -221,8 +227,8 @@ $guests = $wpdb->get_results($query);
                     <td class="px-3 py-4 sm:px-6">
                         <div class="flex items-center">
                             <span
-                                class="px-2 py-1 text-xs font-medium rounded-full <?php echo $status_classes[$status]; ?>">
-                                <?php echo ucfirst($status); ?>
+                                class="px-2 py-1 text-xs font-medium rounded-full capitalize <?php echo $status_classes[$guest->visit_status] ?? $status_classes['approved']; ?>">
+                                <?php echo esc_html($guest->visit_status); ?>
                             </span>
                         </div>
                     </td>
@@ -255,83 +261,21 @@ $guests = $wpdb->get_results($query);
                                 data-visit-id="<?php echo $guest->visit_id; ?>">
                                 <?php esc_html_e( 'Edit', 'vms' ); ?>
                             </button>
-                            <?php
-                            // Get current date in WordPress timezone (EAT)
-                            $current_date = current_time('Y-m-d');
-
-                            // Validate guest data
-                            if (!isset($guest->visit_date) || !isset($guest->status)) {
-                                error_log("Guest table error: Missing visit_date or status for guest ID {$guest->id}");
-                                $is_button_disabled = true;
-                                $visit_status = 'invalid';
-                            } else {
-                                // Normalize visit_date to YYYY-MM-DD
-                                $normalized_visit_date = substr($guest->visit_date, 0, 10);
-
-                                if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $normalized_visit_date)) {
-                                    error_log("Guest table error: Invalid visit_date format for guest ID {$guest->id}: {$guest->visit_date}");
-                                    $is_button_disabled = true;
-                                    $visit_status = 'invalid';
-                                } else {
-                                    // Default: disable if not approved
-                                    $is_button_disabled = $guest->status !== 'approved';
-
-                                    if ($current_date < $normalized_visit_date) {
-                                        $visit_status = 'scheduled'; // future
-                                    } elseif ($current_date === $normalized_visit_date) {
-                                        if (!empty($guest->sign_in_time) && !empty($guest->sign_out_time)) {
-                                            $visit_status = 'completed';
-                                        } elseif (!empty($guest->sign_in_time)) {
-                                            $visit_status = 'signout';
-                                        } else {
-                                            $visit_status = 'signin';
-                                        }
-                                    } else { // past date
-                                        if (!empty($guest->sign_in_time) && !empty($guest->sign_out_time)) {
-                                            $visit_status = 'completed';
-                                        } elseif (empty($guest->sign_in_time)) {
-                                            $visit_status = 'missed';
-                                        } else {
-                                            $visit_status = 'signout'; // signed in but not signed out
-                                        }
-                                    }
-                                }
-                            }
-
-                            // Common button classes
-                            $base_button_classes = 'inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition rounded-lg whitespace-nowrap shadow-theme-xs';
-                            $disabled_classes = 'bg-brand-500 opacity-50 cursor-not-allowed';
-                            ?>
-
-                            <?php if ($visit_status === 'missed'): ?>
+                            <?php if ($visit_status === 'missed') : ?>
                             <span
-                                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-warning-600 bg-warning-50 rounded-lg dark:bg-warning-500/15 dark:text-orange-500">
-                                <?php esc_html_e('Missed', 'vms'); ?>
-                            </span>
-
-                            <?php elseif ($visit_status === 'scheduled'): ?>
+                                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-warning-600 bg-warning-50 rounded-lg dark:bg-warning-500/15 dark:text-orange-500"><?php esc_html_e('Missed', 'vms'); ?></span>
+                            <?php elseif ($visit_status === 'scheduled') : ?>
                             <span
-                                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-light-500 bg-blue-light-50 rounded-lg dark:bg-blue-light-500/15 dark:text-blue-light-500">
-                                <?php esc_html_e('Scheduled', 'vms'); ?>
-                            </span>
-
-                            <?php elseif ($visit_status === 'signin'): ?>
-                            <button id="sign-in-button-<?php echo esc_attr($guest->id); ?>"
-                                class="<?php echo esc_attr($base_button_classes . ' bg-brand-500 ' . ($is_button_disabled ? $disabled_classes : 'cursor-pointer hover:bg-brand-600')); ?>"
-                                data-visit-id="<?php echo esc_attr($guest->visit_id); ?>"
-                                <?php echo $is_button_disabled ? 'disabled' : ''; ?>>
-                                <?php esc_html_e('Sign In', 'vms'); ?>
-                            </button>
-
-                            <?php elseif ($visit_status === 'signout'): ?>
-                            <button id="sign-out-button-<?php echo esc_attr($guest->id); ?>"
-                                class="<?php echo esc_attr($base_button_classes . ' bg-purple-500 ' . ($is_button_disabled ? $disabled_classes : 'cursor-pointer hover:bg-purple-600')); ?>"
-                                data-visit-id="<?php echo esc_attr($guest->visit_id); ?>"
-                                <?php echo $is_button_disabled ? 'disabled' : ''; ?>>
-                                <?php esc_html_e('Sign Out', 'vms'); ?>
-                            </button>
-
-                            <?php elseif ($visit_status === 'completed'): ?>
+                                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-light-500 bg-blue-light-50 rounded-lg dark:bg-blue-light-500/15 dark:text-blue-light-500"><?php esc_html_e('Scheduled', 'vms'); ?></span>
+                            <?php elseif ($visit_status === 'signin') : ?>
+                            <button
+                                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-brand-500 rounded-lg cursor-pointer hover:bg-brand-600"
+                                data-visit-id="<?php echo esc_attr($guest->visit_id); ?>"><?php esc_html_e('Sign In', 'vms'); ?></button>
+                            <?php elseif ($visit_status === 'signout') : ?>
+                            <button
+                                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-purple-500 rounded-lg cursor-pointer hover:bg-purple-600"
+                                data-visit-id="<?php echo esc_attr($guest->visit_id); ?>"><?php esc_html_e('Sign Out', 'vms'); ?></button>
+                            <?php elseif ($visit_status === 'completed') : ?>
                             <div class="flex flex-col items-center justify-center text-xs px-4">
                                 <span
                                     class="text-green-600 dark:text-green-400"><?php echo esc_html($sign_in_time); ?></span>
@@ -339,15 +283,14 @@ $guests = $wpdb->get_results($query);
                                     class="text-red-600 dark:text-red-400"><?php echo esc_html($sign_out_time); ?></span>
                             </div>
                             <?php endif; ?>
-
                         </div>
                     </td>
                 </tr>
-                <?php 
-                    } 
-                } else {
+                <?php
+                    endforeach;
+                else:
                     echo '<tr id="no-guests-row"><td colspan="8" class="px-4 py-4 text-center text-gray-600 dark:text-white">No guests found.</td></tr>';
-                }
+                endif;
                 ?>
             </tbody>
         </table>

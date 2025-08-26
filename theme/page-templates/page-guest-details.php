@@ -204,10 +204,10 @@ get_header();
                                             class="p-6 border-t border-gray-200 dark:border-gray-700">
                                             <form id="guest-update-form" action="" method="post"
                                                 enctype="multipart/form-data">
-                                                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                                <div class="-mx-2.5 flex flex-wrap gap-y-4">
 
                                                     <!-- First Name -->
-                                                    <div class="mb-4">
+                                                    <div class="w-full px-2.5 md:w-1/2">
                                                         <label for="fname"
                                                             class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                                                             <?php esc_html_e( 'First Name:', 'vms' ); ?>
@@ -219,7 +219,7 @@ get_header();
                                                     </div>
 
                                                     <!-- Last Name -->
-                                                    <div class="mb-4">
+                                                    <div class="w-full px-2.5 md:w-1/2">
                                                         <label for="lname"
                                                             class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                                                             <?php esc_html_e( 'Last Name:', 'vms' ); ?>
@@ -231,7 +231,7 @@ get_header();
                                                     </div>
 
                                                     <!-- Email -->
-                                                    <div class="mb-4">
+                                                    <div class="w-full px-2.5 md:w-1/2">
                                                         <label for="email"
                                                             class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                                                             <?php esc_html_e( 'Email:', 'vms' ); ?>
@@ -254,7 +254,7 @@ get_header();
                                                     </div>
 
                                                     <!-- Phone Number -->
-                                                    <div class="mb-4">
+                                                    <div class="w-full px-2.5 md:w-1/2">
                                                         <label for="pnumber"
                                                             class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                                                             <?php esc_html_e( 'Phone Number:', 'vms' ); ?>
@@ -281,7 +281,7 @@ get_header();
                                                     </div>
 
                                                     <!-- ID Number -->
-                                                    <div class="mb-4">
+                                                    <div class="w-full px-2.5 md:w-1/2">
                                                         <label for="id_number"
                                                             class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                                                             <?php esc_html_e( 'ID Number:', 'vms' ); ?>
@@ -293,7 +293,7 @@ get_header();
                                                     </div>
 
                                                     <!-- Courtesy -->
-                                                    <div class="mb-4">
+                                                    <div class="w-full px-2.5 md:w-1/2">
                                                         <label for="courtesy"
                                                             class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                                                             <?php esc_html_e( 'Courtesy:', 'vms' ); ?>
@@ -305,7 +305,7 @@ get_header();
                                                     </div>
 
                                                     <!-- Status -->
-                                                    <div class="mb-4">
+                                                    <div class="w-full px-2.5 md:w-1/2">
                                                         <label for="guest_status"
                                                             class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                                                             <?php esc_html_e( 'Status:', 'vms' ); ?>
@@ -345,7 +345,7 @@ get_header();
                                                     </div>
 
                                                     <!-- Communication Preferences -->
-                                                    <div class="col-span-2">
+                                                    <div class="w-full px-2.5">
                                                         <hr class="my-4 border-gray-300 dark:border-gray-600">
                                                         <div class="mb-4"
                                                             x-data="{ switcherToggle: <?php echo ($guest->receive_messages ?? 'no') === 'yes' ? 'true' : 'false'; ?> }">
@@ -402,19 +402,19 @@ get_header();
                                                     </div>
                                                 </div>
 
-                                                <div class="flex justify-center mt-4 space-x-2">
+                                                <div class="flex flex-col md:flex-row justify-center mt-4 gap-2">
                                                     <input type="hidden" name="guest_id"
                                                         value="<?php echo esc_attr($guest_id); ?>">
                                                     <button type="submit" name="update_guest" id="update-guest-btn"
-                                                        class="px-4 py-2 font-semibold text-white bg-brand-500 rounded-lg hover:bg-brand-600">
+                                                        class="inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600 cursor-pointer">
                                                         <?php esc_html_e( 'Update Guest', 'vms' ); ?>
                                                     </button>
                                                     <button type="reset"
-                                                        class="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-3 text-gray-700 shadow-theme-xs ring-1 ring-inset ring-gray-300 transition hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-white/[0.03] cursor-pointer">
+                                                        class="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-3 text-gray-700 shadow-theme-xs ring-1 ring-inset ring-gray-300 transition hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-white/[0.03] cursor-pointer">
                                                         <?php esc_html_e( 'Reset', 'vms' ); ?>
                                                     </button>
                                                     <button type="submit" name="delete_guest" id="delete-guest-btn"
-                                                        class="px-4 py-2 font-semibold text-white bg-error-500 rounded-lg hover:bg-error-600">
+                                                        class="px-4 py-2 text-white bg-error-500 rounded-lg hover:bg-error-600 inline-flex items-center justify-center gap-2 shadow-theme-xs transition cursor-pointer">
                                                         <?php esc_html_e( 'Delete Guest', 'vms' ); ?>
                                                     </button>
                                                 </div>

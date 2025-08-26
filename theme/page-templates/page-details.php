@@ -468,9 +468,9 @@ get_header();
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                                <div class="-mx-2.5 flex flex-wrap gap-y-4">
                                                     <!-- User Name field -->
-                                                    <div class="mb-4">
+                                                    <div class="w-full px-2.5 md:w-1/2">
                                                         <label for="uname"
                                                             class="block text-gray-700 dark:text-gray-300">
                                                             <?php esc_html_e( 'User Name:', 'vms' ); ?>
@@ -480,12 +480,13 @@ get_header();
                                                             id="uname"
                                                             value="<?php echo esc_attr($user_data->user_login); ?>"
                                                             name="user_name" disabled>
-                                                        <small class="text-sm text-gray-600 dark:text-gray-400">
+                                                        <small
+                                                            class="text-sx md:text-sm text-gray-600 dark:text-gray-400">
                                                             <?php esc_html_e( 'Usernames cannot be changed.', 'vms' ); ?>
                                                         </small>
                                                     </div>
                                                     <!-- Email field -->
-                                                    <div class="mb-4">
+                                                    <div class="w-full px-2.5 md:w-1/2">
                                                         <label for="email"
                                                             class="block text-gray-700 dark:text-gray-300">
                                                             <?php esc_html_e( 'Email (required):', 'vms' ); ?>
@@ -496,12 +497,13 @@ get_header();
                                                             value="<?php echo esc_attr($user_data->user_email); ?>"
                                                             name="email"
                                                             <?php echo !$is_admin_or_manager ? 'disabled' : ''; ?>>
-                                                        <small class="text-sm text-gray-600 dark:text-gray-400">
+                                                        <small
+                                                            class="text-xs md:text-sm text-gray-600 dark:text-gray-400">
                                                             <?php esc_html_e( 'If you change this, an email will be sent to confirm it.', 'vms' ); ?>
                                                         </small>
                                                     </div>
                                                     <!-- First Name field -->
-                                                    <div class="mb-4">
+                                                    <div class="w-full px-2.5 md:w-1/2">
                                                         <label for="fname"
                                                             class="block text-gray-700 dark:text-gray-300">
                                                             <?php esc_html_e( 'First Name:', 'vms' ); ?>
@@ -514,7 +516,7 @@ get_header();
                                                             <?php echo !$is_admin_or_manager ? 'disabled' : ''; ?>>
                                                     </div>
                                                     <!-- Last Name field -->
-                                                    <div class="mb-4">
+                                                    <div class="w-full px-2.5 md:w-1/2">
                                                         <label for="lname"
                                                             class="block text-gray-700 dark:text-gray-300">
                                                             <?php esc_html_e( 'Last Name:', 'vms' ); ?>
@@ -527,7 +529,7 @@ get_header();
                                                             <?php echo !$is_admin_or_manager ? 'disabled' : ''; ?>>
                                                     </div>
                                                     <!-- Member Number -->
-                                                    <div class="mb-4">
+                                                    <div class="w-full px-2.5 md:w-1/2">
                                                         <label for="member_number"
                                                             class="block text-gray-700 dark:text-gray-300">
                                                             <?php esc_html_e( 'Member Number', 'vms' ); ?>
@@ -540,7 +542,7 @@ get_header();
                                                             <?php echo !$is_admin_or_manager ? 'disabled' : ''; ?>>
                                                     </div>
                                                     <!-- Phone Number field -->
-                                                    <div class="mb-4">
+                                                    <div class="w-full px-2.5 md:w-1/2">
                                                         <label for="number"
                                                             class="block text-gray-700 dark:text-gray-300">
                                                             <?php esc_html_e( 'Phone Number:', 'vms' ); ?>
@@ -553,7 +555,7 @@ get_header();
                                                             <?php echo !$is_admin_or_manager ? 'disabled' : ''; ?>>
                                                     </div>
                                                     <!-- Status -->
-                                                    <div class="mb-4">
+                                                    <div class="w-full px-2.5 md:w-1/2">
                                                         <label for="registration_status"
                                                             class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                                                             <?php esc_html_e( 'Account Status:', 'vms' ); ?>
@@ -610,7 +612,7 @@ get_header();
                                                     </div>
 
                                                     <!-- Message Email, Deactivate fields -->
-                                                    <div class="col-span-1 md:col-span-2">
+                                                    <div class="w-full px-2.5">
                                                         <hr class="my-4 border-gray-300 dark:border-gray-600">
                                                         <div class="flex items-center justify-between mb-4">
                                                             <label for="message"
@@ -650,17 +652,17 @@ get_header();
                                                 <?php if ($is_admin_or_manager) : ?>
                                                 <?php wp_nonce_field('update_user_data', '_wpnonce_update_user_data'); ?>
                                                 <?php wp_nonce_field('delete_user', '_wpnonce_delete_user'); ?>
-                                                <div class="flex justify-center mt-4 space-x-2">
+                                                <div class="flex flex-col md:flex-row justify-center mt-4 gap-2">
                                                     <button type="submit" name="update_user"
-                                                        class="px-4 py-2 font-semibold text-white bg-blue-600 rounded cursor-pointer hover:bg-blue-700">
+                                                        class="inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600 cursor-pointer">
                                                         <?php esc_html_e( 'Update Details', 'vms' ); ?>
                                                     </button>
                                                     <button type="reset"
-                                                        class="px-4 py-2 font-semibold text-white bg-gray-600 rounded cursor-pointer hover:bg-gray-700">
+                                                        class="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-3 text-gray-700 shadow-theme-xs ring-1 ring-inset ring-gray-300 transition hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-white/[0.03] cursor-pointer">
                                                         <?php esc_html_e( 'Reset', 'vms' ); ?>
                                                     </button>
                                                     <button type="submit" name="delete_user"
-                                                        class="px-4 py-2 font-semibold text-white bg-red-600 rounded cursor-pointer hover:bg-red-700"
+                                                        class="px-4 py-2 text-white bg-error-500 rounded-lg hover:bg-error-600 inline-flex items-center justify-center gap-2 shadow-theme-xs transition cursor-pointer"
                                                         onclick="return confirm('Are you sure you want to delete your account? This action is irreversible.')">
                                                         <?php esc_html_e( 'Delete Account', 'vms' ); ?>
                                                     </button>

@@ -17,21 +17,20 @@ defined( 'ABSPATH' ) || exit;
     <div :class="sidebarToggle ? 'justify-center' : 'justify-between'"
         class="flex items-center gap-2 pt-8 sidebar-header pb-7">
         <a href="<?php echo esc_url( home_url( ) ); ?>">
-            <span class="flex items-center justify-center gap-4" :class="sidebarToggle ? 'hidden' : ''">
+            <span class="logo flex items-center justify-center gap-4" :class="sidebarToggle ? 'hidden' : ''">
                 <img class="h-12" loading="lazy"
                     src="<?php echo get_template_directory_uri(); ?>/assets/images/logo/logo.png" alt="Logo" />
                 <h2 class="text-2xl font-bold text-black dark:text-white font-satisfy">
                     <?php esc_html_e( 'Nyeri Club', 'vms' ); ?>
                 </h2>
             </span>
-
-            <img class="logo-icon h-10" :class="sidebarToggle ? 'lg:block' : 'hidden'" loading="lazy"
+            <img class="logo-icon h-10" :class="sidebarToggle ? 'lg:block hidden' : 'hidden'" loading="lazy"
                 src="<?php echo get_template_directory_uri(); ?>/assets/images/logo/logo.png" alt="Logo" />
         </a>
     </div>
     <!-- SIDEBAR HEADER -->
 
-    <div class="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
+    <div class="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar mt-15 lg:mt-0">
         <!-- Sidebar Menu -->
         <nav x-data="{selected: $persist('Dashboard')}">
             <!-- Menu Group -->

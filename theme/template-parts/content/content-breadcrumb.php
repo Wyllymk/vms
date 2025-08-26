@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
         <ol class="flex items-center gap-1.5">
             <li>
                 <a class="flex items-center gap-1 text-sm text-gray-500 hover:text-brand-500 dark:text-gray-400 dark:hover:text-brand-400"
-                    href="<?php echo esc_url( home_url( ) ); ?>">
+                    href="<?php echo esc_url( home_url( '/dashboard' ) ); ?>">
                     <?php esc_html_e( 'Home', 'vms' ); ?>
                     <svg class="stroke-current" width="17" height="16" viewBox="0 0 17 16" fill="none"
                         xmlns="http://www.w3.org/2000/svg">
