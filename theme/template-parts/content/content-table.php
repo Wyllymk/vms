@@ -112,7 +112,7 @@ $guest_visits_table = $wpdb->prefix . 'vms_guest_visits';
                     // Note: host_member_id is in the guest_visits table, not the guests table
                     // Base query - join guests with guest_visits and users tables
                     $query = "
-                        SELECT g.*, v.id as visit_id, v.visit_date, v.sign_in_time, v.sign_out_time, v.host_member_id,
+                        SELECT g.*, v.id as visit_id, v.visit_date, v.status, v.sign_in_time, v.sign_out_time, v.host_member_id,
                             u.display_name,
                             MAX(CASE WHEN um1.meta_key = 'first_name' THEN um1.meta_value END) as host_first_name,
                             MAX(CASE WHEN um2.meta_key = 'last_name' THEN um2.meta_value END) as host_last_name
