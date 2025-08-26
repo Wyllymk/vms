@@ -52,12 +52,10 @@ $per_page = isset($_GET['per_page']) ? absint($_GET['per_page']) : 10;
 if (!in_array($per_page, [10, 25, 50])) {
     $per_page = 10;
 }
-
 $paged = isset($_GET['paged']) ? max(1, intval($_GET['paged'])) : 1;
-
 $offset = ($paged - 1) * $per_page;
 
-// Count total visits for this guest
+// Count total visits for this guest from guest_visits table
 $total_visits = $wpdb->get_var(
     $wpdb->prepare("SELECT COUNT(*) FROM $guest_visits_table WHERE guest_id = %d", $guest_id)
 );
@@ -74,7 +72,7 @@ if ($paged > $total_pages) {
     $offset = ($paged - 1) * $per_page;
 }
 
-// Get paged visits with proper ordering
+// Get paged visits with proper ordering from guest_visits table
 $visits = [];
 if ($total_visits > 0) {
     $visits = $wpdb->get_results(
@@ -96,49 +94,78 @@ $row_number = $current_start;
 $pages_to_show = [];
 if ($total_pages > 0) {
     $pages_to_show = [1];
-    
+   
     // Add current page and surrounding pages
     for ($i = max(1, $paged - 1); $i <= min($total_pages, $paged + 1); $i++) {
         $pages_to_show[] = $i;
     }
-    
+   
     // Add last page if it's not already included
     if ($total_pages > 1) {
         $pages_to_show[] = $total_pages;
     }
-    
+   
     // Remove duplicates and sort
     $pages_to_show = array_values(array_unique($pages_to_show));
     sort($pages_to_show);
 }
 
-// Handle deleting a guest visit
-if ( isset($_POST['delete_visit']) && isset($_POST['visit_id']) ) {
-    
+$status_classes = [
+    'approved'   => 'bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-500',
+    'unapproved' => 'bg-warning-50 text-warning-600 dark:bg-warning-500/15 dark:text-orange-400',
+    'suspended'  => 'bg-blue-light-50 text-blue-light-500 dark:bg-blue-light-500/15 dark:text-blue-light-500',
+    'banned'     => 'bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500',
+    'cancelled'  => 'bg-gray-100 text-gray-700 dark:bg-white/5 dark:text-white/80'
+];
+
+
+// Handle canceling a guest visit
+if ( isset($_POST['cancel_visit']) && isset($_POST['visit_id']) ) {
+   
     // Verify nonce for security
-    if ( ! isset($_POST['delete_visit_nonce']) || 
-         ! wp_verify_nonce($_POST['delete_visit_nonce'], 'delete_visit_action') ) {
+    if ( ! isset($_POST['cancel_visit_nonce']) ||
+         ! wp_verify_nonce($_POST['cancel_visit_nonce'], 'cancel_visit_action') ) {
         wp_die(__('Security check failed. Please try again.', 'vms'));
     }
-
+   
     $visit_id = intval($_POST['visit_id']);
-
+   
     if ( $visit_id > 0 ) {
         global $wpdb;
-
-        // Delete visit from table
-        $deleted = $wpdb->delete(
+        
+        // Get the visit details before cancelling
+        $visit = $wpdb->get_row($wpdb->prepare(
+            "SELECT guest_id, host_member_id, visit_date FROM $guest_visits_table WHERE id = %d",
+            $visit_id
+        ));
+        
+        if (!$visit) {
+            wp_die(__('Visit not found.', 'vms'));
+        }
+       
+        // Update visit status to cancelled
+        $updated = $wpdb->update(
             $guest_visits_table,
+            array( 'status' => 'cancelled' ),
             array( 'id' => $visit_id ),
+            array( '%s' ),
             array( '%d' )
         );
-
-        if ( $deleted ) {
+       
+        if ( $updated !== false ) {
+            // Trigger automatic status recalculation for the guest
+            VMS_CoreManager::recalculate_guest_visit_statuses($visit->guest_id);
+            
+            // Also recalculate host's daily limits for that date
+            if ($visit->host_member_id) {
+                VMS_CoreManager::recalculate_host_daily_limits($visit->host_member_id, $visit->visit_date);
+            }
+            
             // Success message or redirect
-            wp_safe_redirect( add_query_arg('visit_deleted', '1', wp_get_referer()) );
+            wp_safe_redirect( add_query_arg('visit_cancelled', '1', wp_get_referer()) );
             exit;
         } else {
-            wp_die(__('Failed to delete visit. It may not exist.', 'vms'));
+            wp_die(__('Failed to cancel visit. Please try again.', 'vms'));
         }
     } else {
         wp_die(__('Invalid visit ID.', 'vms'));
@@ -544,14 +571,16 @@ get_header();
                                                                     </p>
                                                                 </div>
                                                                 <!-- Status -->
-                                                                <div class="col-span-2 flex items-center px-4 py-3">
+                                                                <div
+                                                                    class="col-span-2 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
                                                                     <p
                                                                         class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
                                                                         <?php esc_html_e( 'Status', 'vms' ); ?>
                                                                     </p>
                                                                 </div>
                                                                 <!-- Action -->
-                                                                <div class="col-span-2 flex items-center px-4 py-3">
+                                                                <div
+                                                                    class="col-span-2 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
                                                                     <p
                                                                         class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
                                                                         <?php esc_html_e( 'Action', 'vms' ); ?>
@@ -564,7 +593,7 @@ get_header();
                                                                 <?php if (!empty($visits)): ?>
                                                                 <?php foreach ($visits as $visit): ?>
                                                                 <div id="visit-div-<?php echo esc_attr($visit->id); ?>"
-                                                                    class="grid grid-cols-12 border-t border-gray-100 dark:border-gray-800">
+                                                                    class="grid grid-cols-12 border-y border-gray-100 dark:border-gray-800">
                                                                     <!-- Row Number -->
                                                                     <div
                                                                         class="col-span-1 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
@@ -633,27 +662,24 @@ get_header();
                                                                     </div>
 
                                                                     <!-- Status -->
-                                                                    <div class="col-span-2 flex items-center px-4 py-3">
-                                                                        <?php
-                                                                        $status = VMS_CoreManager::get_visit_status($visit->visit_date, $visit->sign_in_time, $visit->sign_out_time);
-                                                                        $status_class = VMS_CoreManager::get_status_class($status);
-                                                                        $status_text = VMS_CoreManager::get_status_text($status);
-                                                                        ?>
+                                                                    <div
+                                                                        class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
                                                                         <span
-                                                                            class="<?php echo esc_attr($status_class); ?> inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-sm font-medium">
-                                                                            <?php echo esc_html($status_text); ?>
+                                                                            class="inline-flex items-center justify-center gap-1 rounded-full px-2.5 py-0.5 text-sm font-medium capitalize <?php echo $status_classes[$visit->status] ?? $status_classes['approved']; ?>">
+                                                                            <?php echo esc_html($visit->status); ?>
                                                                         </span>
                                                                     </div>
                                                                     <!-- Action -->
-                                                                    <div class="col-span-2 px-4 py-3">
+                                                                    <div
+                                                                        class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
                                                                         <form method="post"
-                                                                            onsubmit="return confirm('Are you sure you want to delete this visit?');">
+                                                                            onsubmit="return confirm('Are you sure you want to cancel this visit?');">
                                                                             <input type="hidden" name="visit_id"
                                                                                 value="<?php echo esc_attr( $visit->visit_id ); ?>">
-                                                                            <?php wp_nonce_field( 'delete_visit_action', 'delete_visit_nonce' ); ?>
-                                                                            <button type="submit" name="delete_visit"
+                                                                            <?php wp_nonce_field( 'cancel_visit_action', 'cancel_visit_nonce' ); ?>
+                                                                            <button type="submit" name="cancel_visit"
                                                                                 class="px-3 py-1 text-xs font-medium text-white bg-red-500 rounded-lg hover:bg-red-600">
-                                                                                <?php esc_html_e( 'Delete', 'vms' ); ?>
+                                                                                <?php esc_html_e( 'Cancel', 'vms' ); ?>
                                                                             </button>
                                                                         </form>
                                                                     </div>
