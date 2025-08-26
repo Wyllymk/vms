@@ -299,14 +299,18 @@ $status_classes = [
                                 class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-light-500 bg-blue-light-50 rounded-lg dark:bg-blue-light-500/15 dark:text-blue-light-500"><?php esc_html_e('Scheduled', 'vms'); ?></span>
 
                             <?php elseif ($visit_status === 'signin') : ?>
-                            <button
+                            <button id="sign-in-button-<?php echo esc_attr($guest->id); ?>"
                                 class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-brand-500 rounded-lg cursor-pointer hover:bg-brand-600"
-                                data-visit-id="<?php echo esc_attr($guest->visit_id); ?>"><?php esc_html_e('Sign In', 'vms'); ?></button>
+                                data-visit-id="<?php echo esc_attr($guest->visit_id); ?>">
+                                <?php esc_html_e('Sign In', 'vms'); ?>
+                            </button>
 
                             <?php elseif ($visit_status === 'signout') : ?>
-                            <button
+                            <button id="sign-out-button-<?php echo esc_attr($guest->id); ?>"
                                 class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-purple-500 rounded-lg cursor-pointer hover:bg-purple-600"
-                                data-visit-id="<?php echo esc_attr($guest->visit_id); ?>"><?php esc_html_e('Sign Out', 'vms'); ?></button>
+                                data-visit-id="<?php echo esc_attr($guest->visit_id); ?>">
+                                <?php esc_html_e('Sign Out', 'vms'); ?>
+                            </button>
 
                             <?php elseif ($visit_status === 'completed') : ?>
                             <div class="flex flex-col items-center justify-center text-xs px-4">

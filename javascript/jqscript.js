@@ -934,6 +934,9 @@ jQuery(document).ready(function ($) {
 										new Event('close-visit-modal')
 									);
 									$('#visit-form')[0].reset();
+
+									// Reload same URL
+									window.location.reload();
 								}
 							);
 						});
