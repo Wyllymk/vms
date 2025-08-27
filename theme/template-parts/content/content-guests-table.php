@@ -20,22 +20,34 @@ $offset = ($current_page - 1) * $guests_per_page;
 // Search functionality
 $search_term = '';
 $where_clause = '';
+$where_visits_clause = '';
+
 if (isset($_GET['search_users']) && !empty($_GET['user_search'])) {
     $search_term = sanitize_text_field($_GET['user_search']);
     $like = '%' . $wpdb->esc_like($search_term) . '%';
+    
+    // For guests table search
     $where_clause = $wpdb->prepare(
+        " WHERE (g.first_name LIKE %s OR g.last_name LIKE %s OR g.id_number LIKE %s OR g.email LIKE %s OR g.phone_number LIKE %s)",
+        $like, $like, $like, $like, $like
+    );
+    
+    // For visits count search - need to join with guests table
+    $where_visits_clause = $wpdb->prepare(
         " WHERE (g.first_name LIKE %s OR g.last_name LIKE %s OR g.id_number LIKE %s OR g.email LIKE %s OR g.phone_number LIKE %s)",
         $like, $like, $like, $like, $like
     );
 }
 
-// Count total guests
-$count_query = "SELECT COUNT(DISTINCT g.id) FROM {$guests_table} g" . $where_clause;
-$total_guests = $wpdb->get_var($count_query);
-$total_pages = ceil($total_guests / $guests_per_page);
+// Count total guest visits (not just guests)
+$count_visits_query = "SELECT COUNT(DISTINCT v.id) 
+                      FROM {$guest_visits_table} v 
+                      LEFT JOIN {$guests_table} g ON v.guest_id = g.id" . $where_visits_clause;
 
-// Fetch guests with latest visit
-// Fetch guests with latest visit including visit status
+$total_visits = $wpdb->get_var($count_visits_query);
+$total_pages = ceil($total_visits / $guests_per_page);
+
+// Fetch guest visits with guest details
 $query = "SELECT 
             g.*, 
             v.id AS visit_id, 
@@ -43,18 +55,19 @@ $query = "SELECT
             v.sign_in_time, 
             v.sign_out_time, 
             v.host_member_id,
+            v.courtesy,
             v.status AS visit_status,
             u.display_name,
             MAX(CASE WHEN um1.meta_key = 'first_name' THEN um1.meta_value END) AS host_first_name,
             MAX(CASE WHEN um2.meta_key = 'last_name' THEN um2.meta_value END) AS host_last_name
-        FROM {$guests_table} g
-        LEFT JOIN {$guest_visits_table} v ON g.id = v.guest_id
+        FROM {$guest_visits_table} v
+        LEFT JOIN {$guests_table} g ON v.guest_id = g.id
         LEFT JOIN {$wpdb->users} u ON v.host_member_id = u.ID
         LEFT JOIN {$wpdb->usermeta} um1 ON (u.ID = um1.user_id AND um1.meta_key = 'first_name')
         LEFT JOIN {$wpdb->usermeta} um2 ON (u.ID = um2.user_id AND um2.meta_key = 'last_name')
-        " . $where_clause . "
-        GROUP BY g.id, v.id
-        ORDER BY v.visit_date ASC, g.id DESC
+        " . $where_visits_clause . "
+        GROUP BY v.id
+        ORDER BY v.visit_date DESC, v.id DESC
         LIMIT {$guests_per_page} OFFSET {$offset}";
 
 $guests = $wpdb->get_results($query);
@@ -98,14 +111,24 @@ $status_classes = [
         <!-- Show total entries info -->
         <div class="text-sm text-gray-500 dark:text-gray-400">
             <?php
-            $start = $total_guests > 0 ? $offset + 1 : 0;
-            $end = min($offset + $guests_per_page, $total_guests);
-            printf(
-                esc_html__('Showing %1$d to %2$d of %3$d entries', 'vms'),
-                $start,
-                $end,
-                $total_guests
-            );
+            $start = $total_visits > 0 ? $offset + 1 : 0;
+            $end = min($offset + $guests_per_page, $total_visits);
+            
+            if (!empty($search_term)) {
+                printf(
+                    esc_html__('Showing %1$d to %2$d of %3$d entries (filtered from total)', 'vms'),
+                    $start,
+                    $end,
+                    $total_visits
+                );
+            } else {
+                printf(
+                    esc_html__('Showing %1$d to %2$d of %3$d entries', 'vms'),
+                    $start,
+                    $end,
+                    $total_visits
+                );
+            }
             ?>
         </div>
     </div>
@@ -200,9 +223,16 @@ $status_classes = [
                         }
 
                         // Host name
-                        $host_name = !empty($guest->host_first_name) || !empty($guest->host_last_name)
-                            ? trim($guest->host_first_name . ' ' . $guest->host_last_name)
+                        // Safely build host name with null coalescing and proper trimming
+                        $host_first = $guest->host_first_name ?? '';
+                        $host_last = $guest->host_last_name ?? '';
+                        $full_host_name = trim($host_first . ' ' . $host_last);
+
+                        $host_name = !empty($full_host_name) 
+                            ? $full_host_name 
                             : ($guest->display_name ?? 'N/A');
+
+                        $is_courtesy = empty($full_host_name) && !empty($guest->courtesy);
                 ?>
                 <tr data-guest-id="<?php echo esc_attr($guest->id); ?>"
                     data-visit-id="<?php echo esc_attr($guest->visit_id); ?>">
@@ -242,9 +272,16 @@ $status_classes = [
                     </td>
                     <td class="px-3 py-4 sm:px-6">
                         <div class="flex items-center">
+                            <?php if ($is_courtesy): ?>
+                            <span
+                                class="inline-flex items-center justify-center gap-1 rounded-full px-2.5 py-0.5 text-sm font-medium capitalize bg-blue-light-50 text-blue-light-500 dark:bg-blue-light-500/15 dark:text-blue-light-500">
+                                Courtesy
+                            </span>
+                            <?php else: ?>
                             <p class="text-gray-500 text-theme-sm dark:text-gray-400">
                                 <?php echo esc_html($host_name); ?>
                             </p>
+                            <?php endif; ?>
                         </div>
                     </td>
                     <td class="px-3 py-4 sm:px-6">

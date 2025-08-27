@@ -182,7 +182,7 @@ jQuery(document).ready(function ($) {
 		$('#submit-guest-form')
 			.prop('disabled', true)
 			.html(
-				'<span class="animate-spin inline-block w-6 h-6 border-4 border-current border-t-transparent rounded-full mr-2"></span> Registering...'
+				'<span class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2"></span> Registering...'
 			);
 
 		// Clear previous messages and modals
@@ -315,14 +315,14 @@ jQuery(document).ready(function ($) {
 					// Build row
 					const newRow = `
                     <tr>
-                        <td class="px-5 py-4 sm:px-6"><p class="text-gray-500 text-theme-sm dark:text-gray-400">${$('tbody tr').length + 1}</p></td>
-                        <td class="px-5 py-4 sm:px-6"><p class="text-gray-800 text-theme-sm dark:text-white/90">${guest.first_name || 'N/A'}</p></td>
-                        <td class="px-5 py-4 sm:px-6"><p class="text-gray-800 text-theme-sm dark:text-white/90">${guest.last_name || 'N/A'}</p></td>
-                        <td class="px-5 py-4 sm:px-6"><span class="px-2 py-1 text-xs font-medium rounded-full ${statusClasses[guest.status] || ''}">${guest.status ? guest.status.charAt(0).toUpperCase() + guest.status.slice(1) : 'N/A'}</span></td>
-                        <td class="px-5 py-4 sm:px-6"><p class="text-gray-500 text-theme-sm dark:text-gray-400">${guest.id_number || 'N/A'}</p></td>
-                        <td class="px-5 py-4 sm:px-6"><p class="text-gray-500 text-theme-sm dark:text-gray-400">${hostName}</p></td>
-                        <td class="px-5 py-4 sm:px-6"><p class="text-gray-500 text-theme-sm dark:text-gray-400">${formattedDate}</p></td>
-                        <td class="px-5 py-4 sm:px-6">
+                        <td class="px-3 py-4 sm:px-6"><p class="text-gray-500 text-theme-sm dark:text-gray-400">${$('tbody tr').length + 1}</p></td>
+                        <td class="px-3 py-4 sm:px-6"><p class="text-gray-800 text-theme-sm dark:text-white/90">${guest.first_name || 'N/A'}</p></td>
+                        <td class="px-3 py-4 sm:px-6"><p class="text-gray-800 text-theme-sm dark:text-white/90">${guest.last_name || 'N/A'}</p></td>
+                        <td class="px-3 py-4 sm:px-6"><span class="inline-flex items-center justify-center px-2.5 gap-1 py-0.5 text-sm font-medium capitalize rounded-full ${statusClasses[guest.status] || ''}">${guest.status ? guest.status.charAt(0).toUpperCase() + guest.status.slice(1) : 'N/A'}</span></td>
+                        <td class="px-3 py-4 sm:px-6"><p class="text-gray-500 text-theme-sm dark:text-gray-400">${guest.id_number || 'N/A'}</p></td>
+                        <td class="px-3 py-4 sm:px-6"><p class="text-gray-500 text-theme-sm dark:text-gray-400">${hostName}</p></td>
+                        <td class="px-3 py-4 sm:px-6"><p class="text-gray-500 text-theme-sm dark:text-gray-400">${formattedDate}</p></td>
+                        <td class="px-3 py-4 sm:px-6">
                             <div class="flex items-center gap-2">
                                 <button id="edit-guest-button-${guest.id}" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 transition bg-white border border-gray-300 rounded-lg cursor-pointer whitespace-nowrap dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">Edit</button>
                                 ${actionButtons(guest)}
@@ -376,6 +376,285 @@ jQuery(document).ready(function ($) {
 									$(this).remove();
 									window.dispatchEvent(
 										new Event('close-guest-modal')
+									);
+									$('#guest-form')[0].reset();
+
+									// Reload same URL
+									window.location.reload();
+								}
+							);
+						});
+				} else {
+					// Show error modal
+					const errorMessages = response.data?.messages || [
+						'An error occurred during guest registration',
+					];
+					const errorMessageHtml = errorMessages
+						.map(
+							(msg) =>
+								`<p class="text-lg font-medium text-gray-700 dark:text-white">${msg}</p>`
+						)
+						.join('');
+					const errorModal = `
+                    <div id="guest-error-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+                        <div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+                            <div class="check_mark mx-auto mb-4">
+                                <div class="sa-icon sa-error animate">
+                                    <span class="sa-line sa-left animateXLeft"></span>
+                                    <span class="sa-line sa-right animateXRight"></span>
+                                    <div class="sa-placeholder"></div>
+                                </div>
+                            </div>
+                            ${errorMessageHtml}
+                            <button id="ok-error-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">OK</button>
+                        </div>
+                    </div>
+                `;
+					$('body').append(errorModal);
+					$(document)
+						.off('click', '#ok-error-btn')
+						.on('click', '#ok-error-btn', function (e) {
+							e.preventDefault();
+							$('#guest-error-modal-overlay').fadeOut(
+								300,
+								function () {
+									$(this).remove();
+								}
+							);
+						});
+				}
+			},
+			error: function (xhr, status, error) {
+				const errorMessage =
+					xhr.responseJSON?.data?.messages?.join('<br>') ||
+					'An error occurred: ' + error;
+				const errorModal = `
+                <div id="guest-error-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+                    <div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+                        <div class="check_mark mx-auto mb-4">
+                            <div class="sa-icon sa-error animate">
+                                <span class="sa-line sa-left animateXLeft"></span>
+                                <span class="sa-line sa-right animateXRight"></span>
+                                <div class="sa-placeholder"></div>
+                            </div>
+                        </div>
+                        <p class="text-lg font-medium text-gray-700 dark:text-white">${errorMessage}</p>
+                        <button id="ok-error-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">OK</button>
+                    </div>
+                </div>
+            `;
+				$('body').append(errorModal);
+				$(document)
+					.off('click', '#ok-error-btn')
+					.on('click', '#ok-error-btn', function (e) {
+						e.preventDefault();
+						$('#guest-error-modal-overlay').fadeOut(
+							300,
+							function () {
+								$(this).remove();
+							}
+						);
+					});
+			},
+			complete: function () {
+				$('#submit-guest-form')
+					.prop('disabled', false)
+					.text('Create Guest');
+			},
+		});
+	});
+
+	// Guest FORM
+	$('#courtesy-guest-form').on('submit', function (e) {
+		e.preventDefault();
+
+		// Show loading indicator
+		$('#submit-courtesy-guest-form')
+			.prop('disabled', true)
+			.html(
+				'<span class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2"></span> Registering...'
+			);
+
+		// Clear previous messages and modals
+		$('.alert-message').remove();
+		$('#success-modal-overlay, #guest-error-modal-overlay').remove();
+
+		// Collect form data
+		var formData = new FormData(this);
+		formData.append('action', 'courtesy_guest_registration');
+		formData.append('nonce', vms_script_ajax.nonce);
+
+		// Action buttons generator
+		const actionButtons = (guest) => {
+			if (!guest) return '';
+
+			const today = new Date().toISOString().split('T')[0];
+			const normalizedVisitDate = guest.visit_date
+				? guest.visit_date.substring(0, 10)
+				: null;
+
+			const isButtonDisabled =
+				!normalizedVisitDate ||
+				!guest.status ||
+				!/^\d{4}-\d{2}-\d{2}$/.test(normalizedVisitDate) ||
+				guest.status !== 'approved';
+
+			const isFuture = normalizedVisitDate > today;
+			const isPast = normalizedVisitDate < today;
+			const isToday = normalizedVisitDate === today;
+
+			const isMissed = isPast && !guest.sign_in_time;
+			const isScheduled = isFuture;
+			const isCompleted = guest.sign_in_time && guest.sign_out_time;
+
+			const baseButtonClasses =
+				'inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition rounded-lg whitespace-nowrap shadow-theme-xs';
+			const disabledClasses = 'bg-blue-500 opacity-50 cursor-not-allowed';
+			const signInEnabledClasses =
+				'bg-blue-500 cursor-pointer hover:bg-blue-600';
+			const signOutEnabledClasses =
+				'bg-purple-500 cursor-pointer hover:bg-purple-600';
+
+			if (isMissed) {
+				return `<span class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-warning-600 bg-warning-50 rounded-lg dark:bg-warning-500/15 dark:text-orange-500">Missed</span>`;
+			}
+
+			if (isScheduled) {
+				return `<span class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-light-500 bg-blue-light-50 rounded-lg dark:bg-blue-light-500/15 dark:text-blue-light-500">Scheduled</span>`;
+			}
+
+			if (isToday) {
+				if (isCompleted) {
+					const signInTime = new Date(
+						guest.sign_in_time
+					).toLocaleTimeString([], {
+						hour: 'numeric',
+						minute: '2-digit',
+					});
+					const signOutTime = new Date(
+						guest.sign_out_time
+					).toLocaleTimeString([], {
+						hour: 'numeric',
+						minute: '2-digit',
+					});
+					return `<div class="flex flex-col items-center justify-center text-xs px-4"><span class="text-green-600 dark:text-green-400">${signInTime}</span><span class="text-red-600 dark:text-red-400">${signOutTime}</span></div>`;
+				} else if (!guest.sign_in_time) {
+					return `<button id="sign-in-button-${guest.id}" class="${baseButtonClasses} ${isButtonDisabled ? disabledClasses : signInEnabledClasses}" data-visit-id="${guest.visit_id}" ${isButtonDisabled ? 'disabled' : ''}>Sign In</button>`;
+				} else if (!guest.sign_out_time) {
+					return `<button id="sign-out-button-${guest.id}" class="${baseButtonClasses} ${isButtonDisabled ? disabledClasses : signOutEnabledClasses}" data-visit-id="${guest.visit_id}" ${isButtonDisabled ? 'disabled' : ''}>Sign Out</button>`;
+				}
+			}
+
+			return '';
+		};
+
+		// AJAX request
+		$.ajax({
+			url: vms_script_ajax.ajaxurl,
+			type: 'POST',
+			data: formData,
+			processData: false,
+			contentType: false,
+			dataType: 'json',
+			success: function (response) {
+				if (response.success && response.data.guestData) {
+					const guest = response.data.guestData;
+
+					console.log(guest);
+
+					// Format visit date
+					let formattedDate = 'N/A';
+					if (guest.visit_date) {
+						const visitDate = new Date(guest.visit_date);
+						if (!isNaN(visitDate)) {
+							formattedDate = visitDate.toLocaleDateString(
+								'en-US',
+								{
+									month: 'short',
+									day: 'numeric',
+									year: 'numeric',
+								}
+							);
+						}
+					}
+
+					// Status classes
+					const statusClasses = {
+						approved:
+							'bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-500',
+						unapproved:
+							'bg-warning-50 text-warning-600 dark:bg-warning-500/15 dark:text-orange-400',
+						suspended:
+							'bg-blue-light-50 text-blue-light-500 dark:bg-blue-light-500/15 dark:text-blue-light-500',
+						banned: 'bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500',
+						cancelled:
+							'bg-gray-100 text-gray-700 dark:bg-white/5 dark:text-white/80',
+					};
+
+					// Build row
+					const newRow = `
+                    <tr>
+                        <td class="px-3 py-4 sm:px-6"><p class="text-gray-500 text-theme-sm dark:text-gray-400">${$('tbody tr').length + 1}</p></td>
+                        <td class="px-3 py-4 sm:px-6"><p class="text-gray-800 text-theme-sm dark:text-white/90">${guest.first_name || 'N/A'}</p></td>
+                        <td class="px-3 py-4 sm:px-6"><p class="text-gray-800 text-theme-sm dark:text-white/90">${guest.last_name || 'N/A'}</p></td>
+                        <td class="px-3 py-4 sm:px-6"><span class="inline-flex items-center justify-center px-2.5 gap-1 py-0.5 text-sm font-medium capitalize rounded-full ${statusClasses[guest.status] || ''}">${guest.status ? guest.status.charAt(0).toUpperCase() + guest.status.slice(1) : 'N/A'}</span></td>
+                        <td class="px-3 py-4 sm:px-6"><p class="text-gray-500 text-theme-sm dark:text-gray-400">${guest.id_number || 'N/A'}</p></td>
+                        <td class="px-3 py-4 sm:px-6"><span class="inline-flex items-center justify-center px-2.5 gap-1 py-0.5 text-sm font-medium capitalize rounded-full bg-blue-light-50 text-blue-light-500 dark:bg-blue-light-500/15 dark:text-blue-light-500">${guest.courtesy}</span></td>
+                        <td class="px-3 py-4 sm:px-6"><p class="text-gray-500 text-theme-sm dark:text-gray-400">${formattedDate}</p></td>
+                        <td class="px-3 py-4 sm:px-6">
+                            <div class="flex items-center gap-2">
+                                <button id="edit-guest-button-${guest.id}" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 transition bg-white border border-gray-300 rounded-lg cursor-pointer whitespace-nowrap dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">Edit</button>
+                                ${actionButtons(guest)}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+
+					// Remove "no guests" row
+					$('#no-guests-row').remove();
+
+					// Prepend row
+					$('tbody').prepend(newRow);
+
+					// Re-number rows
+					$('tbody tr').each(function (index) {
+						$(this)
+							.find('td:first p')
+							.text(index + 1);
+					});
+
+					// Show success modal
+					const message =
+						response.data.messages?.[0] ||
+						'Guest registered successfully';
+					const successModal = `
+                    <div id="success-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+                        <div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+                            <div class="check_mark mx-auto mb-4">
+                                <div class="sa-icon sa-success animate">
+                                    <span class="sa-line sa-tip animateSuccessTip"></span>
+                                    <span class="sa-line sa-long animateSuccessLong"></span>
+                                    <div class="sa-placeholder"></div>
+                                    <div class="sa-fix"></div>
+                                </div>
+                            </div>
+                            <p class="text-lg font-medium text-gray-700 dark:text-white">${message}</p>
+                            <button id="ok-success-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 transition">OK</button>
+                        </div>
+                    </div>
+                `;
+					$('body').append(successModal);
+
+					$(document)
+						.off('click', '#ok-success-btn')
+						.on('click', '#ok-success-btn', function (e) {
+							e.preventDefault();
+							$('#success-modal-overlay').fadeOut(
+								300,
+								function () {
+									$(this).remove();
+									window.dispatchEvent(
+										new Event('close-courtesy-guest-modal')
 									);
 									$('#guest-form')[0].reset();
 								}
@@ -454,7 +733,7 @@ jQuery(document).ready(function ($) {
 					});
 			},
 			complete: function () {
-				$('#submit-guest-form')
+				$('#submit-courtesy-guest-form')
 					.prop('disabled', false)
 					.text('Create Guest');
 			},
@@ -848,55 +1127,6 @@ jQuery(document).ready(function ($) {
 			dataType: 'json',
 			success: function (response) {
 				if (response.success) {
-					const data = response.data;
-
-					// Build new row HTML (matching your PHP loop structure)
-					const newRow = `
-					<div id="visit-div"
-						class="grid grid-cols-12 border-t border-gray-100 dark:border-gray-800">
-						
-						<!-- Host Member -->
-						<div id="visit-host" class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
-							<p class="text-theme-sm text-gray-700 dark:text-gray-400">${data.host_display}</p>
-						</div>
-						
-						<!-- Visit Date -->
-						<div id="visit-date" class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
-							<p class="text-theme-sm text-gray-700 dark:text-gray-400">${data.visit_date}</p>
-						</div>
-						
-						<!-- Sign In Time -->
-						<div id="sign-in-time" class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
-							<p class="text-theme-sm text-gray-700 dark:text-gray-400">${data.sign_in_time}</p>
-						</div>
-						
-						<!-- Sign Out Time -->
-						<div id="sign-out-time" class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
-							<p class="text-theme-sm text-gray-700 dark:text-gray-400">${data.sign_out_time}</p>
-						</div>
-						
-						<!-- Duration -->
-						<div id="visit-duration" class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
-							<p class="text-theme-sm text-gray-700 dark:text-gray-400">${data.duration}</p>
-						</div>
-						
-						<!-- Status -->
-						<div id="visit-status" class="col-span-2 flex items-center px-4 py-3">
-							<span class="${data.status_class} inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-sm font-medium">
-								${data.status_text}
-							</span>
-						</div>
-					</div>
-				`;
-
-					// Append the new row to the visits container
-					$('#visits-container').append(newRow);
-
-					// Remove "No visits found" if exists
-					if ($('#no-visits-div').length) {
-						$('#no-visits-div').remove();
-					}
-
 					// Success modal
 					const message =
 						response.data.messages?.[0] ||

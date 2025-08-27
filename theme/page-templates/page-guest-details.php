@@ -319,18 +319,6 @@ get_header();
                                                             class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" />
                                                     </div>
 
-                                                    <!-- Courtesy -->
-                                                    <div class="w-full px-2.5 md:w-1/2">
-                                                        <label for="courtesy"
-                                                            class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                                            <?php esc_html_e( 'Courtesy:', 'vms' ); ?>
-                                                        </label>
-                                                        <input type="text" id="courtesy" name="courtesy"
-                                                            placeholder="Chairman"
-                                                            value="<?php echo esc_attr($guest->courtesy ?? ''); ?>"
-                                                            class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" />
-                                                    </div>
-
                                                     <!-- Status -->
                                                     <div class="w-full px-2.5 md:w-1/2">
                                                         <label for="guest_status"
@@ -606,9 +594,7 @@ get_header();
                                                                     <!-- Host -->
                                                                     <div
                                                                         class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
-                                                                        <p
-                                                                            class="text-theme-sm text-gray-700 dark:text-gray-400">
-                                                                            <?php
+                                                                        <?php
                                                                             $host_display = 'N/A';
                                                                             if (!empty($visit->host_member_id)) {
                                                                                 $host_user = get_userdata($visit->host_member_id);
@@ -619,10 +605,25 @@ get_header();
                                                                                         ? trim($first_name . ' ' . $last_name)
                                                                                         : $host_user->user_login;
                                                                                 }
+                                                                            } elseif( !empty($visit->courtesy)) {
+                                                                                $host_display = $visit->courtesy;                                                                                
                                                                             }
-                                                                            echo esc_html($host_display);
-                                                                            ?>
-                                                                        </p>
+                                                                            $is_courtesy = empty($host_member_id) && !empty($visit->courtesy);
+                                                                           
+                                                                        ?>
+                                                                        <div class="flex items-center">
+                                                                            <?php if ($is_courtesy): ?>
+                                                                            <span
+                                                                                class="inline-flex items-center justify-center gap-1 rounded-full px-2.5 py-0.5 text-sm font-medium capitalize bg-blue-light-50 text-blue-light-500 dark:bg-blue-light-500/15 dark:text-blue-light-500">
+                                                                                Courtesy
+                                                                            </span>
+                                                                            <?php else: ?>
+                                                                            <p
+                                                                                class="text-gray-500 text-theme-sm dark:text-gray-400">
+                                                                                <?php echo esc_html($host_display); ?>
+                                                                            </p>
+                                                                            <?php endif; ?>
+                                                                        </div>
                                                                     </div>
 
                                                                     <!-- Visit Date -->

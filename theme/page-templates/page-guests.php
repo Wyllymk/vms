@@ -18,7 +18,9 @@ if ( ! ( current_user_can( 'administrator' ) || current_user_can( 'general_manag
 get_header();
 ?>
 
-<section x-data="{ page: 'guests', 'isGuestInfoModal': false}" @close-guest-modal.window="isGuestInfoModal = false">
+<section x-data="{ page: 'guests', 'isGuestInfoModal': false, 'isCourtesyGuestInfoModal': false}"
+    @close-courtesy-guest-modal.window="isCourtesyGuestInfoModal = false"
+    @close-guest-modal.window="isGuestInfoModal = false">
     <!-- ===== Page Wrapper Start ===== -->
     <div class="flex h-screen overflow-hidden">
         <!-- ===== Sidebar Start ===== -->
@@ -78,10 +80,14 @@ get_header();
                                 </div>
 
                                 <!-- Register Button -->
-                                <div class="flex items-center justify-end w-full md:w-1/2">
+                                <div class="flex items-center justify-end w-full md:w-1/2 gap-4">
                                     <a @click="isGuestInfoModal = true"
                                         class="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg cursor-pointer bg-brand-500 shadow-theme-xs hover:bg-brand-600">
                                         <?php esc_html_e( 'Register Guest', 'vms' ); ?>
+                                    </a>
+                                    <a @click="isCourtesyGuestInfoModal = true"
+                                        class="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium transition rounded-lg cursor-pointer shadow-theme-xs text-warning-600 bg-warning-100 hover:bg-warning-200 dark:bg-warning-500/15 dark:hover:bg-warning-500/25 dark:text-orange-500">
+                                        <?php esc_html_e( 'Register Courtesy Guest', 'vms' ); ?>
                                     </a>
                                 </div>
                             </div>
@@ -161,6 +167,9 @@ get_header();
 
     <!-- BEGIN MODAL -->
     <?php get_template_part( 'template-parts/content/content', 'guest-modal' ); ?>
+    <!-- END MODAL -->
+    <!-- BEGIN MODAL -->
+    <?php get_template_part( 'template-parts/content/content', 'courtesy-guest-modal' ); ?>
     <!-- END MODAL -->
 </section>
 
