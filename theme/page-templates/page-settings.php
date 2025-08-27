@@ -10,20 +10,111 @@ defined( 'ABSPATH' ) || exit;
 
 // Check if the current user is an Administrator or Manager or Advocate
 if ( ! ( current_user_can( 'administrator' ) || current_user_can( 'reception' ) || current_user_can( 'general_manager' ) || current_user_can( 'chairman' ) ) ) {
-	// Redirect unauthorized users to the front page
-	wp_redirect( home_url() );
-	exit;
+    // Redirect unauthorized users to the front page
+    wp_redirect( home_url() );
+    exit;
+}
+
+// Initialize session for success messages
+if ( ! session_id() ) {
+    session_start();
+}
+
+// Handle form submission
+if ( isset( $_POST['update_settings'] ) && wp_verify_nonce( $_POST['_wpnonce_update_settings'], 'update_settings_data' ) ) {
+    $errors = array();
+    $success_messages = array();
+    
+    // Sanitize and validate inputs
+    $api_key = sanitize_text_field( $_POST['api_key'] ?? '' );
+    $api_secret = sanitize_text_field( $_POST['api_secret'] ?? '' );
+    $sender_id = sanitize_text_field( $_POST['sender_id'] ?? 'SMS_TEST' );
+    $status_url = esc_url_raw( $_POST['status_url'] ?? '' );
+    $status_secret = sanitize_text_field( $_POST['status_secret'] ?? '' );
+    
+    // Validate required fields
+    if ( empty( $api_key ) ) {
+        $errors[] = 'API Key is required';
+    }
+    
+    if ( empty( $api_secret ) ) {
+        $errors[] = 'API Secret is required';
+    }
+    
+    if ( ! empty( $status_url ) && empty( $status_secret ) ) {
+        $errors[] = 'Status Secret is required when Status URL is provided';
+    }
+    
+    // Save settings if no errors
+    if ( empty( $errors ) ) {
+        update_option( 'vms_sms_api_key', $api_key );
+        update_option( 'vms_sms_api_secret', $api_secret );
+        update_option( 'vms_sms_sender_id', $sender_id );
+        update_option( 'vms_status_url', $status_url );
+        update_option( 'vms_status_secret', $status_secret );
+        
+        $success_messages[] = 'Settings updated successfully';
+        $_SESSION['settings_success'] = $success_messages;
+        
+        // Redirect to prevent form resubmission
+        wp_redirect( add_query_arg( 'updated', '1', wp_get_referer() ) );
+        exit;
+    } else {
+        $_SESSION['settings_errors'] = $errors;
+    }
+}
+
+// Handle balance refresh
+if ( isset( $_POST['refresh_balance'] ) && wp_verify_nonce( $_POST['_wpnonce_refresh_balance'], 'refresh_balance_data' ) ) {
+    $api_key = get_option( 'vms_sms_api_key', '' );
+    $api_secret = get_option( 'vms_sms_api_secret', '' );
+    
+    if ( ! empty( $api_key ) && ! empty( $api_secret ) ) {
+        // Make API call to get balance
+        $response = wp_remote_get( 'https://api.smsleopard.com/v1/balance', array(
+            'headers' => array(
+                'Authorization' => 'Bearer ' . base64_encode( $api_key . ':' . $api_secret ),
+                'Accept' => 'application/json',
+            ),
+            'timeout' => 30,
+        ) );
+        
+        if ( ! is_wp_error( $response ) ) {
+            $body = wp_remote_retrieve_body( $response );
+            $data = json_decode( $body, true );
+            
+            if ( isset( $data['balance'] ) ) {
+                update_option( 'vms_sms_balance', $data['balance'] );
+                update_option( 'vms_sms_last_check', current_time( 'mysql' ) );
+                $_SESSION['settings_success'] = array( 'Balance refreshed successfully' );
+            } else {
+                $_SESSION['settings_errors'] = array( 'Failed to retrieve balance from API' );
+            }
+        } else {
+            $_SESSION['settings_errors'] = array( 'API connection failed: ' . $response->get_error_message() );
+        }
+    } else {
+        $_SESSION['settings_errors'] = array( 'Please configure API credentials first' );
+    }
+    
+    wp_redirect( wp_get_referer() );
+    exit;
 }
 
 get_header();
 
-// Retrieve the saved SMS balance and last checked time
-$sms_balance       = get_option( 'mobilesasa_sms_balance', 'N/A' );
-$last_checked_time = get_option( 'mobilesasa_last_check', 'N/A' );
+// Retrieve current settings
+$api_key = get_option( 'vms_sms_api_key', '' );
+$api_secret = get_option( 'vms_sms_api_secret', '' );
+$sender_id = get_option( 'vms_sms_sender_id', 'SMS_TEST' );
+$status_url = get_option( 'vms_status_url', '' );
+$status_secret = get_option( 'vms_status_secret', '' );
+$sms_balance = get_option( 'vms_sms_balance', 'N/A' );
+$last_checked_time = get_option( 'vms_sms_last_check', 'Never' );
 
 ?>
 
-<section x-data="{ page: 'settings'">
+<section x-data="{ page: 'settings'}">
     <!-- ===== Page Wrapper Start ===== -->
     <div class="flex h-screen overflow-hidden">
         <!-- ===== Sidebar Start ===== -->
@@ -44,124 +135,267 @@ $last_checked_time = get_option( 'mobilesasa_last_check', 'N/A' );
             <main>
                 <div class="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
                     <!-- Breadcrumb Start -->
-                    <div x-data="{ pageName: `Settings`}">
+                    <div x-data="{ pageName: `SMS Settings`}">
                         <?php get_template_part( 'template-parts/content/content', 'breadcrumb' ); ?>
                     </div>
+
                     <!-- Main content here grows to fill the available space -->
                     <div class="content-page">
                         <!-- Wrapper for light/dark mode support -->
                         <div class="text-gray-800 content-page dark:text-gray-100">
                             <div class="py-6 mx-auto">
-                                <div class="flex flex-col">
+                                <div class="flex flex-col space-y-6">
+
+                                    <!-- SMS Balance Card -->
                                     <div
-                                        class="rounded-2xl shadow-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
+                                        class="rounded-2xl shadow-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+                                        <div
+                                            class="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                                            <h4 class="text-lg font-semibold flex items-center">
+                                                <svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor"
+                                                    viewBox="0 0 20 20">
+                                                    <path
+                                                        d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4zM18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z">
+                                                    </path>
+                                                </svg>
+                                                <?php esc_html_e( 'SMS Balance', 'vms' ); ?>
+                                            </h4>
+                                            <form method="post" class="inline">
+                                                <?php wp_nonce_field( 'refresh_balance_data', '_wpnonce_refresh_balance' ); ?>
+                                                <button type="submit" name="refresh_balance"
+                                                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition rounded-lg bg-blue-500 shadow-theme-xs hover:bg-blue-600">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                                                        </path>
+                                                    </svg>
+                                                    <?php esc_html_e( 'Refresh', 'vms' ); ?>
+                                                </button>
+                                            </form>
+                                        </div>
+                                        <div class="px-6 py-4">
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div
+                                                    class="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                                                    <div class="text-2xl font-bold text-green-600 dark:text-green-400">
+                                                        KES
+                                                        <?php echo is_numeric($sms_balance) ? number_format($sms_balance, 2) : esc_html($sms_balance); ?>
+                                                    </div>
+                                                    <div class="text-sm text-gray-600 dark:text-gray-400">Current
+                                                        Balance</div>
+                                                </div>
+                                                <div class="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                                                    <div class="text-sm font-medium text-blue-600 dark:text-blue-400">
+                                                        Last Updated</div>
+                                                    <div class="text-xs text-gray-600 dark:text-gray-400">
+                                                        <?php echo $last_checked_time !== 'Never' ? date('M j, Y g:i A', strtotime($last_checked_time)) : 'Never'; ?>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Settings Card -->
+                                    <div
+                                        class="rounded-2xl shadow-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
                                         <!-- Card Header -->
                                         <div
                                             class="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                                            <h4 class="text-lg font-semibold">
-                                                <?php esc_html_e( 'Settings', 'vms' ); ?>
+                                            <h4 class="text-lg font-semibold flex items-center">
+                                                <svg class="w-5 h-5 mr-2 text-blue-500" fill="currentColor"
+                                                    viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd"
+                                                        d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z"
+                                                        clip-rule="evenodd"></path>
+                                                </svg>
+                                                <?php esc_html_e( 'SMS API Configuration', 'vms' ); ?>
                                             </h4>
                                         </div>
 
                                         <!-- Card Body -->
                                         <div class="px-6 py-4">
-
                                             <?php                                                
-                                                // Display success messages
-                                                if ( isset( $_SESSION['settings_success'] ) && ! empty( $_SESSION['settings_success'] ) ) :
-                                                    foreach ( $_SESSION['settings_success'] as $success_message ) :
-                                                ?>
+                                            // Display success messages
+                                            if ( isset( $_SESSION['settings_success'] ) && ! empty( $_SESSION['settings_success'] ) ) :
+                                                foreach ( $_SESSION['settings_success'] as $success_message ) :
+                                            ?>
                                             <div class="flex items-center justify-between p-4 mb-4 text-white bg-green-500 border-l-4 border-green-700 rounded"
                                                 role="alert">
-                                                <div>
-                                                    <strong>Success!</strong>
-                                                    <p class="text-sm">
-                                                        <?php echo ucwords( esc_html( $success_message ) ); ?></p>
+                                                <div class="flex items-center">
+                                                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd"
+                                                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                            clip-rule="evenodd"></path>
+                                                    </svg>
+                                                    <div>
+                                                        <strong>Success!</strong>
+                                                        <p class="text-sm"><?php echo esc_html( $success_message ); ?>
+                                                        </p>
+                                                    </div>
                                                 </div>
-                                                <button type="button"
-                                                    class="float-right text-white cursor-pointer hover:text-gray-300"
+                                                <button type="button" class="text-white hover:text-gray-300"
                                                     onclick="this.parentElement.style.display='none';">×</button>
                                             </div>
                                             <?php
-                                                    endforeach;
-                                                    unset( $_SESSION['settings_success'] ); // Clear success messages after displaying
-                                                endif;                                                
-                                                ?>
+                                                endforeach;
+                                                unset( $_SESSION['settings_success'] );
+                                            endif;
+                                            
+                                            // Display error messages
+                                            if ( isset( $_SESSION['settings_errors'] ) && ! empty( $_SESSION['settings_errors'] ) ) :
+                                                foreach ( $_SESSION['settings_errors'] as $error_message ) :
+                                            ?>
+                                            <div class="flex items-center justify-between p-4 mb-4 text-white bg-red-500 border-l-4 border-red-700 rounded"
+                                                role="alert">
+                                                <div class="flex items-center">
+                                                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd"
+                                                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                                            clip-rule="evenodd"></path>
+                                                    </svg>
+                                                    <div>
+                                                        <strong>Error!</strong>
+                                                        <p class="text-sm"><?php echo esc_html( $error_message ); ?></p>
+                                                    </div>
+                                                </div>
+                                                <button type="button" class="text-white hover:text-gray-300"
+                                                    onclick="this.parentElement.style.display='none';">×</button>
+                                            </div>
+                                            <?php
+                                                endforeach;
+                                                unset( $_SESSION['settings_errors'] );
+                                            endif;                                                
+                                            ?>
 
-                                            <!-- Update Account Info -->
-                                            <div class="overflow-auto">
-                                                <h3
-                                                    class="mb-4 text-lg font-semibold text-gray-700 border-b border-gray-200 dark:text-gray-300 dark:border-gray-700">
-                                                    <?php esc_html_e( 'Update SMS Information', 'vms' ); ?>
-                                                </h3>
-                                                <form action="" method="post" enctype="multipart/form-data">
-                                                    <?php wp_nonce_field( 'update_account_data', '_wpnonce_update_account_data' ); ?>
-                                                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                                        <!-- Sender ID -->
-                                                        <div class="mb-4">
-                                                            <div class="flex space-x-4">
-                                                                <!-- Sender ID Input -->
-                                                                <div class="w-1/2">
-                                                                    <label for="uname"
-                                                                        class="block text-gray-700 dark:text-gray-300">
-                                                                        <?php esc_html_e( 'Sender ID:', 'vms' ); ?>
-                                                                    </label>
-                                                                    <input type="text"
-                                                                        class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
-                                                                        id="uname"
-                                                                        value="<?php echo esc_attr( get_option( 'mobilesasa_sender_id', '' ) ); ?>"
-                                                                        name="sender_id" placeholder="Enter Sender ID">
-                                                                    <small
-                                                                        class="text-sm text-gray-600 dark:text-gray-400">
-                                                                        <?php esc_html_e( 'Please enter a valid Sender ID.', 'vms' ); ?>
-                                                                    </small>
-                                                                </div>
+                                            <form action="" method="post" enctype="multipart/form-data">
+                                                <?php wp_nonce_field( 'update_settings_data', '_wpnonce_update_settings' ); ?>
 
-                                                                <!-- SMS Balance Input -->
-                                                                <div class="w-1/2">
-                                                                    <label for="sms_balance"
-                                                                        class="block text-gray-700 dark:text-gray-300">
-                                                                        <?php esc_html_e( 'SMS Balance:', 'vms' ); ?>
-                                                                    </label>
-                                                                    <input type="text"
-                                                                        class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
-                                                                        value="<?php echo esc_attr( $sms_balance ); ?>"
-                                                                        readonly>
-                                                                    <small
-                                                                        class="text-sm text-gray-600 dark:text-gray-400">
-                                                                        <?php esc_html_e( 'Last Checked:', 'vms' ); ?>
-                                                                        <?php echo esc_attr( $last_checked_time ); ?>
-                                                                    </small>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <!-- End of Sender ID -->
-                                                        <!-- API Token -->
-                                                        <div class="mb-4">
-                                                            <label for="api_token"
-                                                                class="block text-gray-700 dark:text-gray-300">
-                                                                <?php esc_html_e( 'API Token:', 'vms' ); ?>
+                                                <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                                                    <!-- API Credentials Section -->
+                                                    <div class="space-y-4">
+                                                        <h5
+                                                            class="text-md font-medium text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 pb-2">
+                                                            <?php esc_html_e( 'API Credentials', 'vms' ); ?>
+                                                        </h5>
+
+                                                        <!-- API Key -->
+                                                        <div>
+                                                            <label for="api_key"
+                                                                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                                <?php esc_html_e( 'API Key', 'vms' ); ?> <span
+                                                                    class="text-red-500">*</span>
                                                             </label>
                                                             <input type="text"
                                                                 class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
-                                                                id="api_token"
-                                                                value="<?php echo esc_attr( get_option( 'mobilesasa_api_token', '' ) ); ?>"
-                                                                name="api_token" placeholder="Enter API Token">
-                                                            <small class="text-sm text-gray-600 dark:text-gray-400">
-                                                                <?php esc_html_e( 'Please enter your API Token.', 'vms' ); ?>
+                                                                id="api_key" name="api_key"
+                                                                value="<?php echo esc_attr( $api_key ); ?>"
+                                                                placeholder="Enter your SMS Leopard API Key" required>
+                                                            <small class="text-xs text-gray-600 dark:text-gray-400">
+                                                                <?php esc_html_e( 'Your SMS Leopard API key from the dashboard', 'vms' ); ?>
                                                             </small>
                                                         </div>
-                                                        <!-- End of API Token -->
+
+                                                        <!-- API Secret -->
+                                                        <div>
+                                                            <label for="api_secret"
+                                                                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                                <?php esc_html_e( 'API Secret', 'vms' ); ?> <span
+                                                                    class="text-red-500">*</span>
+                                                            </label>
+                                                            <input type="password"
+                                                                class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
+                                                                id="api_secret" name="api_secret"
+                                                                value="<?php echo esc_attr( $api_secret ); ?>"
+                                                                placeholder="Enter your SMS Leopard API Secret"
+                                                                required>
+                                                            <small class="text-xs text-gray-600 dark:text-gray-400">
+                                                                <?php esc_html_e( 'Your SMS Leopard API secret key', 'vms' ); ?>
+                                                            </small>
+                                                        </div>
                                                     </div>
-                                                    <div class="flex justify-center mt-4 space-x-2">
-                                                        <a type="submit" name="update_details"
-                                                            class="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-white transition rounded-lg cursor-pointer bg-brand-500 shadow-theme-xs hover:bg-brand-600">
-                                                            <?php esc_html_e( 'Update Settings', 'vms' ); ?>
-                                                        </a>
+
+                                                    <!-- SMS Settings Section -->
+                                                    <div class="space-y-4">
+                                                        <h5
+                                                            class="text-md font-medium text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 pb-2">
+                                                            <?php esc_html_e( 'SMS Configuration', 'vms' ); ?>
+                                                        </h5>
+
+                                                        <!-- Sender ID -->
+                                                        <div>
+                                                            <label for="sender_id"
+                                                                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                                <?php esc_html_e( 'Sender ID', 'vms' ); ?>
+                                                            </label>
+                                                            <input type="text"
+                                                                class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
+                                                                id="sender_id" name="sender_id"
+                                                                value="<?php echo esc_attr( $sender_id ); ?>"
+                                                                placeholder="SMS_TEST">
+                                                            <small class="text-xs text-gray-600 dark:text-gray-400">
+                                                                <?php esc_html_e( 'Use SMS_TEST for testing or your approved sender ID', 'vms' ); ?>
+                                                            </small>
+                                                        </div>
+
+                                                        <!-- Status URL -->
+                                                        <div>
+                                                            <label for="status_url"
+                                                                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                                <?php esc_html_e( 'Status Callback URL', 'vms' ); ?>
+                                                            </label>
+                                                            <input type="url"
+                                                                class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
+                                                                id="status_url" name="status_url"
+                                                                value="<?php echo esc_url( $status_url ); ?>"
+                                                                placeholder="https://yoursite.com/sms/callback">
+                                                            <small class="text-xs text-gray-600 dark:text-gray-400">
+                                                                <?php esc_html_e( 'Optional URL for delivery reports', 'vms' ); ?>
+                                                            </small>
+                                                        </div>
+
+                                                        <!-- Status Secret -->
+                                                        <div>
+                                                            <label for="status_secret"
+                                                                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                                <?php esc_html_e( 'Status Secret', 'vms' ); ?>
+                                                            </label>
+                                                            <input type="text"
+                                                                class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
+                                                                id="status_secret" name="status_secret"
+                                                                value="<?php echo esc_attr( $status_secret ); ?>"
+                                                                placeholder="Enter callback verification secret">
+                                                            <small class="text-xs text-gray-600 dark:text-gray-400">
+                                                                <?php esc_html_e( 'Required if status URL is provided', 'vms' ); ?>
+                                                            </small>
+                                                        </div>
                                                     </div>
-                                                </form>
-                                            </div>
-                                            <!-- End of Update Account Info -->
+                                                </div>
+
+                                                <!-- Action Buttons -->
+                                                <div class="flex justify-center mt-8 space-x-4">
+                                                    <button type="submit" name="update_settings"
+                                                        class="inline-flex items-center gap-2 px-8 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600 focus:ring-3 focus:ring-brand-500/20">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                            viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                        </svg>
+                                                        <?php esc_html_e( 'Save Settings', 'vms' ); ?>
+                                                    </button>
+
+                                                    <button type="button" id="test-connection"
+                                                        class="inline-flex items-center gap-2 px-8 py-3 text-sm font-medium text-gray-700 transition bg-white border border-gray-300 rounded-lg shadow-theme-xs hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                            viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                                        </svg>
+                                                        <?php esc_html_e( 'Test Connection', 'vms' ); ?>
+                                                    </button>
+                                                </div>
+                                            </form>
                                         </div>
                                     </div>
                                 </div>
@@ -169,7 +403,6 @@ $last_checked_time = get_option( 'mobilesasa_last_check', 'N/A' );
                         </div>
                     </div>
                 </div>
-
             </main>
             <!-- ===== Main Content End ===== -->
         </div>
@@ -177,6 +410,55 @@ $last_checked_time = get_option( 'mobilesasa_last_check', 'N/A' );
     </div>
     <!-- ===== Page Wrapper End ===== -->
 </section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const testButton = document.getElementById('test-connection');
+
+    if (testButton) {
+        testButton.addEventListener('click', async function() {
+            const originalText = this.innerHTML;
+            const apiKey = document.getElementById('api_key').value;
+            const apiSecret = document.getElementById('api_secret').value;
+
+            if (!apiKey || !apiSecret) {
+                alert('Please enter both API Key and API Secret first.');
+                return;
+            }
+
+            this.disabled = true;
+            this.innerHTML =
+                '<svg class="w-4 h-4 animate-spin mr-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Testing...';
+
+            try {
+                // Simple connection test
+                const formData = new FormData();
+                formData.append('action', 'test_sms_connection');
+                formData.append('api_key', apiKey);
+                formData.append('api_secret', apiSecret);
+                formData.append('_wpnonce',
+                    '<?php echo wp_create_nonce('test_connection_nonce'); ?>');
+
+                const response = await fetch('<?php echo admin_url('admin-ajax.php'); ?>', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    alert('Connection test successful! Your API credentials appear to be working.');
+                } else {
+                    alert('Connection test failed. Please check your API credentials.');
+                }
+            } catch (error) {
+                alert('Connection test failed: ' + error.message);
+            } finally {
+                this.disabled = false;
+                this.innerHTML = originalText;
+            }
+        });
+    }
+});
+</script>
 
 <?php
 get_footer();
