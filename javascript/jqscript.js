@@ -657,6 +657,8 @@ jQuery(document).ready(function ($) {
 										new Event('close-courtesy-guest-modal')
 									);
 									$('#guest-form')[0].reset();
+
+									window.location.reload();
 								}
 							);
 						});

@@ -114,15 +114,17 @@ $status_classes = [
             $start = $total_visits > 0 ? $offset + 1 : 0;
             $end = min($offset + $guests_per_page, $total_visits);
             
-            if (!empty($search_term)) {
+            if (!empty($search_term)) {                
                 printf(
+                    /* translators: %1$d: start entry number, %2$d: end entry number, %3$d: total filtered entries */
                     esc_html__('Showing %1$d to %2$d of %3$d entries (filtered from total)', 'vms'),
                     $start,
                     $end,
                     $total_visits
                 );
-            } else {
+            } else {                
                 printf(
+                    /* translators: %1$d: start entry number, %2$d: end entry number, %3$d: total entries */
                     esc_html__('Showing %1$d to %2$d of %3$d entries', 'vms'),
                     $start,
                     $end,
@@ -275,7 +277,7 @@ $status_classes = [
                             <?php if ($is_courtesy): ?>
                             <span
                                 class="inline-flex items-center justify-center gap-1 rounded-full px-2.5 py-0.5 text-sm font-medium capitalize bg-blue-light-50 text-blue-light-500 dark:bg-blue-light-500/15 dark:text-blue-light-500">
-                                Courtesy
+                                <?php esc_html_e('Courtesy!', 'vms'); ?>
                             </span>
                             <?php else: ?>
                             <p class="text-gray-500 text-theme-sm dark:text-gray-400">
@@ -403,7 +405,10 @@ $status_classes = [
 
         <!-- Mobile page indicator -->
         <span class="block text-sm font-medium text-gray-700 dark:text-gray-400 sm:hidden">
-            <?php printf(esc_html__('Page %1$d of %2$d', 'vms'), $current_page, $total_pages); ?>
+            <?php 
+            /* translators: %1$d: current page number, %2$d: total pages */ 
+            printf(esc_html__('Page %1$d of %2$d', 'vms'), $current_page, $total_pages); 
+            ?>
         </span>
 
         <!-- Desktop page numbers -->

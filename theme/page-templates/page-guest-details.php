@@ -615,7 +615,7 @@ get_header();
                                                                             <?php if ($is_courtesy): ?>
                                                                             <span
                                                                                 class="inline-flex items-center justify-center gap-1 rounded-full px-2.5 py-0.5 text-sm font-medium capitalize bg-blue-light-50 text-blue-light-500 dark:bg-blue-light-500/15 dark:text-blue-light-500">
-                                                                                Courtesy
+                                                                                <?php esc_html_e('Courtesy!', 'vms'); ?>
                                                                             </span>
                                                                             <?php else: ?>
                                                                             <p
