@@ -15,92 +15,6 @@ if ( ! ( current_user_can( 'administrator' ) || current_user_can( 'reception' ) 
     exit;
 }
 
-// Initialize session for success messages
-if ( ! session_id() ) {
-    session_start();
-}
-
-// Handle form submission
-if ( isset( $_POST['update_settings'] ) && wp_verify_nonce( $_POST['_wpnonce_update_settings'], 'update_settings_data' ) ) {
-    $errors = array();
-    $success_messages = array();
-    
-    // Sanitize and validate inputs
-    $api_key = sanitize_text_field( $_POST['api_key'] ?? '' );
-    $api_secret = sanitize_text_field( $_POST['api_secret'] ?? '' );
-    $sender_id = sanitize_text_field( $_POST['sender_id'] ?? 'SMS_TEST' );
-    $status_url = esc_url_raw( $_POST['status_url'] ?? '' );
-    $status_secret = sanitize_text_field( $_POST['status_secret'] ?? '' );
-    
-    // Validate required fields
-    if ( empty( $api_key ) ) {
-        $errors[] = 'API Key is required';
-    }
-    
-    if ( empty( $api_secret ) ) {
-        $errors[] = 'API Secret is required';
-    }
-    
-    if ( ! empty( $status_url ) && empty( $status_secret ) ) {
-        $errors[] = 'Status Secret is required when Status URL is provided';
-    }
-    
-    // Save settings if no errors
-    if ( empty( $errors ) ) {
-        update_option( 'vms_sms_api_key', $api_key );
-        update_option( 'vms_sms_api_secret', $api_secret );
-        update_option( 'vms_sms_sender_id', $sender_id );
-        update_option( 'vms_status_url', $status_url );
-        update_option( 'vms_status_secret', $status_secret );
-        
-        $success_messages[] = 'Settings updated successfully';
-        $_SESSION['settings_success'] = $success_messages;
-        
-        // Redirect to prevent form resubmission
-        wp_redirect( add_query_arg( 'updated', '1', wp_get_referer() ) );
-        exit;
-    } else {
-        $_SESSION['settings_errors'] = $errors;
-    }
-}
-
-// Handle balance refresh
-if ( isset( $_POST['refresh_balance'] ) && wp_verify_nonce( $_POST['_wpnonce_refresh_balance'], 'refresh_balance_data' ) ) {
-    $api_key = get_option( 'vms_sms_api_key', '' );
-    $api_secret = get_option( 'vms_sms_api_secret', '' );
-    
-    if ( ! empty( $api_key ) && ! empty( $api_secret ) ) {
-        // Make API call to get balance
-        $response = wp_remote_get( 'https://api.smsleopard.com/v1/balance', array(
-            'headers' => array(
-                'Authorization' => 'Bearer ' . base64_encode( $api_key . ':' . $api_secret ),
-                'Accept' => 'application/json',
-            ),
-            'timeout' => 30,
-        ) );
-        
-        if ( ! is_wp_error( $response ) ) {
-            $body = wp_remote_retrieve_body( $response );
-            $data = json_decode( $body, true );
-            
-            if ( isset( $data['balance'] ) ) {
-                update_option( 'vms_sms_balance', $data['balance'] );
-                update_option( 'vms_sms_last_check', current_time( 'mysql' ) );
-                $_SESSION['settings_success'] = array( 'Balance refreshed successfully' );
-            } else {
-                $_SESSION['settings_errors'] = array( 'Failed to retrieve balance from API' );
-            }
-        } else {
-            $_SESSION['settings_errors'] = array( 'API connection failed: ' . $response->get_error_message() );
-        }
-    } else {
-        $_SESSION['settings_errors'] = array( 'Please configure API credentials first' );
-    }
-    
-    wp_redirect( wp_get_referer() );
-    exit;
-}
-
 get_header();
 
 // Retrieve current settings
@@ -139,6 +53,9 @@ $last_checked_time = get_option( 'vms_sms_last_check', 'Never' );
                         <?php get_template_part( 'template-parts/content/content', 'breadcrumb' ); ?>
                     </div>
 
+                    <!-- Alert Container -->
+                    <div id="alert-container" class="mb-4"></div>
+
                     <!-- Main content here grows to fill the available space -->
                     <div class="content-page">
                         <!-- Wrapper for light/dark mode support -->
@@ -160,26 +77,24 @@ $last_checked_time = get_option( 'vms_sms_last_check', 'Never' );
                                                 </svg>
                                                 <?php esc_html_e( 'SMS Balance', 'vms' ); ?>
                                             </h4>
-                                            <form method="post" class="inline">
-                                                <?php wp_nonce_field( 'refresh_balance_data', '_wpnonce_refresh_balance' ); ?>
-                                                <button type="submit" name="refresh_balance"
-                                                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition rounded-lg bg-blue-500 shadow-theme-xs hover:bg-blue-600">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor"
-                                                        viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
-                                                        </path>
-                                                    </svg>
-                                                    <?php esc_html_e( 'Refresh', 'vms' ); ?>
-                                                </button>
-                                            </form>
+                                            <button type="button" id="refresh-balance"
+                                                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition rounded-lg bg-blue-500 shadow-theme-xs hover:bg-blue-600">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                                                    </path>
+                                                </svg>
+                                                <span><?php esc_html_e( 'Refresh', 'vms' ); ?></span>
+                                            </button>
                                         </div>
                                         <div class="px-6 py-4">
                                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 <div
                                                     class="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                                                    <div class="text-2xl font-bold text-green-600 dark:text-green-400">
+                                                    <div class="text-2xl font-bold text-green-600 dark:text-green-400"
+                                                        id="balance-amount">
                                                         KES
                                                         <?php echo is_numeric($sms_balance) ? number_format($sms_balance, 2) : esc_html($sms_balance); ?>
                                                     </div>
@@ -189,7 +104,8 @@ $last_checked_time = get_option( 'vms_sms_last_check', 'Never' );
                                                 <div class="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                                                     <div class="text-sm font-medium text-blue-600 dark:text-blue-400">
                                                         Last Updated</div>
-                                                    <div class="text-xs text-gray-600 dark:text-gray-400">
+                                                    <div class="text-xs text-gray-600 dark:text-gray-400"
+                                                        id="last-updated">
                                                         <?php echo $last_checked_time !== 'Never' ? date('M j, Y g:i A', strtotime($last_checked_time)) : 'Never'; ?>
                                                     </div>
                                                 </div>
@@ -216,61 +132,8 @@ $last_checked_time = get_option( 'vms_sms_last_check', 'Never' );
 
                                         <!-- Card Body -->
                                         <div class="px-6 py-4">
-                                            <?php                                                
-                                            // Display success messages
-                                            if ( isset( $_SESSION['settings_success'] ) && ! empty( $_SESSION['settings_success'] ) ) :
-                                                foreach ( $_SESSION['settings_success'] as $success_message ) :
-                                            ?>
-                                            <div class="flex items-center justify-between p-4 mb-4 text-white bg-green-500 border-l-4 border-green-700 rounded"
-                                                role="alert">
-                                                <div class="flex items-center">
-                                                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fill-rule="evenodd"
-                                                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                                            clip-rule="evenodd"></path>
-                                                    </svg>
-                                                    <div>
-                                                        <strong>Success!</strong>
-                                                        <p class="text-sm"><?php echo esc_html( $success_message ); ?>
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                <button type="button" class="text-white hover:text-gray-300"
-                                                    onclick="this.parentElement.style.display='none';">×</button>
-                                            </div>
-                                            <?php
-                                                endforeach;
-                                                unset( $_SESSION['settings_success'] );
-                                            endif;
-                                            
-                                            // Display error messages
-                                            if ( isset( $_SESSION['settings_errors'] ) && ! empty( $_SESSION['settings_errors'] ) ) :
-                                                foreach ( $_SESSION['settings_errors'] as $error_message ) :
-                                            ?>
-                                            <div class="flex items-center justify-between p-4 mb-4 text-white bg-red-500 border-l-4 border-red-700 rounded"
-                                                role="alert">
-                                                <div class="flex items-center">
-                                                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fill-rule="evenodd"
-                                                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                                                            clip-rule="evenodd"></path>
-                                                    </svg>
-                                                    <div>
-                                                        <strong>Error!</strong>
-                                                        <p class="text-sm"><?php echo esc_html( $error_message ); ?></p>
-                                                    </div>
-                                                </div>
-                                                <button type="button" class="text-white hover:text-gray-300"
-                                                    onclick="this.parentElement.style.display='none';">×</button>
-                                            </div>
-                                            <?php
-                                                endforeach;
-                                                unset( $_SESSION['settings_errors'] );
-                                            endif;                                                
-                                            ?>
-
-                                            <form action="" method="post" enctype="multipart/form-data">
-                                                <?php wp_nonce_field( 'update_settings_data', '_wpnonce_update_settings' ); ?>
+                                            <form id="settings-form" enctype="multipart/form-data">
+                                                <?php wp_nonce_field( 'vms_save_settings_nonce', 'security' ); ?>
 
                                                 <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
                                                     <!-- API Credentials Section -->
@@ -375,14 +238,14 @@ $last_checked_time = get_option( 'vms_sms_last_check', 'Never' );
 
                                                 <!-- Action Buttons -->
                                                 <div class="flex justify-center mt-8 space-x-4">
-                                                    <button type="submit" name="update_settings"
+                                                    <button type="submit" id="save-settings"
                                                         class="inline-flex items-center gap-2 px-8 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600 focus:ring-3 focus:ring-brand-500/20">
                                                         <svg class="w-4 h-4" fill="none" stroke="currentColor"
                                                             viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round"
                                                                 stroke-width="2" d="M5 13l4 4L19 7"></path>
                                                         </svg>
-                                                        <?php esc_html_e( 'Save Settings', 'vms' ); ?>
+                                                        <span><?php esc_html_e( 'Save Settings', 'vms' ); ?></span>
                                                     </button>
 
                                                     <button type="button" id="test-connection"
@@ -392,7 +255,7 @@ $last_checked_time = get_option( 'vms_sms_last_check', 'Never' );
                                                             <path stroke-linecap="round" stroke-linejoin="round"
                                                                 stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                                                         </svg>
-                                                        <?php esc_html_e( 'Test Connection', 'vms' ); ?>
+                                                        <span><?php esc_html_e( 'Test Connection', 'vms' ); ?></span>
                                                     </button>
                                                 </div>
                                             </form>
@@ -410,55 +273,6 @@ $last_checked_time = get_option( 'vms_sms_last_check', 'Never' );
     </div>
     <!-- ===== Page Wrapper End ===== -->
 </section>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const testButton = document.getElementById('test-connection');
-
-    if (testButton) {
-        testButton.addEventListener('click', async function() {
-            const originalText = this.innerHTML;
-            const apiKey = document.getElementById('api_key').value;
-            const apiSecret = document.getElementById('api_secret').value;
-
-            if (!apiKey || !apiSecret) {
-                alert('Please enter both API Key and API Secret first.');
-                return;
-            }
-
-            this.disabled = true;
-            this.innerHTML =
-                '<svg class="w-4 h-4 animate-spin mr-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Testing...';
-
-            try {
-                // Simple connection test
-                const formData = new FormData();
-                formData.append('action', 'test_sms_connection');
-                formData.append('api_key', apiKey);
-                formData.append('api_secret', apiSecret);
-                formData.append('_wpnonce',
-                    '<?php echo wp_create_nonce('test_connection_nonce'); ?>');
-
-                const response = await fetch('<?php echo admin_url('admin-ajax.php'); ?>', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (response.ok) {
-                    alert('Connection test successful! Your API credentials appear to be working.');
-                } else {
-                    alert('Connection test failed. Please check your API credentials.');
-                }
-            } catch (error) {
-                alert('Connection test failed: ' + error.message);
-            } finally {
-                this.disabled = false;
-                this.innerHTML = originalText;
-            }
-        });
-    }
-});
-</script>
 
 <?php
 get_footer();
