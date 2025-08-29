@@ -10,7 +10,7 @@ use WyllyMk\VMS\VMS_CoreManager;
 defined('ABSPATH') || exit;
 
 // Check if the current user is an Administrator or Manager or Advocate
-if ( ! ( current_user_can( 'administrator' ) || current_user_can( 'general_manager' ) )  ) {
+if ( ! ( current_user_can( 'administrator' ) || current_user_can( 'general_manager' ) || current_user_can( 'chairman' ) )  ) {
 	// Redirect unauthorized users to the front page
 	wp_redirect( home_url() );
 	exit;

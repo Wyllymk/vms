@@ -80,7 +80,8 @@ get_header();
                                 </div>
 
                                 <!-- Register Button -->
-                                <div class="flex items-center justify-end w-full md:w-1/2 gap-4">
+                                <div
+                                    class="flex items-center justify-between md:justify-end w-full md:w-1/2 gap-2 md:gap-4">
                                     <a @click="isGuestInfoModal = true"
                                         class="inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg cursor-pointer bg-brand-500 shadow-theme-xs hover:bg-brand-600 whitespace-nowrap">
                                         <?php esc_html_e( 'Register Guest', 'vms' ); ?>
