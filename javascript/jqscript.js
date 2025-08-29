@@ -1557,17 +1557,8 @@ jQuery(document).ready(function ($) {
 							'bg-gray-100 text-gray-700 dark:bg-white/5 dark:text-white/80',
 					};
 
-					statusCell
-						.removeClass()
-						.addClass(
-							`px-2 py-1 text-xs font-medium rounded-full ${statusClasses[guest.status] || ''}`
-						)
-						.text(
-							guest.status
-								? guest.status.charAt(0).toUpperCase() +
-										guest.status.slice(1)
-								: 'N/A'
-						);
+					// keep the "Approved" badge intact
+					statusCell.text('Approved');
 
 					// Build Sign Out button; fallback to current data if API didn't return visit_id
 					const newVisitId =
@@ -1649,17 +1640,14 @@ jQuery(document).ready(function ($) {
 					const parentContainer = button.closest(
 						'.flex.items-center.gap-2'
 					);
-
-					// Remove the sign-out button only
 					button.remove();
 
-					// Append the times block right after the edit button
 					parentContainer.append(`
-                    <div class="flex flex-col items-center justify-center px-4 text-xs">
-                        <span class="text-green-600 dark:text-green-400">${formatTime(guest.sign_in_time)}</span>
-                        <span class="text-red-600 dark:text-red-400">${formatTime(guest.sign_out_time)}</span>
-                    </div>
-                `);
+					<div class="flex flex-col items-center justify-center text-xs px-4">
+						<span class="text-green-600 dark:text-green-400">${formatTime(guest.sign_in_time)}</span>
+						<span class="text-red-600 dark:text-red-400">${formatTime(guest.sign_out_time)}</span>
+					</div>
+					`);
 
 					const successMessage =
 						response.data.messages?.[0] ||
