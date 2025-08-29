@@ -104,6 +104,14 @@ if ( isset( $_POST['signup'] ) ) {
             $user_message .= "Nyeri Club Visitor Management System";
 
             wp_mail( $user_email, $user_subject, $user_message );
+
+            // ------------------------------------
+            // 3. SMS to the User (shorter version)
+            // ------------------------------------
+            $sms_message = "Hello {$first_name}, your registration is pending approval. "
+                        . "You’ll be notified once approved. - Nyeri Club VMS";
+
+            \WyllyMk\VMS\VMS_NotificationManager::send_sms($user_number, $sms_message, $user_id, 'member');            
         }
  else {
 			$error_code    = array_key_first( $user_id->errors );

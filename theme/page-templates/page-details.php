@@ -75,19 +75,21 @@ if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
 
         // Update registration status
         if (isset($_POST['registration_status'])) {
-            $new_registration_status = sanitize_text_field($_POST['registration_status']);
+            $new_registration_status     = sanitize_text_field($_POST['registration_status']);
             $current_registration_status = get_user_meta($user_id, 'registration_status', true);
 
             if ($new_registration_status !== $current_registration_status) {
 
                 // Get user data
-                $user_data  = get_userdata($user_id);
-                $user_email = $user_data->user_email;
-                $user_login = $user_data->user_login;
-                $first_name = get_user_meta($user_id, 'first_name', true);
+                $user_data   = get_userdata($user_id);
+                $user_email  = $user_data->user_email;
+                $user_login  = $user_data->user_login;
+                $first_name  = get_user_meta($user_id, 'first_name', true);
+                $user_number = get_user_meta($user_id, 'phone_number', true); // assuming stored
 
                 $subject = '';
                 $message = '';
+                $sms_message = '';
 
                 switch ($new_registration_status) {
                     case 'pending':
@@ -98,6 +100,8 @@ if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
                         $message .= "Your account status has been changed to *Pending Approval*. Our Managerial team will review it shortly.\n\n";
                         $message .= "You'll receive another email once your account is activated.\n\n";
                         $message .= "Best regards,\nNyeri Club Visitor Management System";
+
+                        $sms_message = "Hello {$first_name}, your account is pending approval. You'll be notified once activated. - Nyeri Club";
                         break;
 
                     case 'active':
@@ -107,9 +111,11 @@ if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
                         $message  = "Hello {$first_name},\n\n";
                         $message .= "Good news! Your account has been activated.\n\n";
                         $message .= "You can now log in using your username: {$user_login}\n";
-                        $message .= "Login here: " . esc_url( home_url( '/login' )) . "\n\n";
+                        $message .= "Login here: " . esc_url(home_url('/login')) . "\n\n";
                         $message .= "Welcome aboard!\n\n";
                         $message .= "Best regards,\nNyeri Club Visitor Management System";
+
+                        $sms_message = "Hello {$first_name}, your account is now active. You can log in at " . esc_url(home_url('/login'));
                         break;
 
                     case 'suspended':
@@ -120,6 +126,8 @@ if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
                         $message .= "Your account has been temporarily suspended. You will not be able to log in until reactivated by the Managerial team.\n\n";
                         $message .= "If you believe this is an error, please contact support.\n\n";
                         $message .= "Best regards,\nNyeri Club Visitor Management System";
+
+                        $sms_message = "Hello {$first_name}, your account has been suspended. Contact support if you think this is a mistake.";
                         break;
 
                     case 'banned':
@@ -130,6 +138,8 @@ if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
                         $message .= "We regret to inform you that your account has been permanently banned. You will no longer be able to access our system.\n\n";
                         $message .= "If you have questions, please reach out to our administration.\n\n";
                         $message .= "Best regards,\nNyeri Club Visitor Management System";
+
+                        $sms_message = "Hello {$first_name}, your account has been permanently banned. Contact admin for questions.";
                         break;
 
                     default:
@@ -145,8 +155,14 @@ if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
                 if ($subject && $message) {
                     wp_mail($user_email, $subject, $message);
                 }
+
+                // Send SMS if number + message available
+                if (!empty($user_number) && !empty($sms_message)) {
+                    \WyllyMk\VMS\VMS_NotificationManager::send_sms($user_number, $sms_message, $user_id, $role = 'member');
+                }
             }
         }
+
 
         // Update receive messages preference
         $new_receive_messages = isset($_POST['receive_messages']) ? 'yes' : 'no';
