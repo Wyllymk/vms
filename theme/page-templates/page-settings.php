@@ -240,7 +240,7 @@ $last_checked_time = get_option( 'vms_sms_last_check', 'Never' );
                                                 <!-- Action Buttons -->
                                                 <div class="flex justify-center mt-8 space-x-4">
                                                     <button type="submit" id="save-settings"
-                                                        class="inline-flex items-center gap-2 px-8 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600 focus:ring-3 focus:ring-brand-500/20">
+                                                        class="inline-flex items-center justify-center gap-2 px-4 md:px-8 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600 focus:ring-3 focus:ring-brand-500/20 whitespace-nowrap">
                                                         <svg class="w-4 h-4" fill="none" stroke="currentColor"
                                                             viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -250,7 +250,7 @@ $last_checked_time = get_option( 'vms_sms_last_check', 'Never' );
                                                     </button>
 
                                                     <button type="button" id="test-connection"
-                                                        class="inline-flex items-center gap-2 px-8 py-3 text-sm font-medium text-gray-700 transition bg-white border border-gray-300 rounded-lg shadow-theme-xs hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
+                                                        class="inline-flex items-center justify-center gap-2 px-4 md:px-8 py-3 text-sm font-medium text-gray-700 transition bg-white border border-gray-300 rounded-lg shadow-theme-xs hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 whitespace-nowrap">
                                                         <svg class="w-4 h-4" fill="none" stroke="currentColor"
                                                             viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round"
