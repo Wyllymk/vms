@@ -16,6 +16,11 @@ if ( ! ( current_user_can( 'administrator' ) || current_user_can( 'general_manag
 	exit;
 }
 
+// WordPress table prefix
+$guests_table       = $wpdb->prefix . 'vms_guests';
+$guest_visits_table = $wpdb->prefix . 'vms_guest_visits';
+$wp_users_table     = $wpdb->users;
+
 // Initialize message arrays
 $lawyer_u_success = [];
 $lawyer_u_error = [];
@@ -327,6 +332,67 @@ delete_transient('visit_delete_error_' . get_current_user_id());
 $page_name = 'Employee-Details'; // default
 if ($user_data && array_intersect(['member', 'chairman'], (array) $user_data->roles)) {
     $page_name = 'Member-Details';
+}
+
+$status_classes = [
+    'approved'   => 'bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-500',
+    'unapproved' => 'bg-warning-50 text-warning-600 dark:bg-warning-500/15 dark:text-orange-400',
+    'suspended'  => 'bg-blue-light-50 text-blue-light-500 dark:bg-blue-light-500/15 dark:text-blue-light-500',
+    'banned'     => 'bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500',
+    'cancelled'  => 'bg-gray-100 text-gray-700 dark:bg-white/5 dark:text-white/80'
+];
+
+// Handle canceling a guest visit
+if ( isset($_POST['cancel_visit']) && isset($_POST['visit_id']) ) {
+   
+    // Verify nonce for security
+    if ( ! isset($_POST['cancel_visit_nonce']) ||
+         ! wp_verify_nonce($_POST['cancel_visit_nonce'], 'cancel_visit_action') ) {
+        wp_die(__('Security check failed. Please try again.', 'vms'));
+    }
+   
+    $visit_id = intval($_POST['visit_id']);
+   
+    if ( $visit_id > 0 ) {
+        global $wpdb;
+        
+        // Get the visit details before cancelling
+        $visit = $wpdb->get_row($wpdb->prepare(
+            "SELECT guest_id, host_member_id, visit_date FROM $guest_visits_table WHERE id = %d",
+            $visit_id
+        ));
+        
+        if (!$visit) {
+            wp_die(__('Visit not found.', 'vms'));
+        }
+       
+        // Update visit status to cancelled
+        $updated = $wpdb->update(
+            $guest_visits_table,
+            array( 'status' => 'cancelled' ),
+            array( 'id' => $visit_id ),
+            array( '%s' ),
+            array( '%d' )
+        );
+       
+        if ( $updated !== false ) {
+            // Trigger automatic status recalculation for the guest
+            VMS_CoreManager::recalculate_guest_visit_statuses($visit->guest_id);
+            
+            // Also recalculate host's daily limits for that date
+            if ($visit->host_member_id) {
+                VMS_CoreManager::recalculate_host_daily_limits($visit->host_member_id, $visit->visit_date);
+            }
+            
+            // Success message or redirect
+            wp_safe_redirect( add_query_arg('visit_cancelled', '1', wp_get_referer()) );
+            exit;
+        } else {
+            wp_die(__('Failed to cancel visit. Please try again.', 'vms'));
+        }
+    } else {
+        wp_die(__('Invalid visit ID.', 'vms'));
+    }
 }
 
 get_header();
@@ -869,27 +935,23 @@ get_header();
                                                                     <!-- Status -->
                                                                     <div
                                                                         class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
-                                                                        <?php
-                                                                        $status = VMS_CoreManager::get_visit_status($guest->visit_date, $guest->sign_in_time, $guest->sign_out_time);
-                                                                        $status_class = VMS_CoreManager::get_status_class($status);
-                                                                        $status_text = VMS_CoreManager::get_status_text($status);
-                                                                        ?>
                                                                         <span
-                                                                            class="<?php echo esc_attr($status_class); ?> inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-sm font-medium">
-                                                                            <?php echo esc_html($status_text); ?>
+                                                                            class="inline-flex items-center justify-center gap-1 rounded-full px-2.5 py-0.5 text-sm font-medium capitalize <?php echo $status_classes[$guest->status] ?? $status_classes['approved']; ?>">
+                                                                            <?php echo esc_html($guest->status); ?>
                                                                         </span>
                                                                     </div>
 
                                                                     <!-- Action -->
-                                                                    <div class="col-span-1 px-4 py-3">
+                                                                    <div
+                                                                        class="col-span-1 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
                                                                         <form method="post"
-                                                                            onsubmit="return confirm('Are you sure you want to delete this visit?');">
+                                                                            onsubmit="return confirm('Are you sure you want to cancel this visit?');">
                                                                             <input type="hidden" name="visit_id"
-                                                                                value="<?php echo esc_attr($guest->visit_id); ?>">
-                                                                            <?php wp_nonce_field('delete_visit_action', 'delete_visit_nonce'); ?>
-                                                                            <button type="submit" name="delete_visit"
-                                                                                class="px-3 py-1 text-xs font-medium text-white bg-red-500 rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-colors">
-                                                                                <?php esc_html_e('Delete', 'vms'); ?>
+                                                                                value="<?php echo esc_attr( $guest->visit_id ); ?>">
+                                                                            <?php wp_nonce_field( 'cancel_visit_action', 'cancel_visit_nonce' ); ?>
+                                                                            <button type="submit" name="cancel_visit"
+                                                                                class="px-3 py-1 text-xs font-medium text-white bg-red-500 rounded-lg hover:bg-red-600">
+                                                                                <?php esc_html_e( 'Cancel', 'vms' ); ?>
                                                                             </button>
                                                                         </form>
                                                                     </div>

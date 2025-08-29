@@ -101,7 +101,8 @@ $last_checked_time = get_option( 'vms_sms_last_check', 'Never' );
                                                     <div class="text-sm text-gray-600 dark:text-gray-400">Current
                                                         Balance</div>
                                                 </div>
-                                                <div class="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                                                <div
+                                                    class="text-center flex flex-col items-center justify-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                                                     <div class="text-sm font-medium text-blue-600 dark:text-blue-400">
                                                         Last Updated</div>
                                                     <div class="text-xs text-gray-600 dark:text-gray-400"
