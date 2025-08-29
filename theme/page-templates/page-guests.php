@@ -82,11 +82,11 @@ get_header();
                                 <!-- Register Button -->
                                 <div class="flex items-center justify-end w-full md:w-1/2 gap-4">
                                     <a @click="isGuestInfoModal = true"
-                                        class="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg cursor-pointer bg-brand-500 shadow-theme-xs hover:bg-brand-600">
+                                        class="inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg cursor-pointer bg-brand-500 shadow-theme-xs hover:bg-brand-600 whitespace-nowrap">
                                         <?php esc_html_e( 'Register Guest', 'vms' ); ?>
                                     </a>
                                     <a @click="isCourtesyGuestInfoModal = true"
-                                        class="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium transition rounded-lg cursor-pointer shadow-theme-xs text-warning-600 bg-warning-100 hover:bg-warning-200 dark:bg-warning-500/15 dark:hover:bg-warning-500/25 dark:text-orange-500">
+                                        class="inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition rounded-lg cursor-pointer shadow-theme-xs text-warning-600 bg-warning-100 hover:bg-warning-200 dark:bg-warning-500/15 dark:hover:bg-warning-500/25 dark:text-orange-500 whitespace-nowrap">
                                         <?php esc_html_e( 'Register Courtesy Guest', 'vms' ); ?>
                                     </a>
                                 </div>
