@@ -27,7 +27,7 @@ defined( 'ABSPATH' ) || exit;
                     <th class="px-5 py-3 sm:px-6">
                         <div class="flex items-center">
                             <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
-                                <?php esc_html_e( 'User Name', 'vms' ); ?>
+                                <?php esc_html_e( 'User Role', 'vms' ); ?>
                             </p>
                         </div>
                     </th>
@@ -105,6 +105,11 @@ defined( 'ABSPATH' ) || exit;
                                 $last_name = get_user_meta($user_id, 'last_name', true);
                                 $registration_status = get_user_meta($user_id, 'registration_status', true);
                                 $user_phone_number = get_user_meta($user_id, 'phone_number', true);
+                                // ✅ Get user role properly
+                                global $wp_roles;
+                                $user_roles = $user->roles; // returns array of roles
+                                $user_role  = !empty($user_roles) ? $user_roles[0] : 'guest';                                
+                                $role_name = isset($wp_roles->roles[$user_role]['name']) ? $wp_roles->roles[$user_role]['name'] : ucfirst($user_role);
                                 ?>
                 <tr>
                     <td class="px-5 py-4 sm:px-6">
@@ -117,7 +122,7 @@ defined( 'ABSPATH' ) || exit;
                             <div class="flex items-center gap-3">
                                 <div>
                                     <span class="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                                        <?php echo esc_html($username); ?>
+                                        <?php echo esc_html($role_name); ?>
                                     </span>
                                 </div>
                             </div>
@@ -203,6 +208,11 @@ defined( 'ABSPATH' ) || exit;
                                 $last_name = get_user_meta($user_id, 'last_name', true);
                                 $registration_status = get_user_meta($user_id, 'registration_status', true);
                                 $user_phone_number = get_user_meta($user_id, 'phone_number', true);
+                                // ✅ Get user role properly
+                                global $wp_roles;
+                                $user_roles = $user->roles; // returns array of roles
+                                $user_role  = !empty($user_roles) ? $user_roles[0] : 'guest';                                
+                                $role_name = isset($wp_roles->roles[$user_role]['name']) ? $wp_roles->roles[$user_role]['name'] : ucfirst($user_role);
                 ?>
                 <tr>
                     <td class="px-5 py-4 sm:px-6">
@@ -214,7 +224,7 @@ defined( 'ABSPATH' ) || exit;
                             <div class="flex items-center gap-3">
                                 <div>
                                     <span class="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                                        <?php echo esc_html($username); ?>
+                                        <?php echo esc_html($role_name); ?>
                                     </span>
                                 </div>
                             </div>

@@ -942,52 +942,73 @@ jQuery(document).ready(function ($) {
 
 					// Status classes for active/inactive
 					const statusClasses = {
+						pending:
+							'bg-blue-light-50 text-blue-light-500 dark:bg-blue-light-500/15 dark:text-blue-light-500',
 						active: 'bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-500',
+						suspended:
+							'bg-warning-50 text-warning-600 dark:bg-warning-500/15 dark:text-orange-400',
+						banned: 'bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500',
 						inactive:
 							'bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500',
 					};
 
-					// Build new table row
+					// Get the current row count for numbering
+					const rowCount = $('tbody tr').length + 1;
+
+					// Build new table row matching the PHP structure
 					const newRow = `
-                    <tr>
-                        <td class="px-3 py-4 sm:px-6">
-                            <p class="text-gray-500 text-theme-sm dark:text-gray-400">${$('tbody tr').length + 1}</p>
-                        </td>
-                        <td class="px-3 py-4 sm:px-6">
-                            <p class="text-gray-800 text-theme-sm dark:text-white/90">${employee.first_name || 'N/A'}</p>
-                        </td>
-                        <td class="px-3 py-4 sm:px-6">
-                            <p class="text-gray-800 text-theme-sm dark:text-white/90">${employee.last_name || 'N/A'}</p>
-                        </td>
-                        <td class="px-3 py-4 sm:px-6">
-                            <p class="text-gray-800 text-theme-sm dark:text-white/90">${employee.email || 'N/A'}</p>
-                        </td>
-                        <td class="px-3 py-4 sm:px-6">
+                <tr>
+                    <td class="px-5 py-4 sm:px-6">
+                        <p class="text-gray-500 text-theme-sm dark:text-gray-400">${rowCount}</p>
+                    </td>                   
+					<td class="px-5 py-4 sm:px-6">
+                        <div class="flex items-center">
+                            <div class="flex items-center gap-3">
+                                <p class="text-gray-500 text-theme-sm dark:text-gray-400">${roleNames[employee.user_role] || employee.user_role || 'N/A'}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-5 py-4 sm:px-6">
+                        <div class="flex items-center">
+                            <p class="text-gray-500 text-theme-sm dark:text-gray-400">${employee.first_name || 'N/A'}</p>
+                        </div>
+                    </td>
+                    <td class="px-5 py-4 sm:px-6">
+                        <div class="flex items-center">
+                            <p class="text-gray-500 text-theme-sm dark:text-gray-400">${employee.last_name || 'N/A'}</p>
+                        </div>
+                    </td>
+                    <td class="px-5 py-4 sm:px-6">
+                        <div class="flex items-center">
+                            <p class="text-gray-500 text-theme-sm dark:text-gray-400">${employee.email || 'N/A'}</p>
+                        </div>
+                    </td>
+                    <td class="px-5 py-4 sm:px-6">
+                        <div class="flex items-center">
                             <p class="text-gray-500 text-theme-sm dark:text-gray-400">${employee.phone_number || 'N/A'}</p>
-                        </td>
-                        <td class="px-3 py-4 sm:px-6">
-                            <span class="inline-flex items-center justify-center px-2.5 gap-1 py-0.5 text-sm font-medium capitalize rounded-full ${statusClasses[employee.registration_status] || statusClasses.active}">
+                        </div>
+                    </td>
+                    <td class="px-5 py-4 sm:px-6">
+                        <div class="flex items-center">
+                            <span class="inline-flex items-center justify-center gap-1 rounded-full px-2.5 py-0.5 text-sm font-medium ${statusClasses[employee.registration_status] || statusClasses.active}">
                                 ${employee.registration_status ? employee.registration_status.charAt(0).toUpperCase() + employee.registration_status.slice(1) : 'Active'}
                             </span>
-                        </td>
-                        <td class="px-3 py-4 sm:px-6">
-                            <p class="text-gray-500 text-theme-sm dark:text-gray-400">${roleNames[employee.user_role] || employee.user_role || 'N/A'}</p>
-                        </td>
-                        <td class="px-3 py-4 sm:px-6">
-                            <div class="flex items-center gap-2">
-                                <button id="edit-employee-button-${employee.id}" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 transition bg-white border border-gray-300 rounded-lg cursor-pointer whitespace-nowrap dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
-                                    Edit
-                                </button>
-                                <button id="delete-employee-button-${employee.id}" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition bg-red-500 rounded-lg cursor-pointer whitespace-nowrap hover:bg-red-600">
-                                    Delete
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                	`;
+                        </div>
+                    </td>
+                    <td class="px-5 py-4 sm:px-6">
+                        <form action="${window.location.origin}/details" method="get">
+                            <input type="hidden" name="user_id" value="${employee.id || employee.user_id}">
+                            <button type="submit" class="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg cursor-pointer whitespace-nowrap bg-brand-500 shadow-theme-xs hover:bg-brand-60">
+                                View Details
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            	`;
 
 					// Remove "no employees" row if it exists
 					$('#no-employees-row').remove();
+					$('tbody tr:contains("No employees found.")').remove();
 
 					// Prepend new row to table
 					$('tbody').prepend(newRow);
@@ -1004,21 +1025,21 @@ jQuery(document).ready(function ($) {
 						response.data.messages?.[0] ||
 						'Employee registered successfully';
 					const successModal = `
-                    <div id="success-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
-                        <div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
-                            <div class="check_mark mx-auto mb-4">
-                                <div class="sa-icon sa-success animate">
-                                    <span class="sa-line sa-tip animateSuccessTip"></span>
-                                    <span class="sa-line sa-long animateSuccessLong"></span>
-                                    <div class="sa-placeholder"></div>
-                                    <div class="sa-fix"></div>
-                                </div>
+                <div id="success-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+                    <div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+                        <div class="check_mark mx-auto mb-4">
+                            <div class="sa-icon sa-success animate">
+                                <span class="sa-line sa-tip animateSuccessTip"></span>
+                                <span class="sa-line sa-long animateSuccessLong"></span>
+                                <div class="sa-placeholder"></div>
+                                <div class="sa-fix"></div>
                             </div>
-                            <p class="text-lg font-medium text-gray-700 dark:text-white">${message}</p>
-                            <button id="ok-success-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 transition">OK</button>
                         </div>
+                        <p class="text-lg font-medium text-gray-700 dark:text-white">${message}</p>
+                        <button id="ok-success-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 transition">OK</button>
                     </div>
-                	`;
+                </div>
+            	`;
 					$('body').append(successModal);
 
 					// Handle success modal close
@@ -1052,20 +1073,20 @@ jQuery(document).ready(function ($) {
 						.join('');
 
 					const errorModal = `
-                    <div id="employee-error-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
-                        <div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
-                            <div class="check_mark mx-auto mb-4">
-                                <div class="sa-icon sa-error animate">
-                                    <span class="sa-line sa-left animateXLeft"></span>
-                                    <span class="sa-line sa-right animateXRight"></span>
-                                    <div class="sa-placeholder"></div>
-                                </div>
+                <div id="employee-error-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+                    <div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+                        <div class="check_mark mx-auto mb-4">
+                            <div class="sa-icon sa-error animate">
+                                <span class="sa-line sa-left animateXLeft"></span>
+                                <span class="sa-line sa-right animateXRight"></span>
+                                <div class="sa-placeholder"></div>
                             </div>
-                            ${errorMessageHtml}
-                            <button id="ok-error-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">OK</button>
                         </div>
+                        ${errorMessageHtml}
+                        <button id="ok-error-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">OK</button>
                     </div>
-                `;
+                </div>
+            	`;
 					$('body').append(errorModal);
 
 					$(document)
@@ -1086,20 +1107,20 @@ jQuery(document).ready(function ($) {
 					xhr.responseJSON?.data?.messages?.join('<br>') ||
 					'An error occurred: ' + error;
 				const errorModal = `
-                <div id="employee-error-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
-                    <div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
-                        <div class="check_mark mx-auto mb-4">
-                            <div class="sa-icon sa-error animate">
-                                <span class="sa-line sa-left animateXLeft"></span>
-                                <span class="sa-line sa-right animateXRight"></span>
-                                <div class="sa-placeholder"></div>
-                            </div>
+            <div id="employee-error-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+                <div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+                    <div class="check_mark mx-auto mb-4">
+                        <div class="sa-icon sa-error animate">
+                            <span class="sa-line sa-left animateXLeft"></span>
+                            <span class="sa-line sa-right animateXRight"></span>
+                            <div class="sa-placeholder"></div>
                         </div>
-                        <p class="text-lg font-medium text-gray-700 dark:text-white">${errorMessage}</p>
-                        <button id="ok-error-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">OK</button>
                     </div>
+                    <p class="text-lg font-medium text-gray-700 dark:text-white">${errorMessage}</p>
+                    <button id="ok-error-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">OK</button>
                 </div>
-            `;
+            </div>
+        	`;
 				$('body').append(errorModal);
 
 				$(document)
