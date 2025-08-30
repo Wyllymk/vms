@@ -30,7 +30,7 @@ $lawyer_d_error = [];
 if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
     $user_id = intval($_GET['user_id']);
     $current_user = wp_get_current_user();
-    $is_admin_or_manager = in_array('administrator', $current_user->roles) || in_array('general_manager', $current_user->roles);
+    $is_allowed = in_array('administrator', $current_user->roles) || in_array('general_manager', $current_user->roles) || in_array('reception', $current_user->roles) || in_array('chairman', $current_user->roles);
 
     // Update User Data          
     if (isset($_POST['update_user']) && check_admin_referer('update_user_data', '_wpnonce_update_user_data')) {
@@ -164,7 +164,7 @@ if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
         }
 
         // === ROLE UPDATE (Simplified, only if changed) ===
-        if ($is_admin_or_manager && isset($_POST['user_role'])) {
+        if ($is_allowed && isset($_POST['user_role'])) {
             $new_role = sanitize_key($_POST['user_role']);
             $user     = new WP_User($user_id);
 
@@ -269,7 +269,7 @@ if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
 
     // Delete User
     if (isset($_POST['delete_user']) && check_admin_referer('delete_user', '_wpnonce_delete_user')) {
-        if ($user_id === get_current_user_id() || $is_admin_or_manager) {
+        if ($user_id === get_current_user_id() || $is_allowed) {
             $first_name = get_user_meta($user_id, 'first_name', true);
 
             require_once ABSPATH . 'wp-admin/includes/user.php';
@@ -628,8 +628,7 @@ get_header();
                                                             class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
                                                             id="email"
                                                             value="<?php echo esc_attr($user_data->user_email); ?>"
-                                                            name="email"
-                                                            <?php echo !$is_admin_or_manager ? 'disabled' : ''; ?>>
+                                                            name="email" <?php echo !$is_allowed ? 'disabled' : ''; ?>>
                                                         <small
                                                             class="text-xs md:text-sm text-gray-600 dark:text-gray-400">
                                                             <?php esc_html_e( 'If you change this, an email will be sent to confirm it.', 'vms' ); ?>
@@ -646,7 +645,7 @@ get_header();
                                                             id="fname"
                                                             value="<?php echo esc_attr($user_data->first_name); ?>"
                                                             name="first_name"
-                                                            <?php echo !$is_admin_or_manager ? 'disabled' : ''; ?>>
+                                                            <?php echo !$is_allowed ? 'disabled' : ''; ?>>
                                                     </div>
                                                     <!-- Last Name field -->
                                                     <div class="w-full px-2.5 md:w-1/2">
@@ -659,7 +658,7 @@ get_header();
                                                             id="lname"
                                                             value="<?php echo esc_attr($user_data->last_name); ?>"
                                                             name="last_name"
-                                                            <?php echo !$is_admin_or_manager ? 'disabled' : ''; ?>>
+                                                            <?php echo !$is_allowed ? 'disabled' : ''; ?>>
                                                     </div>
                                                     <!-- Member Number -->
                                                     <div class="w-full px-2.5 md:w-1/2">
@@ -672,7 +671,7 @@ get_header();
                                                             id="member_number"
                                                             value="<?php echo esc_attr($member_number); ?>"
                                                             name="member_number"
-                                                            <?php echo !$is_admin_or_manager ? 'disabled' : ''; ?>>
+                                                            <?php echo !$is_allowed ? 'disabled' : ''; ?>>
                                                     </div>
                                                     <!-- Phone Number field -->
                                                     <div class="w-full px-2.5 md:w-1/2">
@@ -685,7 +684,7 @@ get_header();
                                                             id="number"
                                                             value="<?php echo esc_attr($user_phone_number); ?>"
                                                             name="pnumber"
-                                                            <?php echo !$is_admin_or_manager ? 'disabled' : ''; ?>>
+                                                            <?php echo !$is_allowed ? 'disabled' : ''; ?>>
                                                     </div>
                                                     <!-- Status -->
                                                     <div class="w-full px-2.5 md:w-1/2">
@@ -704,7 +703,7 @@ get_header();
                                                         }
 
                                                         // Disable if not admin/manager
-                                                        $disabled = ( ! $is_admin_or_manager ) ? 'disabled' : '';
+                                                        $disabled = ( ! $is_allowed ) ? 'disabled' : '';
                                                         ?>
 
                                                         <div x-data="{ isOptionSelected: true }"
@@ -793,7 +792,7 @@ get_header();
                                                             <?php
                                                             $receive_messages = get_user_meta($user_id, 'receive_messages', true);
                                                             $checked = ($receive_messages === 'yes') ? 'checked' : '';
-                                                            $disabled = (!$is_admin_or_manager) ? 'disabled' : '';
+                                                            $disabled = (!$is_allowed) ? 'disabled' : '';
                                                             ?>
                                                             <input type="checkbox"
                                                                 class="px-4 py-2 text-gray-900 border border-gray-300 rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
@@ -809,7 +808,7 @@ get_header();
                                                             <?php
                                                             $receive_emails = get_user_meta($user_id, 'receive_emails', true);
                                                             $checked = ($receive_emails === 'yes') ? 'checked' : '';
-                                                            $disabled = (!$is_admin_or_manager) ? 'disabled' : '';
+                                                            $disabled = (!$is_allowed) ? 'disabled' : '';
                                                             ?>
                                                             <input type="checkbox"
                                                                 class="px-4 py-2 text-gray-900 border border-gray-300 rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
@@ -820,7 +819,7 @@ get_header();
                                                         <hr class="my-4 border-gray-300 dark:border-gray-600">
                                                     </div>
                                                 </div>
-                                                <?php if ($is_admin_or_manager) : ?>
+                                                <?php if ($is_allowed) : ?>
                                                 <?php wp_nonce_field('update_user_data', '_wpnonce_update_user_data'); ?>
                                                 <?php wp_nonce_field('delete_user', '_wpnonce_delete_user'); ?>
                                                 <div class="flex flex-col md:flex-row justify-center mt-4 gap-2">
