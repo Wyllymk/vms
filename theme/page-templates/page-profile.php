@@ -155,7 +155,7 @@ $user_role        = !empty($current_user->roles) ? $current_user->roles[0] : 'gu
                                     <div class="order-3 xl:order-2">
                                         <h4
                                             class="mb-2 text-lg font-semibold text-center text-gray-800 dark:text-white/90 xl:text-left">
-                                            <?php echo esc_html( ucfirst($current_user->display_name) ); ?>
+                                            <?php echo esc_html( $current_user->first_name . ' ' . $current_user->last_name ); ?>
                                         </h4>
                                         <div
                                             class="flex flex-col items-center gap-1 text-center xl:flex-row xl:gap-3 xl:text-left">
