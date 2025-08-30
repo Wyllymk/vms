@@ -19,7 +19,8 @@ get_header();
 
 ?>
 
-<section x-data="{ page: 'employees'}">
+<section x-data="{ page: 'employees', 'isEmployeeInfoModal': false}"
+    @close-employee-modal.window="isEmployeeInfoModal = false">
     <!-- ===== Page Wrapper Start ===== -->
     <div class="flex h-screen overflow-hidden">
         <!-- ===== Sidebar Start ===== -->
@@ -81,9 +82,9 @@ get_header();
 
                                 <!-- Register Button -->
                                 <div class="flex items-center justify-end w-full md:w-1/2">
-                                    <a href="<?php echo esc_url( home_url( '/register' ) ); ?>"
-                                        class="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600">
-                                        <?php esc_html_e( 'Register', 'vms' ); ?>
+                                    <a @click="isEmployeeInfoModal = true"
+                                        class="inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg cursor-pointer bg-brand-500 shadow-theme-xs hover:bg-brand-600 whitespace-nowrap">
+                                        <?php esc_html_e( 'Register Employee', 'vms' ); ?>
                                     </a>
                                 </div>
                             </div>
@@ -138,6 +139,10 @@ get_header();
         <!-- ===== Content Area End ===== -->
     </div>
     <!-- ===== Page Wrapper End ===== -->
+
+    <!-- BEGIN MODAL -->
+    <?php get_template_part( 'template-parts/content/content', 'employee-modal' ); ?>
+    <!-- END MODAL -->
 </section>
 
 

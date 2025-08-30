@@ -44,7 +44,6 @@ $receive_emails   = get_user_meta( $user_id, 'receive_emails', true );
             </p>
         </div>
         <form id="profile-form" class="flex flex-col" method="post" enctype="multipart/form-data">
-            <?php wp_nonce_field( 'update_user_data', '_wpnonce_update_user_data' ); ?>
             <input type="hidden" name="update_user" value="1">
             <div class="custom-scrollbar h-[450px] overflow-y-auto px-2">
                 <div class="mt-7">
@@ -122,11 +121,11 @@ $receive_emails   = get_user_meta( $user_id, 'receive_emails', true );
                 <button @click="isProfileInfoModal = false" type="button"
                     class="cursor-pointer flex w-full justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] sm:w-auto">
                     <?php esc_html_e( 'Close', 'vms' ); ?>
-                    </a>
-                    <button type="submit" id="submit-button"
-                        class="cursor-pointer flex w-full justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 sm:w-auto">
-                        <?php esc_html_e( 'Save Changes', 'vms' ); ?>
-                    </button>
+                </button>
+                <button type="submit" id="submit-button"
+                    class="cursor-pointer flex w-full justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 sm:w-auto">
+                    <?php esc_html_e( 'Save Changes', 'vms' ); ?>
+                </button>
             </div>
         </form>
     </div>

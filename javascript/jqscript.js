@@ -236,7 +236,7 @@ jQuery(document).ready(function ($) {
 		$('#submit-button')
 			.prop('disabled', true)
 			.html(
-				'<span class="animate-spin inline-block w-6 h-6 border-4 border-current border-t-transparent rounded-full mr-2"></span> Processing...'
+				'<span class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2"></span> Processing...'
 			);
 
 		// Clear previous messages
@@ -401,6 +401,214 @@ jQuery(document).ready(function ($) {
 				);
 			},
 		});
+	});
+
+	// PASSWORD FORM AJAX
+	$('#password-form').on('submit', function (e) {
+		e.preventDefault();
+
+		// Get form values
+		const currentPassword = $('#current_password').val();
+		const newPassword = $('#new_password').val();
+		const confirmPassword = $('#confirm_password').val();
+
+		// Clear previous messages
+		$('.alert-message').remove();
+
+		// Client-side validation
+		if (newPassword !== confirmPassword) {
+			showPasswordErrorMessage('New passwords do not match');
+			return;
+		}
+
+		if (newPassword.length < 8) {
+			showPasswordErrorMessage(
+				'Password must be at least 8 characters long'
+			);
+			return;
+		}
+
+		// Password strength validation
+		if (!isPasswordStrong(newPassword)) {
+			showPasswordErrorMessage(
+				'Password must contain uppercase, lowercase, number, and special character'
+			);
+			return;
+		}
+
+		// Show loading indicator
+		$('#password-submit-button')
+			.prop('disabled', true)
+			.html(
+				'<span class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2"></span> Changing Password...'
+			);
+
+		// Prepare form data
+		const formData = new FormData();
+		formData.append('action', 'change_user_password');
+		formData.append('nonce', vms_script_ajax.nonce);
+		formData.append('current_password', currentPassword);
+		formData.append('new_password', newPassword);
+		formData.append('confirm_password', confirmPassword);
+
+		// AJAX request
+		$.ajax({
+			url: vms_script_ajax.ajaxurl,
+			type: 'POST',
+			data: formData,
+			processData: false,
+			contentType: false,
+			dataType: 'json',
+			success: function (response) {
+				console.log('Password change response:', response);
+
+				if (response.success) {
+					// Show success message
+					showPasswordSuccessModal(
+						response.data.message || 'Password changed successfully'
+					);
+
+					// Clear form
+					$('#password-form')[0].reset();
+				} else {
+					// Show error message
+					showPasswordErrorMessage(
+						response.data.message || 'Failed to change password'
+					);
+				}
+			},
+			error: function (xhr, status, error) {
+				console.error('AJAX error:', xhr.responseText);
+				showPasswordErrorMessage(
+					'An error occurred while changing password. Please try again.'
+				);
+			},
+			complete: function () {
+				// Reset button
+				$('#password-submit-button')
+					.prop('disabled', false)
+					.text('Change Password');
+			},
+		});
+	});
+
+	// Password strength checker
+	function isPasswordStrong(password) {
+		const hasUpper = /[A-Z]/.test(password);
+		const hasLower = /[a-z]/.test(password);
+		const hasNumber = /\d/.test(password);
+		const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+		return hasUpper && hasLower && hasNumber && hasSpecial;
+	}
+
+	// Show error message
+	function showPasswordErrorMessage(message) {
+		const errorHtml = `
+				<div class="alert-message error-alert bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 dark:bg-red-900/20 dark:border-red-700 dark:text-red-300">
+					<div class="flex">
+						<div class="flex-shrink-0">
+							<svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+								<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+							</svg>
+						</div>
+						<div class="ml-3">
+							<p class="text-sm">${message}</p>
+						</div>
+					</div>
+				</div>
+			`;
+		$('#password-form').before(errorHtml);
+
+		// Scroll to show message
+		$('html, body').animate(
+			{
+				scrollTop: $('.alert-message').offset().top - 100,
+			},
+			300
+		);
+	}
+
+	// Show success modal
+	function showPasswordSuccessModal(message) {
+		const successModal = `
+				<div id="password-success-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+					<div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+						<div class="check_mark mx-auto mb-4">
+							<div class="sa-icon sa-success animate">
+								<span class="sa-line sa-tip animateSuccessTip"></span>
+								<span class="sa-line sa-long animateSuccessLong"></span>
+								<div class="sa-placeholder"></div>
+								<div class="sa-fix"></div>
+							</div>
+						</div>
+						<p class="text-lg font-medium text-gray-700 dark:text-white mb-2">Password Changed!</p>
+						<p class="text-sm text-gray-500 dark:text-gray-400 mb-6">${message}</p>
+						<button id="password-ok-btn" type="button" class="inline-block w-1/2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 transition">
+							OK
+						</button>
+					</div>
+				</div>
+			`;
+
+		// Inject modal into body
+		$('body').append(successModal);
+
+		// Handle OK button click
+		$(document).on('click', '#password-ok-btn', function (e) {
+			e.preventDefault();
+
+			// Remove success modal
+			$('#password-success-modal-overlay').fadeOut(300, function () {
+				$(this).remove();
+			});
+
+			// Close password modal if using Alpine.js
+			if (typeof window.dispatchEvent === 'function') {
+				window.dispatchEvent(new Event('close-password-modal'));
+			}
+
+			// Alternative: trigger Alpine close if isPasswordModal exists
+			if (window.Alpine) {
+				// You might need to adjust this based on your Alpine.js setup
+				document.dispatchEvent(new CustomEvent('close-password-modal'));
+			}
+		});
+	}
+
+	// Real-time password validation feedback
+	$('#new_password').on('input', function () {
+		const password = $(this).val();
+		const $field = $(this);
+
+		// Remove existing validation classes
+		$field.removeClass('border-red-300 border-green-300');
+
+		if (password.length > 0) {
+			if (isPasswordStrong(password) && password.length >= 8) {
+				$field.addClass('border-green-300');
+			} else {
+				$field.addClass('border-red-300');
+			}
+		}
+	});
+
+	// Real-time password match validation
+	$('#confirm_password').on('input', function () {
+		const password = $('#new_password').val();
+		const confirmPassword = $(this).val();
+		const $field = $(this);
+
+		// Remove existing validation classes
+		$field.removeClass('border-red-300 border-green-300');
+
+		if (confirmPassword.length > 0) {
+			if (password === confirmPassword) {
+				$field.addClass('border-green-300');
+			} else {
+				$field.addClass('border-red-300');
+			}
+		}
 	});
 
 	// Guest FORM
@@ -689,6 +897,227 @@ jQuery(document).ready(function ($) {
 				$('#submit-guest-form')
 					.prop('disabled', false)
 					.text('Create Guest');
+			},
+		});
+	});
+
+	// Employee FORM
+	$('#employee-form').on('submit', function (e) {
+		e.preventDefault();
+
+		// Show loading indicator
+		$('#submit-employee-form')
+			.prop('disabled', true)
+			.html(
+				'<span class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2"></span> Registering...'
+			);
+
+		// Clear previous messages and modals
+		$('.alert-message').remove();
+		$('#success-modal-overlay, #employee-error-modal-overlay').remove();
+
+		// Collect form data
+		var formData = new FormData(this);
+		formData.append('action', 'employee_registration');
+		formData.append('nonce', vms_script_ajax.nonce);
+
+		// AJAX request
+		$.ajax({
+			url: vms_script_ajax.ajaxurl,
+			type: 'POST',
+			data: formData,
+			processData: false,
+			contentType: false,
+			dataType: 'json',
+			success: function (response) {
+				if (response.success && response.data.employeeData) {
+					const employee = response.data.employeeData;
+
+					// Format the role name for display
+					const roleNames = {
+						general_manager: 'General Manager',
+						gate: 'Gate',
+						reception: 'Reception',
+					};
+
+					// Status classes for active/inactive
+					const statusClasses = {
+						active: 'bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-500',
+						inactive:
+							'bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500',
+					};
+
+					// Build new table row
+					const newRow = `
+                    <tr>
+                        <td class="px-3 py-4 sm:px-6">
+                            <p class="text-gray-500 text-theme-sm dark:text-gray-400">${$('tbody tr').length + 1}</p>
+                        </td>
+                        <td class="px-3 py-4 sm:px-6">
+                            <p class="text-gray-800 text-theme-sm dark:text-white/90">${employee.first_name || 'N/A'}</p>
+                        </td>
+                        <td class="px-3 py-4 sm:px-6">
+                            <p class="text-gray-800 text-theme-sm dark:text-white/90">${employee.last_name || 'N/A'}</p>
+                        </td>
+                        <td class="px-3 py-4 sm:px-6">
+                            <p class="text-gray-800 text-theme-sm dark:text-white/90">${employee.email || 'N/A'}</p>
+                        </td>
+                        <td class="px-3 py-4 sm:px-6">
+                            <p class="text-gray-500 text-theme-sm dark:text-gray-400">${employee.phone_number || 'N/A'}</p>
+                        </td>
+                        <td class="px-3 py-4 sm:px-6">
+                            <span class="inline-flex items-center justify-center px-2.5 gap-1 py-0.5 text-sm font-medium capitalize rounded-full ${statusClasses[employee.registration_status] || statusClasses.active}">
+                                ${employee.registration_status ? employee.registration_status.charAt(0).toUpperCase() + employee.registration_status.slice(1) : 'Active'}
+                            </span>
+                        </td>
+                        <td class="px-3 py-4 sm:px-6">
+                            <p class="text-gray-500 text-theme-sm dark:text-gray-400">${roleNames[employee.user_role] || employee.user_role || 'N/A'}</p>
+                        </td>
+                        <td class="px-3 py-4 sm:px-6">
+                            <div class="flex items-center gap-2">
+                                <button id="edit-employee-button-${employee.id}" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 transition bg-white border border-gray-300 rounded-lg cursor-pointer whitespace-nowrap dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    Edit
+                                </button>
+                                <button id="delete-employee-button-${employee.id}" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition bg-red-500 rounded-lg cursor-pointer whitespace-nowrap hover:bg-red-600">
+                                    Delete
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                	`;
+
+					// Remove "no employees" row if it exists
+					$('#no-employees-row').remove();
+
+					// Prepend new row to table
+					$('tbody').prepend(newRow);
+
+					// Re-number all rows
+					$('tbody tr').each(function (index) {
+						$(this)
+							.find('td:first p')
+							.text(index + 1);
+					});
+
+					// Show success modal
+					const message =
+						response.data.messages?.[0] ||
+						'Employee registered successfully';
+					const successModal = `
+                    <div id="success-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+                        <div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+                            <div class="check_mark mx-auto mb-4">
+                                <div class="sa-icon sa-success animate">
+                                    <span class="sa-line sa-tip animateSuccessTip"></span>
+                                    <span class="sa-line sa-long animateSuccessLong"></span>
+                                    <div class="sa-placeholder"></div>
+                                    <div class="sa-fix"></div>
+                                </div>
+                            </div>
+                            <p class="text-lg font-medium text-gray-700 dark:text-white">${message}</p>
+                            <button id="ok-success-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 transition">OK</button>
+                        </div>
+                    </div>
+                	`;
+					$('body').append(successModal);
+
+					// Handle success modal close
+					$(document)
+						.off('click', '#ok-success-btn')
+						.on('click', '#ok-success-btn', function (e) {
+							e.preventDefault();
+							$('#success-modal-overlay').fadeOut(
+								300,
+								function () {
+									$(this).remove();
+									window.dispatchEvent(
+										new Event('close-employee-modal')
+									);
+									$('#employee-form')[0].reset();
+									// Optionally reload the page
+									// window.location.reload();
+								}
+							);
+						});
+				} else {
+					// Show error modal
+					const errorMessages = response.data?.messages || [
+						'An error occurred during employee registration',
+					];
+					const errorMessageHtml = errorMessages
+						.map(
+							(msg) =>
+								`<p class="text-lg font-medium text-gray-700 dark:text-white">${msg}</p>`
+						)
+						.join('');
+
+					const errorModal = `
+                    <div id="employee-error-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+                        <div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+                            <div class="check_mark mx-auto mb-4">
+                                <div class="sa-icon sa-error animate">
+                                    <span class="sa-line sa-left animateXLeft"></span>
+                                    <span class="sa-line sa-right animateXRight"></span>
+                                    <div class="sa-placeholder"></div>
+                                </div>
+                            </div>
+                            ${errorMessageHtml}
+                            <button id="ok-error-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">OK</button>
+                        </div>
+                    </div>
+                `;
+					$('body').append(errorModal);
+
+					$(document)
+						.off('click', '#ok-error-btn')
+						.on('click', '#ok-error-btn', function (e) {
+							e.preventDefault();
+							$('#employee-error-modal-overlay').fadeOut(
+								300,
+								function () {
+									$(this).remove();
+								}
+							);
+						});
+				}
+			},
+			error: function (xhr, status, error) {
+				const errorMessage =
+					xhr.responseJSON?.data?.messages?.join('<br>') ||
+					'An error occurred: ' + error;
+				const errorModal = `
+                <div id="employee-error-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+                    <div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+                        <div class="check_mark mx-auto mb-4">
+                            <div class="sa-icon sa-error animate">
+                                <span class="sa-line sa-left animateXLeft"></span>
+                                <span class="sa-line sa-right animateXRight"></span>
+                                <div class="sa-placeholder"></div>
+                            </div>
+                        </div>
+                        <p class="text-lg font-medium text-gray-700 dark:text-white">${errorMessage}</p>
+                        <button id="ok-error-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">OK</button>
+                    </div>
+                </div>
+            `;
+				$('body').append(errorModal);
+
+				$(document)
+					.off('click', '#ok-error-btn')
+					.on('click', '#ok-error-btn', function (e) {
+						e.preventDefault();
+						$('#employee-error-modal-overlay').fadeOut(
+							300,
+							function () {
+								$(this).remove();
+							}
+						);
+					});
+			},
+			complete: function () {
+				$('#submit-employee-form')
+					.prop('disabled', false)
+					.text('Create Employee');
 			},
 		});
 	});

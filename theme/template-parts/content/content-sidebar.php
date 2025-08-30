@@ -30,7 +30,7 @@ defined( 'ABSPATH' ) || exit;
     </div>
     <!-- SIDEBAR HEADER -->
 
-    <div class="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar mt-15 lg:mt-0">
+    <div class="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar mt-10 lg:mt-0">
         <!-- Sidebar Menu -->
         <nav x-data="{selected: $persist('Dashboard')}">
             <!-- Menu Group -->
@@ -72,7 +72,7 @@ defined( 'ABSPATH' ) || exit;
 
                     <!-- Menu Item Profile -->
                     <li>
-                        <a href="<?php echo esc_url( home_url( '/profile/' ) ); ?>"
+                        <a href="<?php echo esc_url( home_url( '/profile' ) ); ?>"
                             @click="selected = (selected === 'Profile' ? '':'Profile')"
                             class="<?php echo ( is_page( 'profile' ) ) ? 'menu-item group menu-item-active' : 'menu-item group menu-item-inactive'; ?>">
                             <svg class="<?php echo ( is_page( 'profile' ) ) ? 'menu-item-icon-active' : 'menu-item-icon-inactive'; ?>"
@@ -94,8 +94,8 @@ defined( 'ABSPATH' ) || exit;
                     <?php if ( ( current_user_can( 'administrator' ) || current_user_can( 'chairman' ) || current_user_can( 'general_manager' ) || current_user_can( 'reception' ) ) ) : ?>
                     <li>
                         <a href="<?php echo esc_url( home_url( '/members' ) ); ?>"
-                            @click="selected = (selected === 'Members' ? '':'Members')"
-                            class="<?php echo ( is_page( 'members' ) ) ? 'menu-item group menu-item-active' : 'menu-item group menu-item-inactive'; ?>">
+                            @click="selected = (selected === 'Members' ? '' : 'Members')"
+                            class="<?php echo ( is_page( array( 'members', 'details' ) ) ) ? 'menu-item group menu-item-active' : 'menu-item group menu-item-inactive'; ?>">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1"
                                 stroke="currentColor" class="size-6">
                                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -106,6 +106,7 @@ defined( 'ABSPATH' ) || exit;
                             </span>
                         </a>
                     </li>
+
                     <?php endif; ?>
                     <!-- Menu Item Members -->
 
@@ -114,7 +115,7 @@ defined( 'ABSPATH' ) || exit;
                     <li>
                         <a href="<?php echo esc_url( home_url( '/employees' ) ); ?>"
                             @click="selected = (selected === 'Employees' ? '':'Employees')"
-                            class="<?php echo ( is_page( 'employees' ) ) ? 'menu-item group menu-item-active' : 'menu-item group menu-item-inactive'; ?>">
+                            class="<?php echo ( is_page( array( 'employees', 'employee-details' ) ) ) ? 'menu-item group menu-item-active' : 'menu-item group menu-item-inactive'; ?>">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"
                                 stroke-linejoin="round">
@@ -136,7 +137,7 @@ defined( 'ABSPATH' ) || exit;
                     <li>
                         <a href="<?php echo esc_url( home_url( '/guests' ) ); ?>"
                             @click="selected = (selected === 'Guests' ? '':'Guests')"
-                            class="<?php echo ( is_page( 'guests' ) ) ? 'menu-item group menu-item-active' : 'menu-item group menu-item-inactive'; ?>">
+                            class="<?php echo ( is_page( array( 'guests', 'guest-details' ) ) ) ? 'menu-item group menu-item-active' : 'menu-item group menu-item-inactive'; ?>">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"
                                 stroke-linejoin="round">

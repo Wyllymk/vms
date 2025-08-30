@@ -1,6 +1,6 @@
 <?php
 /**
- * The template for displaying the Member details page
+ * The template for displaying the Employee details page
  *
   * @package Visitor_Management_System
  */
@@ -16,9 +16,6 @@ if ( ! ( current_user_can( 'administrator' ) || current_user_can( 'general_manag
 	exit;
 }
 
-// WordPress table prefix
-$guests_table       = $wpdb->prefix . 'vms_guests';
-$guest_visits_table = $wpdb->prefix . 'vms_guest_visits';
 $wp_users_table     = $wpdb->users;
 
 // Initialize message arrays
@@ -172,9 +169,11 @@ if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
             $current_roles = (array) $user->roles;
 
             // Define custom role labels
-            $role_labels = [               
-                'chairman'        => 'Chairman',
-                'member'          => 'Member',
+            $role_labels = [
+                'general_manager' => 'General Manager',
+                'reception'       => 'Reception',
+                'gate'            => 'Gate',
+                'client'          => 'Client',
             ];
 
             // Get readable label or fallback
@@ -263,7 +262,7 @@ if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
         if (isset($_GET['per_page'])) {
             $redirect_args['per_page'] = intval($_GET['per_page']);
         }
-        wp_safe_redirect(add_query_arg($redirect_args, home_url('/details')));
+        wp_safe_redirect(add_query_arg($redirect_args, home_url('/employee-details')));
         exit;
     }
 
@@ -282,7 +281,7 @@ if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
                 wp_logout();
             }
 
-            wp_safe_redirect(home_url('/members'));
+            wp_safe_redirect(home_url('/employees'));
             exit;
         }
     }
@@ -331,6 +330,7 @@ if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
     $user_avatar = get_avatar_url($user_id);
     $user_phone_number = get_user_meta($user_id, 'phone_number', true);
     $member_number = get_user_meta($user_data->ID, 'member_number', true);
+    $current_role = !empty($user_data->roles) ? $user_data->roles[0] : '';
     $receive_messages = get_user_meta($user_id, 'receive_messages', true);
     $receive_emails = get_user_meta($user_id, 'receive_emails', true);
     $registration_status = get_user_meta($user_id, 'registration_status', true);
@@ -346,53 +346,7 @@ if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
     delete_transient('lawyer_d_error_' . get_current_user_id());
 }
 
-// Get pagination params - per_page now supports 10, 25, or 50
-$valid_per_page = [10, 25, 50];
-$per_page = isset($_GET['per_page']) && in_array(intval($_GET['per_page']), $valid_per_page) ? intval($_GET['per_page']) : 10;
-$paged = isset($_GET['paged']) ? max(1, intval($_GET['paged'])) : 1;
-$offset = ($paged - 1) * $per_page;
-
-// Get total visits count and paginated visits
-$total_visits = VMS_CoreManager::count_guest_visits($user_id);
-$total_pages = ceil($total_visits / $per_page);
-$guests = VMS_CoreManager::get_paginated_guest_visits($user_id, $per_page, $offset);
-
-// Calculate row numbers for display
-$current_start = $total_visits > 0 ? ($paged - 1) * $per_page + 1 : 0;
-$row_number = $current_start;
-
-// Build compact pagination array
-$pages_to_show = [];
-if ($total_pages > 0) {
-    $pages_to_show = [1];
-    
-    // Add current page and surrounding pages
-    for ($i = max(1, $paged - 1); $i <= min($total_pages, $paged + 1); $i++) {
-        $pages_to_show[] = $i;
-    }
-    
-    // Add last page if it's not already included
-    if ($total_pages > 1) {
-        $pages_to_show[] = $total_pages;
-    }
-    
-    // Remove duplicates and sort
-    $pages_to_show = array_values(array_unique($pages_to_show));
-    sort($pages_to_show);
-}
-
-// Get delete messages from transients
-$delete_success = get_transient('visit_delete_success_' . get_current_user_id()) ?: [];
-$delete_error = get_transient('visit_delete_error_' . get_current_user_id()) ?: [];
-
-// Clear the transients after getting them
-delete_transient('visit_delete_success_' . get_current_user_id());
-delete_transient('visit_delete_error_' . get_current_user_id());
-
 $page_name = 'Employee-Details'; // default
-if ($user_data && array_intersect(['member', 'chairman'], (array) $user_data->roles)) {
-    $page_name = 'Member-Details';
-}
 
 $status_classes = [
     'approved'   => 'bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-500',
@@ -402,64 +356,10 @@ $status_classes = [
     'cancelled'  => 'bg-gray-100 text-gray-700 dark:bg-white/5 dark:text-white/80'
 ];
 
-// Handle canceling a guest visit
-if ( isset($_POST['cancel_visit']) && isset($_POST['visit_id']) ) {
-   
-    // Verify nonce for security
-    if ( ! isset($_POST['cancel_visit_nonce']) ||
-         ! wp_verify_nonce($_POST['cancel_visit_nonce'], 'cancel_visit_action') ) {
-        wp_die(__('Security check failed. Please try again.', 'vms'));
-    }
-   
-    $visit_id = intval($_POST['visit_id']);
-   
-    if ( $visit_id > 0 ) {
-        global $wpdb;
-        
-        // Get the visit details before cancelling
-        $visit = $wpdb->get_row($wpdb->prepare(
-            "SELECT guest_id, host_member_id, visit_date FROM $guest_visits_table WHERE id = %d",
-            $visit_id
-        ));
-        
-        if (!$visit) {
-            wp_die(__('Visit not found.', 'vms'));
-        }
-       
-        // Update visit status to cancelled
-        $updated = $wpdb->update(
-            $guest_visits_table,
-            array( 'status' => 'cancelled' ),
-            array( 'id' => $visit_id ),
-            array( '%s' ),
-            array( '%d' )
-        );
-       
-        if ( $updated !== false ) {
-            // Trigger automatic status recalculation for the guest
-            VMS_CoreManager::recalculate_guest_visit_statuses($visit->guest_id);
-            
-            // Also recalculate host's daily limits for that date
-            if ($visit->host_member_id) {
-                VMS_CoreManager::recalculate_host_daily_limits($visit->host_member_id, $visit->visit_date);
-            }
-            
-            // Success message or redirect
-            wp_safe_redirect( add_query_arg('visit_cancelled', '1', wp_get_referer()) );
-            exit;
-        } else {
-            wp_die(__('Failed to cancel visit. Please try again.', 'vms'));
-        }
-    } else {
-        wp_die(__('Invalid visit ID.', 'vms'));
-    }
-}
-
 get_header();
 ?>
 
-<section id="primary" x-data="{ page: 'details', 'isGuestInfoModal': false}"
-    @close-guest-modal.window="isGuestInfoModal = false">
+<section id="primary" x-data="{ page: 'employee-details'}">
     <main id="main">
         <!-- ===== Page Wrapper Start ===== -->
         <div class="flex h-screen overflow-hidden">
@@ -654,26 +554,52 @@ get_header();
                                                             class="block text-gray-700 dark:text-gray-300">
                                                             <?php esc_html_e( 'Last Name:', 'vms' ); ?>
                                                         </label>
-                                                        <input type="text"
+                                                        <input type="text" id="lname"
                                                             class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
-                                                            id="lname"
                                                             value="<?php echo esc_attr($user_data->last_name); ?>"
                                                             name="last_name"
                                                             <?php echo !$is_admin_or_manager ? 'disabled' : ''; ?>>
                                                     </div>
-                                                    <!-- Member Number -->
+                                                    <!-- Role Dropdown -->
                                                     <div class="w-full px-2.5 md:w-1/2">
-                                                        <label for="member_number"
+                                                        <label for="role"
                                                             class="block text-gray-700 dark:text-gray-300">
-                                                            <?php esc_html_e( 'Member Number', 'vms' ); ?>
+                                                            <?php esc_html_e('Role:', 'vms'); ?>
                                                         </label>
-                                                        <input type="text"
-                                                            class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
-                                                            id="member_number"
-                                                            value="<?php echo esc_attr($member_number); ?>"
-                                                            name="member_number"
-                                                            <?php echo !$is_admin_or_manager ? 'disabled' : ''; ?>>
+
+                                                        <?php 
+                                                        // Get current role of the user
+                                                        $current_role = !empty($user_data->roles) ? $user_data->roles[0] : '';
+                                                        ?>
+
+                                                        <select name="user_role" id="role"
+                                                            class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800">
+                                                            <option value=""><?php esc_html_e('Select Role', 'vms'); ?>
+                                                            </option>
+                                                            <?php
+                                                            // List of roles you want to display
+                                                            $allowed_roles = array('general_manager', 'gate', 'reception');
+
+                                                            global $wp_roles;
+                                                            foreach ($allowed_roles as $role_key) {
+                                                                if (isset($wp_roles->roles[$role_key])) {
+                                                                    $role_name = $wp_roles->roles[$role_key]['name'];
+
+                                                                    // Select if matches POST or current role
+                                                                    $selected = '';
+                                                                    if ((isset($_POST['user_role']) && $_POST['user_role'] === $role_key) || $current_role === $role_key) {
+                                                                        $selected = 'selected';
+                                                                    }
+
+                                                                    echo '<option value="' . esc_attr($role_key) . '" ' . $selected . '>'
+                                                                        . esc_html($role_name)
+                                                                        . '</option>';
+                                                                }
+                                                            }
+                                                            ?>
+                                                        </select>
                                                     </div>
+
                                                     <!-- Phone Number field -->
                                                     <div class="w-full px-2.5 md:w-1/2">
                                                         <label for="number"
@@ -743,45 +669,7 @@ get_header();
                                                             </span>
                                                         </div>
                                                     </div>
-                                                    <!-- Role Dropdown -->
-                                                    <div class="w-full px-2.5 md:w-1/2">
-                                                        <label for="role"
-                                                            class="block text-gray-700 dark:text-gray-300">
-                                                            <?php esc_html_e('Role:', 'vms'); ?>
-                                                        </label>
 
-                                                        <?php 
-                                                        // Get current role of the user
-                                                        $current_role = !empty($user_data->roles) ? $user_data->roles[0] : '';
-                                                        ?>
-
-                                                        <select name="user_role" id="role"
-                                                            class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800">
-                                                            <option value=""><?php esc_html_e('Select Role', 'vms'); ?>
-                                                            </option>
-                                                            <?php
-                                                            // List of roles you want to display
-                                                            $allowed_roles = array('member', 'chairman');
-
-                                                            global $wp_roles;
-                                                            foreach ($allowed_roles as $role_key) {
-                                                                if (isset($wp_roles->roles[$role_key])) {
-                                                                    $role_name = $wp_roles->roles[$role_key]['name'];
-
-                                                                    // Select if matches POST or current role
-                                                                    $selected = '';
-                                                                    if ((isset($_POST['user_role']) && $_POST['user_role'] === $role_key) || $current_role === $role_key) {
-                                                                        $selected = 'selected';
-                                                                    }
-
-                                                                    echo '<option value="' . esc_attr($role_key) . '" ' . $selected . '>'
-                                                                        . esc_html($role_name)
-                                                                        . '</option>';
-                                                                }
-                                                            }
-                                                            ?>
-                                                        </select>
-                                                    </div>
                                                     <!-- Message Email, Deactivate fields -->
                                                     <div class="w-full px-2.5">
                                                         <hr class="my-4 border-gray-300 dark:border-gray-600">
@@ -843,356 +731,10 @@ get_header();
                                         </div>
                                     </div>
                                     <!-- End of Personal Information Section -->
-                                    <!-- Guests Section -->
-                                    <div class="mt-10" id="guests-section">
-                                        <div
-                                            class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
-                                            <div class="flex items-center justify-between px-5 py-4 sm:px-6 sm:py-5">
-                                                <h3 class="text-base font-medium text-gray-800 dark:text-white/90">
-                                                    <?php esc_html_e('Guest Visits', 'vms'); ?>
-                                                </h3>
-                                                <?php
-                                                $registration_status = get_user_meta($user_id, 'registration_status', true);
-                                                $is_active = ($registration_status === 'active');
-                                                ?>
-                                                <div class="flex items-center justify-end w-full md:w-1/2">
-                                                    <a <?php if ($is_active) : ?> @click="isGuestInfoModal = true"
-                                                        <?php endif; ?>
-                                                        class="cursor-pointer inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg shadow-theme-xs bg-brand-500 hover:bg-brand-600 <?php echo $is_active ? '' : 'opacity-50 cursor-not-allowed hover:bg-brand-500'; ?>">
-                                                        <?php esc_html_e('Register New Visit', 'vms'); ?>
-                                                    </a>
-                                                </div>
-                                            </div>
-
-                                            <!-- Display delete messages -->
-                                            <?php if (!empty($delete_success)): ?>
-                                            <div
-                                                class="mb-4 mx-5 rounded-lg bg-success-50 p-4 text-success-800 dark:bg-success-500/15 dark:text-success-400">
-                                                <?php foreach ($delete_success as $message): ?>
-                                                <p><?php echo esc_html($message); ?></p>
-                                                <?php endforeach; ?>
-                                            </div>
-                                            <?php endif; ?>
-
-                                            <?php if (!empty($delete_error)): ?>
-                                            <div
-                                                class="mb-4 mx-5 rounded-lg bg-error-50 p-4 text-error-800 dark:bg-error-500/15 dark:text-error-400">
-                                                <?php foreach ($delete_error as $message): ?>
-                                                <p><?php echo esc_html($message); ?></p>
-                                                <?php endforeach; ?>
-                                            </div>
-                                            <?php endif; ?>
-
-                                            <div class="border-t border-gray-100 p-5 dark:border-gray-800 sm:p-6">
-                                                <div
-                                                    class="overflow-hidden rounded-xl border border-gray-200 bg-white pt-4 dark:border-gray-800 dark:bg-white/[0.03]">
-
-                                                    <!-- Controls -->
-                                                    <div
-                                                        class="mb-4 flex flex-col gap-2 px-4 sm:flex-row sm:items-center sm:justify-between">
-                                                        <div class="flex items-center gap-3">
-                                                            <span class="text-gray-500 dark:text-gray-400">Show</span>
-                                                            <div class="relative z-20 bg-transparent">
-                                                                <select
-                                                                    class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-9 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none py-2 pr-8 pl-3 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
-                                                                    onchange="window.location.href = '<?php echo esc_url(add_query_arg(['user_id' => $user_id, 'per_page' => ''], remove_query_arg(['paged'], $_SERVER['REQUEST_URI']))); ?>' + this.value">
-                                                                    <option value="10"
-                                                                        <?php selected($per_page, 10); ?>>10</option>
-                                                                    <option value="25"
-                                                                        <?php selected($per_page, 25); ?>>25</option>
-                                                                    <option value="50"
-                                                                        <?php selected($per_page, 50); ?>>50</option>
-                                                                </select>
-                                                                <span
-                                                                    class="absolute top-1/2 right-2 z-30 -translate-y-1/2 text-gray-500 dark:text-gray-400">
-                                                                    <svg class="stroke-current" width="16" height="16"
-                                                                        viewBox="0 0 16 16" fill="none"
-                                                                        xmlns="http://www.w3.org/2000/svg">
-                                                                        <path
-                                                                            d="M3.8335 5.9165L8.00016 10.0832L12.1668 5.9165"
-                                                                            stroke="" stroke-width="1.2"
-                                                                            stroke-linecap="round"
-                                                                            stroke-linejoin="round" />
-                                                                    </svg>
-                                                                </span>
-                                                            </div>
-                                                            <span
-                                                                class="text-gray-500 dark:text-gray-400">entries</span>
-                                                        </div>
-                                                    </div>
-
-                                                    <!-- Table -->
-                                                    <div class="max-w-full overflow-x-auto">
-                                                        <div id="guests-table" class="min-w-[1102px]">
-
-                                                            <!-- Table Header -->
-                                                            <div id="guests-header"
-                                                                class="grid grid-cols-12 border-t border-gray-200 dark:border-gray-800">
-                                                                <div
-                                                                    class="col-span-1 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
-                                                                    <p
-                                                                        class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
-                                                                        #</p>
-                                                                </div>
-                                                                <div
-                                                                    class="col-span-2 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
-                                                                    <p
-                                                                        class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
-                                                                        Guest Name</p>
-                                                                </div>
-                                                                <div
-                                                                    class="col-span-2 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
-                                                                    <p
-                                                                        class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
-                                                                        Visit Date</p>
-                                                                </div>
-                                                                <div
-                                                                    class="col-span-1 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
-                                                                    <p
-                                                                        class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
-                                                                        Sign In</p>
-                                                                </div>
-                                                                <div
-                                                                    class="col-span-1 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
-                                                                    <p
-                                                                        class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
-                                                                        Sign Out</p>
-                                                                </div>
-                                                                <div
-                                                                    class="col-span-2 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
-                                                                    <p
-                                                                        class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
-                                                                        Duration</p>
-                                                                </div>
-                                                                <div
-                                                                    class="col-span-2 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
-                                                                    <p
-                                                                        class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
-                                                                        Status</p>
-                                                                </div>
-                                                                <div class="col-span-1 flex items-center px-4 py-3">
-                                                                    <p
-                                                                        class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
-                                                                        Action</p>
-                                                                </div>
-                                                            </div>
-
-                                                            <!-- Table Body -->
-                                                            <div id="guests-body">
-                                                                <?php if (!empty($guests)): ?>
-                                                                <?php foreach ($guests as $guest): ?>
-                                                                <div id="guest-div-<?php echo esc_attr($guest->visit_id); ?>"
-                                                                    class="grid grid-cols-12 border-t border-gray-100 dark:border-gray-800">
-                                                                    <!-- Row Number -->
-                                                                    <div
-                                                                        class="col-span-1 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
-                                                                        <p
-                                                                            class="text-theme-sm text-gray-700 dark:text-gray-400">
-                                                                            <?php echo esc_html($row_number++); ?>
-                                                                        </p>
-                                                                    </div>
-
-                                                                    <!-- Guest Name -->
-                                                                    <div
-                                                                        class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
-                                                                        <p
-                                                                            class="text-theme-sm text-gray-700 dark:text-gray-400">
-                                                                            <?php echo esc_html(($guest->first_name ?: 'N/A') . ' ' . ($guest->last_name ?: '')); ?>
-                                                                        </p>
-                                                                    </div>
-
-                                                                    <!-- Visit Date -->
-                                                                    <div
-                                                                        class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
-                                                                        <p
-                                                                            class="text-theme-sm text-gray-700 dark:text-gray-400">
-                                                                            <?php echo esc_html(VMS_CoreManager::format_date($guest->visit_date)); ?>
-                                                                        </p>
-                                                                    </div>
-
-                                                                    <!-- Sign In -->
-                                                                    <div
-                                                                        class="col-span-1 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
-                                                                        <p
-                                                                            class="text-theme-sm text-gray-700 dark:text-gray-400">
-                                                                            <?php echo esc_html(VMS_CoreManager::format_time($guest->sign_in_time)); ?>
-                                                                        </p>
-                                                                    </div>
-
-                                                                    <!-- Sign Out -->
-                                                                    <div
-                                                                        class="col-span-1 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
-                                                                        <p
-                                                                            class="text-theme-sm text-gray-700 dark:text-gray-400">
-                                                                            <?php echo esc_html(VMS_CoreManager::format_time($guest->sign_out_time)); ?>
-                                                                        </p>
-                                                                    </div>
-
-                                                                    <!-- Duration -->
-                                                                    <div
-                                                                        class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
-                                                                        <p
-                                                                            class="text-theme-sm text-gray-700 dark:text-gray-400">
-                                                                            <?php echo esc_html(VMS_CoreManager::calculate_duration($guest->sign_in_time, $guest->sign_out_time)); ?>
-                                                                        </p>
-                                                                    </div>
-
-                                                                    <!-- Status -->
-                                                                    <div
-                                                                        class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
-                                                                        <span
-                                                                            class="inline-flex items-center justify-center gap-1 rounded-full px-2.5 py-0.5 text-sm font-medium capitalize <?php echo $status_classes[$guest->status] ?? $status_classes['approved']; ?>">
-                                                                            <?php echo esc_html($guest->status); ?>
-                                                                        </span>
-                                                                    </div>
-
-                                                                    <!-- Action -->
-                                                                    <div
-                                                                        class="col-span-1 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
-                                                                        <form method="post"
-                                                                            onsubmit="return confirm('Are you sure you want to cancel this visit?');">
-                                                                            <input type="hidden" name="visit_id"
-                                                                                value="<?php echo esc_attr( $guest->visit_id ); ?>">
-                                                                            <?php wp_nonce_field( 'cancel_visit_action', 'cancel_visit_nonce' ); ?>
-                                                                            <button type="submit" name="cancel_visit"
-                                                                                class="px-3 py-1 text-xs font-medium text-white bg-red-500 rounded-lg hover:bg-red-600">
-                                                                                <?php esc_html_e( 'Cancel', 'vms' ); ?>
-                                                                            </button>
-                                                                        </form>
-                                                                    </div>
-                                                                </div>
-                                                                <?php endforeach; ?>
-                                                                <?php else: ?>
-                                                                <div id="no-guests-div"
-                                                                    class="border-t border-gray-100 px-4 py-8 text-center dark:border-gray-800">
-                                                                    <p class="text-gray-500 dark:text-gray-400">No guest
-                                                                        visits found</p>
-                                                                </div>
-                                                                <?php endif; ?>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <!-- Pagination -->
-                                                    <?php if ($total_pages > 1): ?>
-                                                    <div
-                                                        class="flex items-center justify-between gap-8 px-6 py-4 sm:justify-normal">
-                                                        <!-- Previous Button -->
-                                                        <?php if ($paged > 1): ?>
-                                                        <a href="<?php echo esc_url(add_query_arg(['user_id' => $user_id, 'paged' => $paged - 1, 'per_page' => $per_page], remove_query_arg(['paged'], $_SERVER['REQUEST_URI']))); ?>"
-                                                            class="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 sm:px-3.5 sm:py-2.5">
-                                                            <svg class="fill-current" width="20" height="20"
-                                                                viewBox="0 0 20 20" fill="none"
-                                                                xmlns="http://www.w3.org/2000/svg">
-                                                                <path fill-rule="evenodd" clip-rule="evenodd"
-                                                                    d="M2.58203 9.99868C2.58174 10.1909 2.6549 10.3833 2.80152 10.53L7.79818 15.5301C8.09097 15.8231 8.56584 15.8233 8.85883 15.5305C9.15183 15.2377 9.152 14.7629 8.85921 14.4699L5.13911 10.7472L16.6665 10.7472C17.0807 10.7472 17.4165 10.4114 17.4165 9.99715C17.4165 9.58294 17.0807 9.24715 16.6665 9.24715L5.14456 9.24715L8.85919 5.53016C9.15199 5.23717 9.15184 4.7623 8.85885 4.4695C8.56587 4.1767 8.09099 4.17685 7.79819 4.46984L2.84069 9.43049C2.68224 9.568 2.58203 9.77087 2.58203 9.99715C2.58203 9.99766 2.58203 9.99817 2.58203 9.99868Z"
-                                                                    fill=""></path>
-                                                            </svg>
-                                                            <span class="hidden sm:inline">Previous</span>
-                                                        </a>
-                                                        <?php else: ?>
-                                                        <span
-                                                            class="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-400 shadow-theme-xs sm:px-3.5 sm:py-2.5 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-600 cursor-not-allowed">
-                                                            <svg class="fill-current" width="20" height="20"
-                                                                viewBox="0 0 20 20" fill="none"
-                                                                xmlns="http://www.w3.org/2000/svg">
-                                                                <path fill-rule="evenodd" clip-rule="evenodd"
-                                                                    d="M2.58203 9.99868C2.58174 10.1909 2.6549 10.3833 2.80152 10.53L7.79818 15.5301C8.09097 15.8231 8.56584 15.8233 8.85883 15.5305C9.15183 15.2377 9.152 14.7629 8.85921 14.4699L5.13911 10.7472L16.6665 10.7472C17.0807 10.7472 17.4165 10.4114 17.4165 9.99715C17.4165 9.58294 17.0807 9.24715 16.6665 9.24715L5.14456 9.24715L8.85919 5.53016C9.15199 5.23717 9.15184 4.7623 8.85885 4.4695C8.56587 4.1767 8.09099 4.17685 7.79819 4.46984L2.84069 9.43049C2.68224 9.568 2.58203 9.77087 2.58203 9.99715C2.58203 9.99766 2.58203 9.99817 2.58203 9.99868Z"
-                                                                    fill=""></path>
-                                                            </svg>
-                                                            <span class="hidden sm:inline">Previous</span>
-                                                        </span>
-                                                        <?php endif; ?>
-
-                                                        <!-- Mobile: Page X of Y -->
-                                                        <span
-                                                            class="block text-sm font-medium text-gray-700 dark:text-gray-400 sm:hidden">
-                                                            Page <?php echo esc_html($paged); ?> of
-                                                            <?php echo esc_html($total_pages); ?>
-                                                        </span>
-
-                                                        <!-- Desktop: Page numbers -->
-                                                        <ul class="hidden items-center gap-0.5 sm:flex">
-                                                            <?php
-                                                            $last_shown = 0;
-                                                            foreach ($pages_to_show as $page_num):
-                                                                if ($last_shown && ($page_num - $last_shown) > 1): ?>
-                                                            <li>
-                                                                <span
-                                                                    class="flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium text-gray-500 dark:text-gray-500 pointer-events-none">...</span>
-                                                            </li>
-                                                            <?php endif;
-                                                            $last_shown = $page_num;
-                                                            $is_current = ($page_num === $paged);
-                                                            ?>
-                                                            <li>
-                                                                <?php if ($is_current): ?>
-                                                                <span
-                                                                    class="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-500 text-sm font-medium text-white">
-                                                                    <?php echo esc_html($page_num); ?>
-                                                                </span>
-                                                                <?php else: ?>
-                                                                <a href="<?php echo esc_url(add_query_arg(['user_id' => $user_id, 'paged' => $page_num, 'per_page' => $per_page], remove_query_arg(['paged'], $_SERVER['REQUEST_URI']))); ?>"
-                                                                    class="flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium text-gray-700 hover:bg-brand-500 hover:text-white dark:text-gray-400 dark:hover:text-white">
-                                                                    <?php echo esc_html($page_num); ?>
-                                                                </a>
-                                                                <?php endif; ?>
-                                                            </li>
-                                                            <?php endforeach; ?>
-                                                        </ul>
-
-                                                        <!-- Next Button -->
-                                                        <?php if ($paged < $total_pages): ?>
-                                                        <a href="<?php echo esc_url(add_query_arg(['user_id' => $user_id, 'paged' => $paged + 1, 'per_page' => $per_page], remove_query_arg(['paged'], $_SERVER['REQUEST_URI']))); ?>"
-                                                            class="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 sm:px-3.5 sm:py-2.5">
-                                                            <span class="hidden sm:inline">Next</span>
-                                                            <svg class="fill-current" width="20" height="20"
-                                                                viewBox="0 0 20 20" fill="none"
-                                                                xmlns="http://www.w3.org/2000/svg">
-                                                                <path fill-rule="evenodd" clip-rule="evenodd"
-                                                                    d="M17.4165 9.9986C17.4168 10.1909 17.3437 10.3832 17.197 10.53L12.2004 15.5301C11.9076 15.8231 11.4327 15.8233 11.1397 15.5305C10.8467 15.2377 10.8465 14.7629 11.1393 14.4699L14.8594 10.7472L3.33203 10.7472C2.91782 10.7472 2.58203 10.4114 2.58203 9.99715C2.58203 9.58294 2.91782 9.24715 3.33203 9.24715L14.854 9.24715L11.1393 5.53016C10.8465 5.23717 10.8467 4.7623 11.1397 4.4695C11.4327 4.1767 11.9075 4.17685 12.2003 4.46984L17.1578 9.43049C17.3163 9.568 17.4165 9.77087 17.4165 9.99715C17.4165 9.99763 17.4165 9.99812 17.4165 9.9986Z"
-                                                                    fill=""></path>
-                                                            </svg>
-                                                        </a>
-                                                        <?php else: ?>
-                                                        <span
-                                                            class="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-400 shadow-theme-xs sm:px-3.5 sm:py-2.5 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-600 cursor-not-allowed">
-                                                            <span class="hidden sm:inline">Next</span>
-                                                            <svg class="fill-current" width="20" height="20"
-                                                                viewBox="0 0 20 20" fill="none"
-                                                                xmlns="http://www.w3.org/2000/svg">
-                                                                <path fill-rule="evenodd" clip-rule="evenodd"
-                                                                    d="M17.4165 9.9986C17.4168 10.1909 17.3437 10.3832 17.197 10.53L12.2004 15.5301C11.9076 15.8231 11.4327 15.8233 11.1397 15.5305C10.8467 15.2377 10.8465 14.7629 11.1393 14.4699L14.8594 10.7472L3.33203 10.7472C2.91782 10.7472 2.58203 10.4114 2.58203 9.99715C2.58203 9.58294 2.91782 9.24715 3.33203 9.24715L14.854 9.24715L11.1393 5.53016C10.8465 5.23717 10.8467 4.7623 11.1397 4.4695C11.4327 4.1767 11.9075 4.17685 12.2003 4.46984L17.1578 9.43049C17.3163 9.568 17.4165 9.77087 17.4165 9.99715C17.4165 9.99763 17.4165 9.99812 17.4165 9.9986Z"
-                                                                    fill=""></path>
-                                                            </svg>
-                                                        </span>
-                                                        <?php endif; ?>
-                                                    </div>
-                                                    <?php else: ?>
-                                                    <!-- No pagination needed, but show entry count -->
-                                                    <div class="px-6 py-4">
-                                                        <div
-                                                            class="text-sm text-gray-500 dark:text-gray-400 text-center">
-                                                            <?php if ($total_visits > 0): ?>
-                                                            Showing all <?php echo esc_html($total_visits); ?> entries
-                                                            <?php endif; ?>
-                                                        </div>
-                                                    </div>
-                                                    <?php endif; ?>
-
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <!-- End of Guests Section -->
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    <!-- BEGIN MODAL -->
-                    <?php get_template_part( 'template-parts/content/content', 'guest-modal' ); ?>
-                    <!-- END MODAL -->
 
                     <!-- Footer -->
                     <?php get_template_part('template-parts/content/content-footer', 'content'); ?>

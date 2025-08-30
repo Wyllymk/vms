@@ -102,3 +102,25 @@ document.addEventListener('DOMContentLoaded', function () {
 		}
 	});
 });
+
+document
+	.getElementById('profile_picture')
+	.addEventListener('change', function (e) {
+		const file = e.target.files[0];
+		const preview = document.getElementById('profile-preview');
+		const badge = document.getElementById('photo-selected');
+
+		if (file) {
+			// Show image preview
+			const reader = new FileReader();
+			reader.onload = function (ev) {
+				preview.src = ev.target.result;
+			};
+			reader.readAsDataURL(file);
+
+			// Show "selected" badge
+			badge.classList.remove('hidden');
+		} else {
+			badge.classList.add('hidden');
+		}
+	});
