@@ -237,24 +237,48 @@ get_header();
                                                     <div class="w-full px-2.5 md:w-1/2">
                                                         <label for="fname"
                                                             class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                                            <?php esc_html_e( 'First Name:', 'vms' ); ?>
+                                                            <?php esc_html_e('First Name:', 'vms'); ?>
                                                         </label>
-                                                        <input type="text" id="fname" name="first_name"
-                                                            placeholder="First Name"
-                                                            value="<?php echo esc_attr($guest->first_name ?? ''); ?>"
-                                                            class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" />
+                                                        <div class="relative">
+                                                            <span
+                                                                class="absolute top-1/2 left-0 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
+                                                                <svg class="fill-current" width="20" height="20"
+                                                                    viewBox="0 0 20 20" fill="none"
+                                                                    xmlns="http://www.w3.org/2000/svg">
+                                                                    <path fill-rule="evenodd" clip-rule="evenodd"
+                                                                        d="M8.0254 6.17845C8.0254 4.90629 9.05669 3.875 10.3289 3.875C11.601 3.875 12.6323 4.90629 12.6323 6.17845C12.6323 7.45061 11.601 8.48191 10.3289 8.48191C9.05669 8.48191 8.0254 7.45061 8.0254 6.17845ZM10.3289 2.375C8.22827 2.375 6.5254 4.07786 6.5254 6.17845C6.5254 8.27904 8.22827 9.98191 10.3289 9.98191C12.4294 9.98191 14.1323 8.27904 14.1323 6.17845C14.1323 4.07786 12.4294 2.375 10.3289 2.375ZM8.92286 11.03C5.7669 11.03 3.2085 13.5884 3.2085 16.7444V17.0333C3.2085 17.4475 3.54428 17.7833 3.9585 17.7833C4.37271 17.7833 4.7085 17.4475 4.7085 17.0333V16.7444C4.7085 14.4169 6.59533 12.53 8.92286 12.53H11.736C14.0635 12.53 15.9504 14.4169 15.9504 16.7444V17.0333C15.9504 17.4475 16.2861 17.7833 16.7004 17.7833C17.1146 17.7833 17.4504 17.4475 17.4504 17.0333V16.7444C17.4504 13.5884 14.8919 11.03 11.736 11.03H8.92286Z"
+                                                                        fill=""></path>
+                                                                </svg>
+                                                            </span>
+                                                            <input type="text" id="fname" name="first_name"
+                                                                placeholder="First Name"
+                                                                value="<?php echo esc_attr($guest->first_name ?? ''); ?>"
+                                                                class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pl-20 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" />
+                                                        </div>
                                                     </div>
 
                                                     <!-- Last Name -->
                                                     <div class="w-full px-2.5 md:w-1/2">
                                                         <label for="lname"
                                                             class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                                            <?php esc_html_e( 'Last Name:', 'vms' ); ?>
+                                                            <?php esc_html_e('Last Name:', 'vms'); ?>
                                                         </label>
-                                                        <input type="text" id="lname" name="last_name"
-                                                            placeholder="Last Name"
-                                                            value="<?php echo esc_attr($guest->last_name ?? ''); ?>"
-                                                            class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" />
+                                                        <div class="relative">
+                                                            <span
+                                                                class="absolute top-1/2 left-0 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
+                                                                <svg class="fill-current" width="20" height="20"
+                                                                    viewBox="0 0 20 20" fill="none"
+                                                                    xmlns="http://www.w3.org/2000/svg">
+                                                                    <path fill-rule="evenodd" clip-rule="evenodd"
+                                                                        d="M8.0254 6.17845C8.0254 4.90629 9.05669 3.875 10.3289 3.875C11.601 3.875 12.6323 4.90629 12.6323 6.17845C12.6323 7.45061 11.601 8.48191 10.3289 8.48191C9.05669 8.48191 8.0254 7.45061 8.0254 6.17845ZM10.3289 2.375C8.22827 2.375 6.5254 4.07786 6.5254 6.17845C6.5254 8.27904 8.22827 9.98191 10.3289 9.98191C12.4294 9.98191 14.1323 8.27904 14.1323 6.17845C14.1323 4.07786 12.4294 2.375 10.3289 2.375ZM8.92286 11.03C5.7669 11.03 3.2085 13.5884 3.2085 16.7444V17.0333C3.2085 17.4475 3.54428 17.7833 3.9585 17.7833C4.37271 17.7833 4.7085 17.4475 4.7085 17.0333V16.7444C4.7085 14.4169 6.59533 12.53 8.92286 12.53H11.736C14.0635 12.53 15.9504 14.4169 15.9504 16.7444V17.0333C15.9504 17.4475 16.2861 17.7833 16.7004 17.7833C17.1146 17.7833 17.4504 17.4475 17.4504 17.0333V16.7444C17.4504 13.5884 14.8919 11.03 11.736 11.03H8.92286Z"
+                                                                        fill=""></path>
+                                                                </svg>
+                                                            </span>
+                                                            <input type="text" id="lname" name="last_name"
+                                                                placeholder="Last Name"
+                                                                value="<?php echo esc_attr($guest->last_name ?? ''); ?>"
+                                                                class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pl-20 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" />
+                                                        </div>
                                                     </div>
 
                                                     <!-- Email -->
@@ -276,7 +300,7 @@ get_header();
                                                             <input type="text" id="email" name="email"
                                                                 placeholder="info@example.com"
                                                                 value="<?php echo esc_attr($guest->email ?? ''); ?>"
-                                                                class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pl-[62px] text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" />
+                                                                class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pl-20 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" />
                                                         </div>
                                                     </div>
 
@@ -303,7 +327,7 @@ get_header();
                                                             <input id="pnumber" name="phone_number" type="tel"
                                                                 value="<?php echo esc_attr($guest->phone_number ?? ''); ?>"
                                                                 placeholder="+254 703 000 000"
-                                                                class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent py-3 pr-4 pl-[84px] text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" />
+                                                                class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent py-3 pr-4 pl-20 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" />
                                                         </div>
                                                     </div>
 
@@ -311,39 +335,72 @@ get_header();
                                                     <div class="w-full px-2.5 md:w-1/2">
                                                         <label for="id_number"
                                                             class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                                            <?php esc_html_e( 'ID Number:', 'vms' ); ?>
+                                                            <?php esc_html_e('ID Number:', 'vms'); ?>
                                                         </label>
-                                                        <input type="number" id="id_number" name="id_number"
-                                                            placeholder="33612365"
-                                                            value="<?php echo esc_attr($guest->id_number ?? ''); ?>"
-                                                            class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" />
+                                                        <div class="relative">
+                                                            <span
+                                                                class="absolute top-1/2 left-0 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
+                                                                <!-- ID card icon -->
+                                                                <svg class="fill-current" width="20" height="20"
+                                                                    viewBox="0 0 24 24" fill="none"
+                                                                    xmlns="http://www.w3.org/2000/svg">
+                                                                    <rect x="3" y="4" width="18" height="16" rx="2"
+                                                                        ry="2" stroke="currentColor" stroke-width="2"
+                                                                        fill="none" />
+                                                                    <circle cx="9" cy="12" r="2" stroke="currentColor"
+                                                                        stroke-width="2" fill="none" />
+                                                                    <path d="M15 10h4M15 14h4" stroke="currentColor"
+                                                                        stroke-width="2" stroke-linecap="round" />
+                                                                </svg>
+                                                            </span>
+                                                            <input type="number" id="id_number" name="id_number"
+                                                                placeholder="33612365"
+                                                                value="<?php echo esc_attr($guest->id_number ?? ''); ?>"
+                                                                class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pl-20 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" />
+                                                        </div>
                                                     </div>
 
                                                     <!-- Status -->
                                                     <div class="w-full px-2.5 md:w-1/2">
                                                         <label for="guest_status"
                                                             class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                                            <?php esc_html_e( 'Status:', 'vms' ); ?>
+                                                            <?php esc_html_e('Status:', 'vms'); ?>
                                                         </label>
                                                         <div x-data="{ isOptionSelected: false }"
                                                             class="relative z-20 bg-transparent">
+                                                            <span
+                                                                class="absolute top-1/2 left-0 -translate-y-1/2 border-r border-gray-200 px-4 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
+                                                                <!-- Status badge icon -->
+                                                                <svg class="stroke-current" width="20" height="20"
+                                                                    viewBox="0 0 24 24" fill="none"
+                                                                    xmlns="http://www.w3.org/2000/svg">
+                                                                    <path
+                                                                        d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"
+                                                                        stroke="currentColor" stroke-width="2"
+                                                                        stroke-linecap="round"
+                                                                        stroke-linejoin="round" />
+                                                                </svg>
+                                                            </span>
+
                                                             <select id="guest_status" name="guest_status"
-                                                                class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pr-11 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
+                                                                class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none pl-20 pr-11 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
                                                                 :class="isOptionSelected && 'text-gray-800 dark:text-white/90'"
                                                                 @change="isOptionSelected = true">
                                                                 <option value="active"
                                                                     <?php selected($guest->guest_status ?? '', 'active'); ?>>
-                                                                    <?php esc_html_e( 'Active', 'vms' ); ?>
+                                                                    <?php esc_html_e('Active', 'vms'); ?>
                                                                 </option>
                                                                 <option value="suspended"
                                                                     <?php selected($guest->guest_status ?? '', 'suspended'); ?>>
-                                                                    <?php esc_html_e( 'Suspended', 'vms' ); ?>
+                                                                    <?php esc_html_e('Suspended', 'vms'); ?>
                                                                 </option>
                                                                 <option value="banned"
                                                                     <?php selected($guest->guest_status ?? '', 'banned'); ?>>
-                                                                    <?php esc_html_e( 'Banned', 'vms' ); ?>
+                                                                    <?php esc_html_e('Banned', 'vms'); ?>
                                                                 </option>
                                                             </select>
+
+                                                            <!-- Dropdown arrow -->
                                                             <span
                                                                 class="pointer-events-none absolute top-1/2 right-4 z-30 -translate-y-1/2 text-gray-500 dark:text-gray-400">
                                                                 <svg class="stroke-current" width="20" height="20"
@@ -351,13 +408,13 @@ get_header();
                                                                     xmlns="http://www.w3.org/2000/svg">
                                                                     <path
                                                                         d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396"
-                                                                        stroke="" stroke-width="1.5"
-                                                                        stroke-linecap="round"
+                                                                        stroke-width="1.5" stroke-linecap="round"
                                                                         stroke-linejoin="round" />
                                                                 </svg>
                                                             </span>
                                                         </div>
                                                     </div>
+
 
                                                     <!-- Communication Preferences -->
                                                     <div class="w-full px-2.5">

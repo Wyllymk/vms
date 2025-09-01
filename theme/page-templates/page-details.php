@@ -334,6 +334,12 @@ if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
     $receive_messages = get_user_meta($user_id, 'receive_messages', true);
     $receive_emails = get_user_meta($user_id, 'receive_emails', true);
     $registration_status = get_user_meta($user_id, 'registration_status', true);
+    $disabled  = (!$is_allowed) ? 'disabled' : '';
+    $initialJSMessage = ($receive_messages === 'yes') ? 'true' : 'false';
+    $initialJSEmail = ($receive_emails === 'yes') ? 'true' : 'false';
+                                                            
+    
+
 
     // Get messages from transients
     $lawyer_u_success = get_transient('lawyer_u_success_' . get_current_user_id()) ?: [];
@@ -605,7 +611,7 @@ get_header();
                                                     <!-- User Name field -->
                                                     <div class="w-full px-2.5 md:w-1/2">
                                                         <label for="uname"
-                                                            class="block text-gray-700 dark:text-gray-300">
+                                                            class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                                                             <?php esc_html_e( 'User Name:', 'vms' ); ?>
                                                         </label>
                                                         <input type="text"
@@ -621,7 +627,7 @@ get_header();
                                                     <!-- Email field -->
                                                     <div class="w-full px-2.5 md:w-1/2">
                                                         <label for="email"
-                                                            class="block text-gray-700 dark:text-gray-300">
+                                                            class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                                                             <?php esc_html_e( 'Email (required):', 'vms' ); ?>
                                                         </label>
                                                         <input type="text"
@@ -637,7 +643,7 @@ get_header();
                                                     <!-- First Name field -->
                                                     <div class="w-full px-2.5 md:w-1/2">
                                                         <label for="fname"
-                                                            class="block text-gray-700 dark:text-gray-300">
+                                                            class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                                                             <?php esc_html_e( 'First Name:', 'vms' ); ?>
                                                         </label>
                                                         <input type="text"
@@ -650,7 +656,7 @@ get_header();
                                                     <!-- Last Name field -->
                                                     <div class="w-full px-2.5 md:w-1/2">
                                                         <label for="lname"
-                                                            class="block text-gray-700 dark:text-gray-300">
+                                                            class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                                                             <?php esc_html_e( 'Last Name:', 'vms' ); ?>
                                                         </label>
                                                         <input type="text"
@@ -663,8 +669,8 @@ get_header();
                                                     <!-- Member Number -->
                                                     <div class="w-full px-2.5 md:w-1/2">
                                                         <label for="member_number"
-                                                            class="block text-gray-700 dark:text-gray-300">
-                                                            <?php esc_html_e( 'Member Number', 'vms' ); ?>
+                                                            class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                                                            <?php esc_html_e( 'Member Number:', 'vms' ); ?>
                                                         </label>
                                                         <input type="text"
                                                             class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
@@ -676,7 +682,7 @@ get_header();
                                                     <!-- Phone Number field -->
                                                     <div class="w-full px-2.5 md:w-1/2">
                                                         <label for="number"
-                                                            class="block text-gray-700 dark:text-gray-300">
+                                                            class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                                                             <?php esc_html_e( 'Phone Number:', 'vms' ); ?>
                                                         </label>
                                                         <input type="tel"
@@ -804,37 +810,67 @@ get_header();
                                                     <!-- Message Email, Deactivate fields -->
                                                     <div class="w-full px-2.5">
                                                         <hr class="my-4 border-gray-300 dark:border-gray-600">
-                                                        <div class="flex items-center justify-between mb-4">
+                                                        <div class="flex items-center justify-between mb-4"
+                                                            x-data="{ checkboxToggle: <?php echo $initialJSMessage; ?> }">
                                                             <label for="message"
-                                                                class="block text-gray-700 dark:text-gray-300">
-                                                                <?php esc_html_e( 'Receive Communication Messages?', 'vms' ); ?>
+                                                                class="block text-sm font-medium text-gray-700 dark:text-gray-400">
+                                                                <?php esc_html_e('Receive Communication Messages?', 'vms'); ?>
                                                             </label>
-                                                            <?php
-                                                            $receive_messages = get_user_meta($user_id, 'receive_messages', true);
-                                                            $checked = ($receive_messages === 'yes') ? 'checked' : '';
-                                                            $disabled = (!$is_allowed) ? 'disabled' : '';
-                                                            ?>
-                                                            <input type="checkbox"
-                                                                class="px-4 py-2 text-gray-900 border border-gray-300 rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                                                id="message" name="receive_messages" value="yes"
-                                                                <?php echo $checked; ?> <?php echo $disabled; ?>>
-                                                        </div>
-                                                        <hr class="my-4 border-gray-300 dark:border-gray-600">
-                                                        <div class="flex items-center justify-between mb-4">
-                                                            <label for="email_comm"
-                                                                class="block text-gray-700 dark:text-gray-300">
-                                                                <?php esc_html_e( 'Receive Communication Emails?', 'vms' ); ?>
-                                                            </label>
-                                                            <?php
-                                                            $receive_emails = get_user_meta($user_id, 'receive_emails', true);
-                                                            $checked = ($receive_emails === 'yes') ? 'checked' : '';
-                                                            $disabled = (!$is_allowed) ? 'disabled' : '';
-                                                            ?>
-                                                            <input type="checkbox"
-                                                                class="px-4 py-2 text-gray-900 border border-gray-300 rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                                                id="email_comm" name="receive_emails" value="yes"
-                                                                <?php echo $checked; ?> <?php echo $disabled; ?>>
 
+                                                            <!-- Real checkbox (hidden but still submitted in form) -->
+                                                            <input type="checkbox" id="message" name="receive_messages"
+                                                                value="yes" class="sr-only" x-model="checkboxToggle"
+                                                                <?php echo $disabled; ?>>
+
+                                                            <!-- Custom styled checkbox -->
+                                                            <div @click="checkboxToggle = !checkboxToggle"
+                                                                :class="checkboxToggle ? 'border-brand-500 bg-brand-500' : 'bg-transparent border-gray-300 dark:border-gray-700'"
+                                                                class="mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px] cursor-pointer transition-colors">
+                                                                <span
+                                                                    :class="checkboxToggle ? 'opacity-100' : 'opacity-0'"
+                                                                    class="transition-opacity">
+                                                                    <svg width="14" height="14" viewBox="0 0 14 14"
+                                                                        fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                        <path d="M11.6666 3.5L5.24992 9.91667L2.33325 7"
+                                                                            stroke="white" stroke-width="1.94437"
+                                                                            stroke-linecap="round"
+                                                                            stroke-linejoin="round"></path>
+                                                                    </svg>
+                                                                </span>
+                                                            </div>
+                                                        </div>
+
+                                                        <hr class="my-4 border-gray-300 dark:border-gray-600">
+
+                                                        <div class="flex items-center justify-between mb-4"
+                                                            x-data="{ checkboxToggle: <?php echo $initialJSEmail; ?> }">
+                                                            <label for="email_comm"
+                                                                class="block text-sm font-medium text-gray-700 dark:text-gray-400">
+                                                                <?php esc_html_e('Receive Communication Emails?', 'vms'); ?>
+                                                            </label>
+
+
+                                                            <!-- Real checkbox (hidden but still submitted in form) -->
+                                                            <input type="checkbox" id="email_comm" name="receive_emails"
+                                                                value="yes" class="sr-only" x-model="checkboxToggle"
+                                                                <?php echo $disabled; ?>>
+
+                                                            <!-- Custom styled checkbox -->
+                                                            <div @click="checkboxToggle = !checkboxToggle"
+                                                                :class="checkboxToggle ? 'border-brand-500 bg-brand-500' : 'bg-transparent border-gray-300 dark:border-gray-700'"
+                                                                class="mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px] cursor-pointer transition-colors">
+                                                                <span
+                                                                    :class="checkboxToggle ? 'opacity-100' : 'opacity-0'"
+                                                                    class="transition-opacity">
+                                                                    <svg width="14" height="14" viewBox="0 0 14 14"
+                                                                        fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                        <path d="M11.6666 3.5L5.24992 9.91667L2.33325 7"
+                                                                            stroke="white" stroke-width="1.94437"
+                                                                            stroke-linecap="round"
+                                                                            stroke-linejoin="round"></path>
+                                                                    </svg>
+                                                                </span>
+                                                            </div>
                                                         </div>
                                                         <hr class="my-4 border-gray-300 dark:border-gray-600">
                                                     </div>
@@ -848,7 +884,7 @@ get_header();
                                                         <?php esc_html_e( 'Update Details', 'vms' ); ?>
                                                     </button>
                                                     <button type="reset"
-                                                        class="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-3 text-gray-700 shadow-theme-xs ring-1 ring-inset ring-gray-300 transition hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-white/[0.03] cursor-pointer">
+                                                        class="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs ring-1 ring-inset ring-gray-300 transition hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-white/[0.03] cursor-pointer">
                                                         <?php esc_html_e( 'Reset', 'vms' ); ?>
                                                     </button>
                                                     <button type="submit" name="delete_user"
