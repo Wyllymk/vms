@@ -234,10 +234,13 @@ $user_role        = !empty($current_user->roles) ? $current_user->roles[0] : 'gu
                                                 class="text-sm font-medium text-gray-800 dark:text-white/90">
                                                 <?php
                                                 // Get current registration_status from usermeta
-                                                $registration_status = get_user_meta( $current_user->ID, 'registration_status', true );                                            
+                                                $registration_status = get_user_meta($current_user->ID, 'registration_status', true);
                                                 ?>
-                                                <?php echo !empty($registration_status) ? esc_html($registration_status) : esc_html__('Not provided', 'vms'); ?>
+                                                <?php echo !empty($registration_status) 
+                                                    ? esc_html(ucfirst($registration_status)) 
+                                                    : esc_html__('Not provided', 'vms'); ?>
                                             </p>
+
                                         </div>
 
                                         <div>
