@@ -559,45 +559,6 @@ get_header();
                                                             name="last_name"
                                                             <?php echo !$is_allowed ? 'disabled' : ''; ?>>
                                                     </div>
-                                                    <!-- Role Dropdown -->
-                                                    <div class="w-full px-2.5 md:w-1/2">
-                                                        <label for="role"
-                                                            class="block text-gray-700 dark:text-gray-300">
-                                                            <?php esc_html_e('Role:', 'vms'); ?>
-                                                        </label>
-
-                                                        <?php 
-                                                        // Get current role of the user
-                                                        $current_role = !empty($user_data->roles) ? $user_data->roles[0] : '';
-                                                        ?>
-
-                                                        <select name="user_role" id="role"
-                                                            class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800">
-                                                            <option value=""><?php esc_html_e('Select Role', 'vms'); ?>
-                                                            </option>
-                                                            <?php
-                                                            // List of roles you want to display
-                                                            $allowed_roles = array('general_manager', 'gate', 'reception');
-
-                                                            global $wp_roles;
-                                                            foreach ($allowed_roles as $role_key) {
-                                                                if (isset($wp_roles->roles[$role_key])) {
-                                                                    $role_name = $wp_roles->roles[$role_key]['name'];
-
-                                                                    // Select if matches POST or current role
-                                                                    $selected = '';
-                                                                    if ((isset($_POST['user_role']) && $_POST['user_role'] === $role_key) || $current_role === $role_key) {
-                                                                        $selected = 'selected';
-                                                                    }
-
-                                                                    echo '<option value="' . esc_attr($role_key) . '" ' . $selected . '>'
-                                                                        . esc_html($role_name)
-                                                                        . '</option>';
-                                                                }
-                                                            }
-                                                            ?>
-                                                        </select>
-                                                    </div>
 
                                                     <!-- Phone Number field -->
                                                     <div class="w-full px-2.5 md:w-1/2">
@@ -612,6 +573,65 @@ get_header();
                                                             name="pnumber"
                                                             <?php echo !$is_allowed ? 'disabled' : ''; ?>>
                                                     </div>
+
+                                                    <!-- Role -->
+                                                    <div class="w-full px-2.5 md:w-1/2">
+                                                        <label for="role"
+                                                            class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                                                            <?php esc_html_e( 'Role:', 'vms' ); ?>
+                                                        </label>
+
+                                                        <?php 
+                                                        // Get current role of the user
+                                                        $current_role = !empty($user_data->roles) ? $user_data->roles[0] : '';
+                                                        ?>
+
+                                                        <div x-data="{ isOptionSelected: true }"
+                                                            class="relative z-20 bg-transparent">
+                                                            <select name="user_role" id="role"
+                                                                class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pr-11 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90            dark:placeholder:text-white/30"
+                                                                :class="isOptionSelected && 'text-gray-800 dark:text-white/90'"
+                                                                @change="isOptionSelected = true"
+                                                                <?php echo $disabled; ?>>
+
+                                                                <?php
+                                                                // List of roles you want to display
+                                                                $allowed_roles = array('general_manager', 'gate', 'reception');
+
+                                                                global $wp_roles;
+                                                                foreach ($allowed_roles as $role_key) {
+                                                                    if (isset($wp_roles->roles[$role_key])) {
+                                                                        $role_name = $wp_roles->roles[$role_key]['name'];
+
+                                                                        // Select if matches POST or current role
+                                                                        $selected = '';
+                                                                        if ((isset($_POST['user_role']) && $_POST['user_role'] === $role_key) || $current_role === $role_key) {
+                                                                            $selected = 'selected';
+                                                                        }
+
+                                                                        echo '<option value="' . esc_attr($role_key) . '" ' . $selected . '>'
+                                                                            . esc_html($role_name)
+                                                                            . '</option>';
+                                                                    }
+                                                                }
+                                                                ?>
+                                                            </select>
+
+                                                            <span
+                                                                class="pointer-events-none absolute top-1/2 right-4 z-30 -translate-y-1/2 text-gray-500 dark:text-gray-400">
+                                                                <svg class="stroke-current" width="20" height="20"
+                                                                    viewBox="0 0 20 20" fill="none"
+                                                                    xmlns="http://www.w3.org/2000/svg">
+                                                                    <path
+                                                                        d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396"
+                                                                        stroke="" stroke-width="1.5"
+                                                                        stroke-linecap="round"
+                                                                        stroke-linejoin="round" />
+                                                                </svg>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
                                                     <!-- Status -->
                                                     <div class="w-full px-2.5 md:w-1/2">
                                                         <label for="registration_status"
