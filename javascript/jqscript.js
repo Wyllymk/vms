@@ -228,6 +228,7 @@ jQuery(document).ready(function ($) {
 			});
 		}
 	}
+
 	// PROFILE FORM
 	$('#profile-form').on('submit', function (e) {
 		e.preventDefault();
@@ -656,9 +657,10 @@ jQuery(document).ready(function ($) {
 
 			const baseButtonClasses =
 				'inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition rounded-lg whitespace-nowrap shadow-theme-xs';
-			const disabledClasses = 'bg-blue-500 opacity-50 cursor-not-allowed';
+			const disabledClasses =
+				'bg-brand-500 opacity-50 cursor-not-allowed';
 			const signInEnabledClasses =
-				'bg-blue-500 cursor-pointer hover:bg-blue-600';
+				'bg-brand-500 cursor-pointer hover:bg-brand-600';
 			const signOutEnabledClasses =
 				'bg-purple-500 cursor-pointer hover:bg-purple-600';
 
@@ -761,12 +763,19 @@ jQuery(document).ready(function ($) {
                         <td class="px-3 py-4 sm:px-6"><p class="text-gray-500 text-theme-sm dark:text-gray-400">${formattedDate}</p></td>
                         <td class="px-3 py-4 sm:px-6">
                             <div class="flex items-center gap-2">
-                                <button id="edit-guest-button-${guest.id}" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 transition bg-white border border-gray-300 rounded-lg cursor-pointer whitespace-nowrap dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">Edit</button>
+                                <button id="edit-guest-button-${guest.id}" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 transition bg-white border border-gray-300 rounded-lg cursor-pointer whitespace-nowrap dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                    </path>
+                                </svg>
+								Edit
+								</button>
                                 ${actionButtons(guest)}
                             </div>
                         </td>
                     </tr>
-                `;
+                	`;
 
 					// Remove "no guests" row
 					$('#no-guests-row').remove();
@@ -817,7 +826,7 @@ jQuery(document).ready(function ($) {
 									$('#guest-form')[0].reset();
 
 									// Reload same URL
-									window.location.reload();
+									// window.location.reload();
 								}
 							);
 						});
@@ -901,6 +910,1041 @@ jQuery(document).ready(function ($) {
 		});
 	});
 
+	// Club Form Submit (Create/Update)
+	$('.club-form').on('submit', function (e) {
+		e.preventDefault();
+
+		const clubId = $('#club_id').val();
+		const isEdit = clubId !== '';
+
+		// Show loading indicator
+		$('.submit-club-form')
+			.prop('disabled', true)
+			.html(
+				'<span class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2"></span> ' +
+					(isEdit ? 'Updating...' : 'Creating...')
+			);
+
+		// Clear previous messages and modals
+		$('.alert-message').remove();
+		$('#success-modal-overlay, #club-error-modal-overlay').remove();
+
+		// Collect form data
+		var formData = new FormData(this);
+		formData.append('action', isEdit ? 'club_update' : 'club_registration');
+		formData.append('nonce', vms_script_ajax.nonce);
+
+		// AJAX request
+		$.ajax({
+			url: vms_script_ajax.ajaxurl,
+			type: 'POST',
+			data: formData,
+			processData: false,
+			contentType: false,
+			dataType: 'json',
+			success: function (response) {
+				if (response.success && response.data.clubData) {
+					const club = response.data.clubData;
+
+					// Format creation date
+					let creationformattedDate = 'N/A';
+					if (club.created_at) {
+						const creationDate = new Date(club.created_at);
+						if (!isNaN(creationDate)) {
+							creationformattedDate =
+								creationDate.toLocaleDateString('en-US', {
+									month: 'short',
+									day: 'numeric',
+									year: 'numeric',
+								});
+						}
+					}
+					let updateformattedDate = 'N/A';
+					if (club.updated_at) {
+						const updateDate = new Date(club.updated_at);
+						if (!isNaN(updateDate)) {
+							updateformattedDate = updateDate.toLocaleDateString(
+								'en-US',
+								{
+									month: 'short',
+									day: 'numeric',
+									year: 'numeric',
+								}
+							);
+						}
+					}
+
+					// Status classes
+					const statusClasses = {
+						active: 'bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-500',
+						suspended:
+							'bg-warning-50 text-warning-600 dark:bg-warning-500/15 dark:text-orange-400',
+						banned: 'bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500',
+					};
+
+					if (isEdit) {
+						// Update existing row
+						const row = $(`tr[data-club-id="${club.id}"]`);
+						row.find('td:nth-child(2) p').text(club.club_name);
+						row.find('td:nth-child(3) span')
+							.removeClass()
+							.addClass(
+								`inline-flex items-center justify-center gap-1 rounded-full px-2.5 py-0.5 text-sm font-medium capitalize ${statusClasses[club.status] || statusClasses.active}`
+							)
+							.text(
+								club.status.charAt(0).toUpperCase() +
+									club.status.slice(1)
+							);
+					} else {
+						// Build new row
+						const newRow = `
+                        <tr data-club-id="${club.id}">
+                            <td class="px-3 py-4 sm:px-6"><p class="text-gray-500 text-theme-sm dark:text-gray-400">${$('#clubs-table-body tr').length + 1}</p></td>
+                            <td class="px-3 py-4 sm:px-6"><p class="text-gray-800 text-theme-sm dark:text-white/90">${club.club_name}</p></td>
+                            <td class="px-3 py-4 sm:px-6"><span class="inline-flex items-center justify-center px-2.5 gap-1 py-0.5 text-sm font-medium capitalize rounded-full ${statusClasses[club.status] || statusClasses.active}">${club.status.charAt(0).toUpperCase() + club.status.slice(1)}</span></td>
+                            <td class="px-3 py-4 sm:px-6"><p class="text-gray-500 text-theme-sm dark:text-gray-400">${creationformattedDate}</p></td>
+                            <td class="px-3 py-4 sm:px-6"><p class="text-gray-500 text-theme-sm dark:text-gray-400">${updateformattedDate}</p></td>
+                            <td class="px-3 py-4 sm:px-6">
+                                <div class="flex items-center gap-2">
+                                    <button class="edit-club-btn inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 transition bg-white border border-gray-300 rounded-lg cursor-pointer whitespace-nowrap dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700" data-club-id="${club.id}">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                            </path>
+                                        </svg>Edit
+                                    </button>
+                                    <button class="delete-club-btn inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition bg-red-500 border border-red-500 rounded-lg cursor-pointer whitespace-nowrap hover:bg-red-600 dark:hover:bg-red-600" data-club-id="${club.id}">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                                            </path>
+                                        </svg>Delete
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+
+						// Remove "no clubs" row if exists
+						$('#no-clubs-row').remove();
+
+						// Prepend row to table body
+						$('#clubs-table-body').prepend(newRow);
+
+						// Re-number rows
+						$('#clubs-table-body tr').each(function (index) {
+							$(this)
+								.find('td:first p')
+								.text(index + 1);
+						});
+					}
+
+					// Show success modal
+					const message =
+						response.data.messages?.[0] ||
+						(isEdit
+							? 'Club updated successfully'
+							: 'Club created successfully');
+					const successModal = `
+                    <div id="success-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+                        <div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+                            <div class="check_mark mx-auto mb-4">
+                                <div class="sa-icon sa-success animate">
+                                    <span class="sa-line sa-tip animateSuccessTip"></span>
+                                    <span class="sa-line sa-long animateSuccessLong"></span>
+                                    <div class="sa-placeholder"></div>
+                                    <div class="sa-fix"></div>
+                                </div>
+                            </div>
+                            <p class="text-lg font-medium text-gray-700 dark:text-white">${message}</p>
+                            <button id="ok-success-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 transition">OK</button>
+                        </div>
+                    </div>
+                `;
+					$('body').append(successModal);
+
+					$(document)
+						.off('click', '#ok-success-btn')
+						.on('click', '#ok-success-btn', function (e) {
+							e.preventDefault();
+							$('#success-modal-overlay').fadeOut(
+								300,
+								function () {
+									$(this).remove();
+									$('.club-form')[0].reset();
+									$('#club_id').val('');
+									// Close modal using Alpine.js
+									window.Alpine &&
+										window.Alpine.store &&
+										window.Alpine.store('clubModal') &&
+										(window.Alpine.store(
+											'clubModal'
+										).isClubEditModal = false);
+								}
+							);
+						});
+				} else {
+					showErrorClubModal(
+						response.data?.messages || [
+							'An error occurred during club operation',
+						]
+					);
+				}
+			},
+			error: function (xhr, status, error) {
+				const errorMessage =
+					xhr.responseJSON?.data?.messages?.join('<br>') ||
+					'An error occurred: ' + error;
+				showErrorClubModal([errorMessage]);
+			},
+			complete: function () {
+				$('.submit-club-form')
+					.prop('disabled', false)
+					.text('Save Club');
+			},
+		});
+	});
+
+	// Reciprocating Member FORM
+	$('#reciprocation-form').on('submit', function (e) {
+		e.preventDefault();
+
+		// Show loading indicator
+		$('#submit-reciprocating-form')
+			.prop('disabled', true)
+			.html(
+				'<span class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2"></span> Registering...'
+			);
+
+		// Clear previous messages and modals
+		$('.alert-message').remove();
+		$(
+			'#success-modal-overlay, #reciprocating-error-modal-overlay'
+		).remove();
+
+		// Collect form data
+		var formData = new FormData(this);
+		formData.append('action', 'reciprocating_member_registration');
+		formData.append('nonce', vms_script_ajax.nonce);
+
+		// Action buttons generator
+		const actionButtons = (member) => {
+			if (!member) return '';
+
+			const today = new Date().toISOString().split('T')[0];
+			const normalizedVisitDate = member.visit_date
+				? member.visit_date.substring(0, 10)
+				: null;
+
+			const isButtonDisabled =
+				!normalizedVisitDate ||
+				!member.status ||
+				!/^\d{4}-\d{2}-\d{2}$/.test(normalizedVisitDate) ||
+				member.status !== 'approved' ||
+				member.member_status !== 'active';
+
+			const isFuture = normalizedVisitDate > today;
+			const isPast = normalizedVisitDate < today;
+			const isToday = normalizedVisitDate === today;
+
+			const isMissed = isPast && !member.sign_in_time;
+			const isScheduled = isFuture;
+			const isCompleted = member.sign_in_time && member.sign_out_time;
+
+			const baseButtonClasses =
+				'inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition rounded-lg whitespace-nowrap shadow-theme-xs';
+			const disabledClasses =
+				'bg-brand-500 opacity-50 cursor-not-allowed';
+			const signInEnabledClasses =
+				'bg-brand-500 cursor-pointer hover:bg-brand-600';
+			const signOutEnabledClasses =
+				'bg-purple-500 cursor-pointer hover:bg-purple-600';
+
+			if (member.status === 'suspended') {
+				return `<span class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-light-500 bg-blue-light-50 rounded-lg dark:bg-blue-light-500/15 dark:text-blue-light-500">Suspended</span>`;
+			}
+
+			if (member.status === 'banned') {
+				return `<span class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-error-600 bg-error-50 rounded-lg dark:bg-error-500/15 dark:text-error-500">Banned</span>`;
+			}
+
+			if (member.status === 'cancelled') {
+				return `<span class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg dark:bg-white/5 dark:text-white/80">Cancelled</span>`;
+			}
+
+			if (isMissed) {
+				return `<span class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-warning-600 bg-warning-50 rounded-lg dark:bg-warning-500/15 dark:text-orange-500">Missed</span>`;
+			}
+
+			if (isScheduled) {
+				return `<span class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-light-500 bg-blue-light-50 rounded-lg dark:bg-blue-light-500/15 dark:text-blue-light-500">Scheduled</span>`;
+			}
+
+			if (isToday) {
+				if (isCompleted) {
+					const signInTime = new Date(
+						member.sign_in_time
+					).toLocaleTimeString([], {
+						hour: 'numeric',
+						minute: '2-digit',
+					});
+					const signOutTime = new Date(
+						member.sign_out_time
+					).toLocaleTimeString([], {
+						hour: 'numeric',
+						minute: '2-digit',
+					});
+					return `<div class="flex flex-col items-center justify-center text-xs px-4"><span class="text-green-600 dark:text-green-400">${signInTime}</span><span class="text-red-600 dark:text-red-400">${signOutTime}</span></div>`;
+				} else if (!member.sign_in_time) {
+					return `<button id="reciprocating-sign-in-button-${member.id}" class="${baseButtonClasses} ${isButtonDisabled ? disabledClasses : signInEnabledClasses}" data-visit-id="${member.visit_id}" ${isButtonDisabled ? 'disabled' : ''}>Sign In</button>`;
+				} else if (!member.sign_out_time) {
+					return `<button id="reciprocating-sign-out-button-${member.id}" class="${baseButtonClasses} ${isButtonDisabled ? disabledClasses : signOutEnabledClasses}" data-visit-id="${member.visit_id}" ${isButtonDisabled ? 'disabled' : ''}>Sign Out</button>`;
+				}
+			}
+
+			return '';
+		};
+
+		// AJAX request
+		$.ajax({
+			url: vms_script_ajax.ajaxurl,
+			type: 'POST',
+			data: formData,
+			processData: false,
+			contentType: false,
+			dataType: 'json',
+			success: function (response) {
+				if (response.success && response.data.memberData) {
+					const member = response.data.memberData;
+
+					// Format visit date
+					let formattedDate = 'N/A';
+					if (member.visit_date) {
+						const visitDate = new Date(member.visit_date);
+						if (!isNaN(visitDate)) {
+							formattedDate = visitDate.toLocaleDateString(
+								'en-US',
+								{
+									month: 'short',
+									day: 'numeric',
+									year: 'numeric',
+								}
+							);
+						}
+					}
+
+					// Club name formatting
+					let clubName = member.club_name || 'N/A';
+					if (member.club_name && member.club_name.includes('.')) {
+						// Split display_name "wilson.mbuthia" → "Wilson Mbuthia"
+						clubName = member.club_name
+							.split('.')
+							.map(
+								(part) =>
+									part.charAt(0).toUpperCase() + part.slice(1)
+							)
+							.join(' ');
+					}
+
+					// Status classes
+					const statusClasses = {
+						approved:
+							'bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-500',
+						unapproved:
+							'bg-warning-50 text-warning-600 dark:bg-warning-500/15 dark:text-orange-400',
+						suspended:
+							'bg-blue-light-50 text-blue-light-500 dark:bg-blue-light-500/15 dark:text-blue-light-500',
+						banned: 'bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500',
+						cancelled:
+							'bg-gray-100 text-gray-700 dark:bg-white/5 dark:text-white/80',
+					};
+
+					// Build row
+					const newRow = `
+						<tr data-member-id="${member.id}" data-visit-id="${member.visit_id}">
+						<td class="px-3 py-4 sm:px-6"><p class="text-gray-500 text-theme-sm dark:text-gray-400">${$('tbody tr').length + 1}</p></td>
+							<td class="px-3 py-4 sm:px-6"><p class="text-gray-800 text-theme-sm dark:text-white/90">${member.first_name || 'N/A'}</p></td>
+							<td class="px-3 py-4 sm:px-6"><p class="text-gray-800 text-theme-sm dark:text-white/90">${member.last_name || 'N/A'}</p></td>
+							<td class="px-3 py-4 sm:px-6"><span class="inline-flex items-center justify-center px-2.5 gap-1 py-0.5 text-sm font-medium capitalize rounded-full ${statusClasses[member.status] || ''}">
+							${member.status ? member.status.charAt(0).toUpperCase() + member.status.slice(1) : 'N/A'}</span>
+							</td>
+							<td class="px-3 py-4 sm:px-6"><p class="text-gray-500 text-theme-sm dark:text-gray-400">${clubName}</p></td>
+							<td class="px-3 py-4 sm:px-6"><p class="text-gray-500 text-theme-sm dark:text-gray-400">${member.reciprocating_member_number || 'N/A'}</p></td>
+							<td class="px-3 py-4 sm:px-6"><p class="text-gray-500 text-theme-sm dark:text-gray-400">${formattedDate}</p></td>
+							<td class="px-3 py-4 sm:px-6">
+								<div class="flex items-center gap-2">
+									<button id="edit-reciprocating-member-button-${member.id}" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 transition bg-white border border-gray-300 rounded-lg cursor-pointer whitespace-nowrap dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700" data-member-id="${member.id}" data-visit-id="${member.visit_id}">
+										<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+										</svg>
+										Edit
+									</button>
+									${actionButtons(member)}
+								</div>
+							</td>
+						</tr>
+						`;
+
+					// Remove "no members" row if exists
+					$('#no-reciprocating-members-row').remove();
+
+					// Prepend row to table
+					$('#reciprocating-members-table-body').prepend(newRow);
+
+					// Re-number rows
+					$('#reciprocating-members-table-body tr').each(
+						function (index) {
+							$(this)
+								.find('td:first p')
+								.text(index + 1);
+						}
+					);
+
+					// Show success modal
+					const message =
+						response.data.messages?.[0] ||
+						'Reciprocating member registered successfully';
+					const successModal = `
+                <div id="success-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+                    <div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+                        <div class="check_mark mx-auto mb-4">
+                            <div class="sa-icon sa-success animate">
+                                <span class="sa-line sa-tip animateSuccessTip"></span>
+                                <span class="sa-line sa-long animateSuccessLong"></span>
+                                <div class="sa-placeholder"></div>
+                                <div class="sa-fix"></div>
+                            </div>
+                        </div>
+                        <p class="text-lg font-medium text-gray-700 dark:text-white">${message}</p>
+                        <button id="ok-success-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 transition">OK</button>
+                    </div>
+                </div>
+            `;
+					$('body').append(successModal);
+
+					$(document)
+						.off('click', '#ok-success-btn')
+						.on('click', '#ok-success-btn', function (e) {
+							e.preventDefault();
+							$('#success-modal-overlay').fadeOut(
+								300,
+								function () {
+									$(this).remove();
+									window.dispatchEvent(
+										new Event('close-reciprocating-modal')
+									);
+									$('#reciprocation-form')[0].reset();
+								}
+							);
+						});
+				} else {
+					// Show error modal
+					const errorMessages = response.data?.messages || [
+						'An error occurred during reciprocating member registration',
+					];
+					const errorMessageHtml = errorMessages
+						.map(
+							(msg) =>
+								`<p class="text-lg font-medium text-gray-700 dark:text-white">${msg}</p>`
+						)
+						.join('');
+					const errorModal = `
+                <div id="reciprocating-error-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+                    <div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+                        <div class="check_mark mx-auto mb-4">
+                            <div class="sa-icon sa-error animate">
+                                <span class="sa-line sa-left animateXLeft"></span>
+                                <span class="sa-line sa-right animateXRight"></span>
+                                <div class="sa-placeholder"></div>
+                            </div>
+                        </div>
+                        ${errorMessageHtml}
+                        <button id="ok-error-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">OK</button>
+                    </div>
+                </div>
+            `;
+					$('body').append(errorModal);
+					$(document)
+						.off('click', '#ok-error-btn')
+						.on('click', '#ok-error-btn', function (e) {
+							e.preventDefault();
+							$('#reciprocating-error-modal-overlay').fadeOut(
+								300,
+								function () {
+									$(this).remove();
+								}
+							);
+						});
+				}
+			},
+			error: function (xhr, status, error) {
+				const errorMessage =
+					xhr.responseJSON?.data?.messages?.join('<br>') ||
+					'An error occurred: ' + error;
+				const errorModal = `
+            <div id="reciprocating-error-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+                <div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+                    <div class="check_mark mx-auto mb-4">
+                        <div class="sa-icon sa-error animate">
+                            <span class="sa-line sa-left animateXLeft"></span>
+                            <span class="sa-line sa-right animateXRight"></span>
+                            <div class="sa-placeholder"></div>
+                        </div>
+                    </div>
+                    <p class="text-lg font-medium text-gray-700 dark:text-white">${errorMessage}</p>
+                    <button id="ok-error-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">OK</button>
+                </div>
+            </div>
+        `;
+				$('body').append(errorModal);
+				$(document)
+					.off('click', '#ok-error-btn')
+					.on('click', '#ok-error-btn', function (e) {
+						e.preventDefault();
+						$('#reciprocating-error-modal-overlay').fadeOut(
+							300,
+							function () {
+								$(this).remove();
+							}
+						);
+					});
+			},
+			complete: function () {
+				$('#submit-reciprocating-form')
+					.prop('disabled', false)
+					.text('Create Reciprocating Member');
+			},
+		});
+	});
+
+	// Edit Member Button Handler
+	$(document).on(
+		'click',
+		'[id^="edit-reciprocating-member-button-"]',
+		function (e) {
+			e.preventDefault();
+
+			// Extract member ID from button ID
+			const memberId = $(this)
+				.attr('id')
+				.replace('edit-reciprocating-member-button-', '');
+
+			// Redirect to edit page
+			window.location.href =
+				vms_script_ajax.home_url +
+				'/reciprocating-member-details/?member_id=' +
+				memberId +
+				'&paged=1';
+		}
+	);
+
+	// Handle reciprocating member sign in
+	$(document).on(
+		'click',
+		'[id^="reciprocating-sign-in-button-"]',
+		function (e) {
+			e.preventDefault();
+
+			const visitId = $(this).data('visit-id');
+			const button = $(this);
+			const memberName = button
+				.closest('tr')
+				.find('td:nth-child(2)')
+				.text()
+				.trim();
+
+			// Confirmation modal (uses classes instead of IDs inside)
+			const confirmModal = `
+		<div class="sign-in-confirm-modal-overlay fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+			<div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+				<div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+					<svg class="h-6 w-6 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+					</svg>
+				</div>
+				<h3 class="mb-2 text-lg font-medium text-gray-900 dark:text-white">Sign In Reciprocating Member</h3>
+				<p class="mb-6 text-sm text-gray-500 dark:text-gray-400">Sign in "${memberName}" to the system?</p>
+				<div class="flex gap-3">
+					<button type="button" class="cancel-sign-in-btn flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">Cancel</button>
+					<button type="button" class="confirm-sign-in-btn flex-1 rounded-lg bg-green-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-green-600" data-visit-id="${visitId}">Sign In</button>
+				</div>
+			</div>
+		</div>
+	`;
+			$('body').append(confirmModal);
+		}
+	);
+
+	// Cancel Sign In
+	$(document).on('click', '.cancel-sign-in-btn', function () {
+		$('.sign-in-confirm-modal-overlay').fadeOut(300, function () {
+			$(this).remove();
+		});
+	});
+
+	// Confirm Sign In
+	$(document).on('click', '.confirm-sign-in-btn', function () {
+		const visitId = $(this).data('visit-id');
+		const confirmBtn = $(this);
+		const button = $(
+			`[id^="reciprocating-sign-in-button-"][data-visit-id="${visitId}"]`
+		);
+
+		// Show loading spinner on confirm button
+		confirmBtn
+			.prop('disabled', true)
+			.html(
+				'<span class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2"></span> Signing In...'
+			);
+
+		$.ajax({
+			url: vms_script_ajax.ajaxurl,
+			type: 'POST',
+			data: {
+				action: 'reciprocating_member_sign_in',
+				visit_id: visitId,
+				nonce: vms_script_ajax.nonce,
+			},
+			dataType: 'json',
+			success: function (response) {
+				if (response.success && response.data.guestData) {
+					const guest = response.data.guestData;
+
+					// Update row badge
+					const row = button.closest('tr');
+					const statusCell = row.find('td:nth-child(4) span');
+					statusCell.text('Approved');
+
+					// Replace sign in button with sign out button
+					const newVisitId = guest.visit_id || visitId;
+					const signOutBtn = `
+					<button class="sign-out-btn inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition rounded-lg cursor-pointer whitespace-nowrap bg-purple-500 shadow-theme-xs hover:bg-purple-600"
+						data-visit-id="${newVisitId}" data-member-id="${guest.id}">
+						Sign Out
+					</button>
+					`;
+					button.replaceWith(signOutBtn);
+
+					// Close modal
+					$('.sign-in-confirm-modal-overlay').fadeOut(
+						300,
+						function () {
+							$(this).remove();
+						}
+					);
+
+					// Show success modal
+					const successMessage =
+						response.data.messages?.[0] ||
+						'Guest signed in successfully';
+					showSuccessModal(successMessage);
+				} else {
+					console.error('Sign in failed:', response);
+					const errorMessage =
+						response.data?.messages?.join('<br>') ||
+						'Error signing in guest';
+					showErrorModal(errorMessage);
+
+					$('.sign-in-confirm-modal-overlay').fadeOut(
+						300,
+						function () {
+							$(this).remove();
+						}
+					);
+				}
+			},
+			error: function (xhr, status, error) {
+				console.error('Sign in error:', error);
+				const errorMessage =
+					xhr.responseJSON?.data?.messages?.join('<br>') ||
+					'An error occurred: ' + error;
+				showErrorModal(errorMessage);
+
+				$('.sign-in-confirm-modal-overlay').fadeOut(300, function () {
+					$(this).remove();
+				});
+			},
+			complete: function () {
+				confirmBtn.prop('disabled', false).text('Sign In');
+			},
+		});
+	});
+
+	// Handle reciprocating member sign out
+	$(document).on(
+		'click',
+		'[id^="reciprocating-sign-out-button-"]',
+		function (e) {
+			e.preventDefault();
+
+			const visitId = $(this).data('visit-id');
+			const button = $(this);
+			const memberName = button
+				.closest('tr')
+				.find('td:nth-child(2)')
+				.text()
+				.trim();
+
+			// Show confirmation modal
+			const confirmModal = `
+		<div id="sign-out-confirm-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+			<div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+				<div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
+					<svg class="h-6 w-6 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+					</svg>
+				</div>
+				<h3 class="mb-2 text-lg font-medium text-gray-900 dark:text-white">Sign Out Reciprocating Member</h3>
+				<p class="mb-6 text-sm text-gray-500 dark:text-gray-400">Sign out "${memberName}" from the system?</p>
+				<div class="flex gap-3">
+					<button class="cancel-sign-out-btn flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">Cancel</button>
+					<button class="confirm-sign-out-btn flex-1 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600" data-visit-id="${visitId}">Sign Out</button>
+				</div>
+			</div>
+		</div>
+	`;
+			$('body').append(confirmModal);
+		}
+	);
+
+	// Cancel Sign Out
+	$(document).on('click', '.cancel-sign-out-btn', function () {
+		$('#sign-out-confirm-modal-overlay').fadeOut(300, function () {
+			$(this).remove();
+		});
+	});
+
+	// Confirm Sign Out
+	$(document).on('click', '.confirm-sign-out-btn', function () {
+		const visitId = $(this).data('visit-id');
+		const button = $(
+			`[id^="reciprocating-sign-out-button-"][data-visit-id="${visitId}"]`
+		);
+
+		// Show loading
+		$(this)
+			.prop('disabled', true)
+			.html(
+				'<span class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2"></span> Signing Out...'
+			);
+
+		$.ajax({
+			url: vms_script_ajax.ajaxurl,
+			type: 'POST',
+			data: {
+				action: 'reciprocating_member_sign_out',
+				visit_id: visitId,
+				nonce: vms_script_ajax.nonce,
+			},
+			dataType: 'json',
+			success: function (response) {
+				if (response.success && response.data.recipData) {
+					// Replace button with completed times
+					const member = response.data.recipData;
+
+					const formatTime = (time) => {
+						if (!time) return '';
+						const date = new Date(time);
+						if (isNaN(date)) return '';
+						return date.toLocaleTimeString('en-US', {
+							hour: 'numeric',
+							minute: '2-digit',
+							hour12: true,
+						});
+					};
+
+					const parentContainer = button.closest(
+						'.flex.items-center.gap-2'
+					);
+					button.remove();
+
+					parentContainer.append(`
+					<div class="flex flex-col items-center justify-center text-xs px-4">
+						<span class="text-green-600 dark:text-green-400">${formatTime(member.sign_in_time)}</span>
+						<span class="text-red-600 dark:text-red-400">${formatTime(member.sign_out_time)}</span>
+					</div>
+					`);
+
+					// Close modal
+					$('#sign-out-confirm-modal-overlay').fadeOut(
+						300,
+						function () {
+							$(this).remove();
+						}
+					);
+
+					const successMessage =
+						response.data.message ||
+						'Reciprocating Member signed out successfully';
+					showSuccessModal(successMessage);
+				} else {
+					console.error('Sign out failed:', response);
+					const errorMessage =
+						response.data?.messages?.join('<br>') ||
+						'Error signing out Reciprocating Member';
+					showErrorModal(errorMessage);
+
+					// Close modal on error
+					$('#sign-out-confirm-modal-overlay').fadeOut(
+						300,
+						function () {
+							$(this).remove();
+						}
+					);
+				}
+			},
+			error: function (xhr, status, error) {
+				console.error('Sign out error:', error);
+				const errorMessage =
+					xhr.responseJSON?.data?.messages?.join('<br>') ||
+					'An error occurred: ' + error;
+				showErrorModal(errorMessage);
+
+				$('#sign-out-confirm-modal-overlay').fadeOut(300, function () {
+					$(this).remove();
+				});
+			},
+			complete: function () {
+				$('.confirm-sign-out-btn')
+					.prop('disabled', false)
+					.text('Sign Out');
+			},
+		});
+	});
+
+	// Notification helper function
+	function showNotification(type, message) {
+		const notificationClass =
+			type === 'success'
+				? 'bg-success-50 text-success-600 border-success-200'
+				: 'bg-error-50 text-error-600 border-error-200';
+
+		const notification = `
+        <div class="fixed top-4 right-4 z-[999999] ${notificationClass} border rounded-lg p-4 shadow-lg animate-fade-in-down">
+            <p class="text-sm font-medium">${message}</p>
+        </div>
+    	`;
+
+		$('body').append(notification);
+
+		// Auto remove after 3 seconds
+		setTimeout(() => {
+			$('.fixed.top-4.right-4').fadeOut(300, function () {
+				$(this).remove();
+			});
+		}, 3000);
+	}
+
+	// Edit Club Button Click
+	$(document).on('click', '.edit-club-btn', function () {
+		const $btn = $(this);
+		const clubId = $btn.data('club-id');
+		const originalHtml = $btn.html();
+
+		$btn.prop('disabled', true).html(`
+        <span class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2"></span>
+        <span>Loading...</span>
+    	`);
+
+		$.ajax({
+			url: vms_script_ajax.ajaxurl,
+			type: 'POST',
+			data: {
+				action: 'get_club_data',
+				nonce: vms_script_ajax.nonce,
+				club_id: clubId,
+			},
+			dataType: 'json',
+			success: function (response) {
+				if (response.success && response.data.clubData) {
+					const club = response.data.clubData;
+
+					// Populate form
+					$('#club_id').val(club.id);
+					$('#club_name').val(club.club_name);
+					$('[name="club_email"]').val(club.club_email);
+					$('[name="club_phone"]').val(club.club_phone);
+					$('[name="club_address"]').val(club.club_address);
+					$('[name="club_website"]').val(club.club_website);
+					$('#club_status').val(club.status);
+					$('[name="notes"]').val(club.notes);
+
+					// Update modal
+					$('#club-modal-title').text('Edit Club');
+					$('#club-modal-description').text(
+						'Update Club Information.'
+					);
+
+					window.Alpine.store('clubModal').open();
+				} else {
+					showErrorClubModal(
+						response.data?.messages || ['Failed to load club data']
+					);
+				}
+			},
+			error: function () {
+				showErrorClubModal(['Failed to load club data']);
+			},
+			complete: function () {
+				$btn.prop('disabled', false).html(originalHtml);
+			},
+		});
+	});
+
+	// Delete Club Button Click
+	$(document).on('click', '.delete-club-btn', function () {
+		const clubId = $(this).data('club-id');
+		const clubName = $(this).closest('tr').find('td:nth-child(2) p').text();
+
+		// Show confirmation modal
+		const confirmModal = `
+            <div id="delete-confirm-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+                <div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+                    <div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
+                        <svg class="h-6 w-6 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                        </svg>
+                    </div>
+                    <h3 class="mb-2 text-lg font-medium text-gray-900 dark:text-white">Delete Club</h3>
+                    <p class="mb-6 text-sm text-gray-500 dark:text-gray-400">Are you sure you want to delete "${clubName}"? This action cannot be undone.</p>
+                    <div class="flex gap-3">
+                        <button id="cancel-delete-btn" type="button" class="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">Cancel</button>
+                        <button id="confirm-delete-btn" type="button" class="flex-1 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600" data-club-id="${clubId}">Delete</button>
+                    </div>
+                </div>
+            </div>
+        `;
+		$('body').append(confirmModal);
+	});
+
+	// Cancel Delete
+	$(document).on('click', '#cancel-delete-btn', function () {
+		$('#delete-confirm-modal-overlay').fadeOut(300, function () {
+			$(this).remove();
+		});
+	});
+
+	// Confirm Delete
+	$(document).on('click', '#confirm-delete-btn', function () {
+		const clubId = $(this).data('club-id');
+
+		// Show loading
+		$(this)
+			.prop('disabled', true)
+			.html(
+				'<span class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2"></span> Deleting...'
+			);
+
+		// Delete club
+		$.ajax({
+			url: vms_script_ajax.ajaxurl,
+			type: 'POST',
+			data: {
+				action: 'delete_club',
+				nonce: vms_script_ajax.nonce,
+				club_id: clubId,
+			},
+			dataType: 'json',
+			success: function (response) {
+				if (response.success) {
+					// Remove row from table
+					$(`tr[data-club-id="${clubId}"]`).fadeOut(300, function () {
+						$(this).remove();
+
+						// Re-number rows
+						$('#clubs-table-body tr').each(function (index) {
+							$(this)
+								.find('td:first p')
+								.text(index + 1);
+						});
+
+						// Show "no clubs" row if table is empty
+						if ($('#clubs-table-body tr').length === 0) {
+							$('#clubs-table-body').append(
+								'<tr id="no-clubs-row"><td colspan="5" class="px-4 py-4 text-center text-gray-600 dark:text-white">No clubs found.</td></tr>'
+							);
+						}
+					});
+
+					// Close confirm modal
+					$('#delete-confirm-modal-overlay').fadeOut(
+						300,
+						function () {
+							$(this).remove();
+						}
+					);
+
+					// Show success message
+					showSuccessMessage(
+						response.data.messages?.[0] ||
+							'Club deleted successfully'
+					);
+				} else {
+					showErrorClubModal(
+						response.data?.messages || ['Failed to delete club']
+					);
+				}
+			},
+			error: function () {
+				showErrorClubModal(['Failed to delete club']);
+			},
+			complete: function () {
+				$('#confirm-delete-btn').prop('disabled', false).text('Delete');
+			},
+		});
+	});
+
+	// Helper function to show error modal
+	function showErrorClubModal(messages) {
+		const errorMessageHtml = messages
+			.map(
+				(msg) =>
+					`<p class="text-lg font-medium text-gray-700 dark:text-white">${msg}</p>`
+			)
+			.join('');
+		const errorModal = `
+            <div id="club-error-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+                <div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+                    <div class="check_mark mx-auto mb-4">
+                        <div class="sa-icon sa-error animate">
+                            <span class="sa-line sa-left animateXLeft"></span>
+                            <span class="sa-line sa-right animateXRight"></span>
+                            <div class="sa-placeholder"></div>
+                        </div>
+                    </div>
+                    ${errorMessageHtml}
+                    <button id="ok-error-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">OK</button>
+                </div>
+            </div>
+        `;
+		$('body').append(errorModal);
+
+		$(document)
+			.off('click', '#ok-error-btn')
+			.on('click', '#ok-error-btn', function (e) {
+				e.preventDefault();
+				$('#club-error-modal-overlay').fadeOut(300, function () {
+					$(this).remove();
+				});
+			});
+	}
+
+	// Helper function to show success message
+	function showSuccessMessage(message) {
+		const successToast = `
+            <div id="success-toast" class="fixed top-4 right-4 z-[999999] bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg">
+                <p class="text-sm font-medium">${message}</p>
+            </div>
+        `;
+		$('body').append(successToast);
+
+		setTimeout(function () {
+			$('#success-toast').fadeOut(300, function () {
+				$(this).remove();
+			});
+		}, 3000);
+	}
+
 	// Employee FORM
 	$('#employee-form').on('submit', function (e) {
 		e.preventDefault();
@@ -963,9 +2007,11 @@ jQuery(document).ready(function ($) {
                     </td>                   
 					<td class="px-5 py-4 sm:px-6">
                         <div class="flex items-center">
-                            <div class="flex items-center gap-3">
-                                <p class="text-gray-500 text-theme-sm dark:text-gray-400">${roleNames[employee.user_role] || employee.user_role || 'N/A'}</p>
-                            </div>
+                            <div class="flex items-center gap-3">                               
+                            	<span class="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
+                                    ${roleNames[employee.user_role] || employee.user_role || 'N/A'}
+                                </span>
+							</div>
                         </div>
                     </td>
                     <td class="px-5 py-4 sm:px-6">
@@ -996,10 +2042,17 @@ jQuery(document).ready(function ($) {
                         </div>
                     </td>
                     <td class="px-5 py-4 sm:px-6">
-                        <form action="${window.location.origin}/details" method="get">
+                        <form action="${window.location.origin}/employee-details" method="get">
                             <input type="hidden" name="user_id" value="${employee.id || employee.user_id}">
-                            <button type="submit" class="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg cursor-pointer whitespace-nowrap bg-brand-500 shadow-theme-xs hover:bg-brand-60">
-                                View Details
+                            <button type="submit"
+                                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 transition bg-white border border-gray-300 rounded-lg cursor-pointer whitespace-nowrap dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                data-user-id="<?php echo $user_id; ?>">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                    </path>
+                                </svg>
+                                Edit
                             </button>
                         </form>
                     </td>
@@ -1188,9 +2241,10 @@ jQuery(document).ready(function ($) {
 
 			const baseButtonClasses =
 				'inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition rounded-lg whitespace-nowrap shadow-theme-xs';
-			const disabledClasses = 'bg-blue-500 opacity-50 cursor-not-allowed';
+			const disabledClasses =
+				'bg-brand-500 opacity-50 cursor-not-allowed';
 			const signInEnabledClasses =
-				'bg-blue-500 cursor-pointer hover:bg-blue-600';
+				'bg-brand-500 cursor-pointer hover:bg-brand-600';
 			const signOutEnabledClasses =
 				'bg-purple-500 cursor-pointer hover:bg-purple-600';
 
@@ -1282,12 +2336,19 @@ jQuery(document).ready(function ($) {
                         <td class="px-3 py-4 sm:px-6"><p class="text-gray-500 text-theme-sm dark:text-gray-400">${formattedDate}</p></td>
                         <td class="px-3 py-4 sm:px-6">
                             <div class="flex items-center gap-2">
-                                <button id="edit-guest-button-${guest.id}" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 transition bg-white border border-gray-300 rounded-lg cursor-pointer whitespace-nowrap dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">Edit</button>
+                                <button id="edit-guest-button-${guest.id}" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 transition bg-white border border-gray-300 rounded-lg cursor-pointer whitespace-nowrap dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                    </path>
+                                </svg>
+								Edit
+								</button>
                                 ${actionButtons(guest)}
                             </div>
                         </td>
                     </tr>
-                `;
+                	`;
 
 					// Remove "no guests" row
 					$('#no-guests-row').remove();
@@ -1321,7 +2382,7 @@ jQuery(document).ready(function ($) {
                             <button id="ok-success-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 transition">OK</button>
                         </div>
                     </div>
-                `;
+                	`;
 					$('body').append(successModal);
 
 					$(document)
@@ -1337,7 +2398,7 @@ jQuery(document).ready(function ($) {
 									);
 									$('#guest-form')[0].reset();
 
-									window.location.reload();
+									// window.location.reload();
 								}
 							);
 						});
@@ -1598,19 +2659,43 @@ jQuery(document).ready(function ($) {
 	$('#delete-guest-btn').on('click', function (e) {
 		e.preventDefault();
 
-		if (
-			!confirm(
-				'Are you sure you want to delete this guest? This action is irreversible.'
-			)
-		) {
-			return;
-		}
+		const guestName = $(this).data('guest-name') || 'this guest';
 
-		// Show loading indicator
+		// Show confirmation modal
+		const confirmModal = `
+		<div id="delete-guest-confirm-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+			<div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+				<div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
+					<svg class="h-6 w-6 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+					</svg>
+				</div>
+				<h3 class="mb-2 text-lg font-medium text-gray-900 dark:text-white">Delete Guest</h3>
+				<p class="mb-6 text-sm text-gray-500 dark:text-gray-400">Are you sure you want to delete "${guestName}"? This action is irreversible.</p>
+				<div class="flex gap-3">
+					<button id="cancel-delete-guest-btn" type="button" class="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">Cancel</button>
+					<button id="confirm-delete-guest-btn" type="button" class="flex-1 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600">Delete</button>
+				</div>
+			</div>
+		</div>
+	`;
+		$('body').append(confirmModal);
+	});
+
+	// Cancel Delete Guest
+	$(document).on('click', '#cancel-delete-guest-btn', function () {
+		$('#delete-guest-confirm-modal-overlay').fadeOut(300, function () {
+			$(this).remove();
+		});
+	});
+
+	// Confirm Delete Guest
+	$(document).on('click', '#confirm-delete-guest-btn', function () {
+		// Show loading
 		$(this)
 			.prop('disabled', true)
 			.html(
-				'<span class="animate-spin inline-block w-6 h-6 border-4 border-current border-t-transparent rounded-full mr-2"></span> Deleting...'
+				'<span class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2"></span> Deleting...'
 			);
 
 		// Clear previous messages and modals
@@ -1637,25 +2722,33 @@ jQuery(document).ready(function ($) {
 					const message =
 						response.data.message || 'Guest deleted successfully';
 
+					// Close confirm modal first
+					$('#delete-guest-confirm-modal-overlay').fadeOut(
+						300,
+						function () {
+							$(this).remove();
+						}
+					);
+
 					// Create and show success animation modal
 					const successModal = `
-                            <div id="success-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
-                                <div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
-                                    <div class="check_mark mx-auto mb-4">
-                                        <div class="sa-icon sa-success animate">
-                                            <span class="sa-line sa-tip animateSuccessTip"></span>
-                                            <span class="sa-line sa-long animateSuccessLong"></span>
-                                            <div class="sa-placeholder"></div>
-                                            <div class="sa-fix"></div>
-                                        </div>
-                                    </div>
-                                    <p class="text-lg font-medium text-gray-700 dark:text-white">${message}</p>
-                                    <button id="ok-success-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 transition">
-                                        OK
-                                    </button>
-                                </div>
-                            </div>
-                        `;
+					<div id="success-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+						<div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+							<div class="check_mark mx-auto mb-4">
+								<div class="sa-icon sa-success animate">
+									<span class="sa-line sa-tip animateSuccessTip"></span>
+									<span class="sa-line sa-long animateSuccessLong"></span>
+									<div class="sa-placeholder"></div>
+									<div class="sa-fix"></div>
+								</div>
+							</div>
+							<p class="text-lg font-medium text-gray-700 dark:text-white">${message}</p>
+							<button id="ok-success-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 transition">
+								OK
+							</button>
+						</div>
+					</div>
+				`;
 
 					// Inject modal into body
 					$('body').append(successModal);
@@ -1675,6 +2768,14 @@ jQuery(document).ready(function ($) {
 							);
 						});
 				} else {
+					// Close confirm modal
+					$('#delete-guest-confirm-modal-overlay').fadeOut(
+						300,
+						function () {
+							$(this).remove();
+						}
+					);
+
 					// Show error messages in a single modal
 					const errorMessages = response.data.messages || [
 						'An error occurred during guest deletion',
@@ -1688,25 +2789,25 @@ jQuery(document).ready(function ($) {
 
 					// Create and show error animation modal
 					const errorModal = `
-                            <div id="guest-error-modal-overlay"
-                                class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
-                                <div
-                                    class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
-                                    <div class="check_mark mx-auto mb-4">
-                                        <div class="sa-icon sa-error animate">
-                                            <span class="sa-line sa-left animateXLeft"></span>
-                                            <span class="sa-line sa-right animateXRight"></span>
-                                            <div class="sa-placeholder"></div>
-                                        </div>
-                                    </div>
-                                    ${errorMessageHtml}
-                                    <button id="ok-error-btn" type="button"
-                                        class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">
-                                        OK
-                                    </button>
-                                </div>
-                            </div>
-                        `;
+					<div id="guest-error-modal-overlay"
+						class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+						<div
+							class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+							<div class="check_mark mx-auto mb-4">
+								<div class="sa-icon sa-error animate">
+									<span class="sa-line sa-left animateXLeft"></span>
+									<span class="sa-line sa-right animateXRight"></span>
+									<div class="sa-placeholder"></div>
+								</div>
+							</div>
+							${errorMessageHtml}
+							<button id="ok-error-btn" type="button"
+								class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">
+								OK
+							</button>
+						</div>
+					</div>
+				`;
 
 					// Inject modal into body
 					$('body').append(errorModal);
@@ -1726,6 +2827,14 @@ jQuery(document).ready(function ($) {
 				}
 			},
 			error: function (xhr, status, error) {
+				// Close confirm modal
+				$('#delete-guest-confirm-modal-overlay').fadeOut(
+					300,
+					function () {
+						$(this).remove();
+					}
+				);
+
 				// Show error message in a modal
 				const errorMessage =
 					xhr.responseJSON?.data?.messages?.join('<br>') ||
@@ -1733,25 +2842,25 @@ jQuery(document).ready(function ($) {
 
 				// Create and show error animation modal
 				const errorModal = `
-                        <div id="guest-error-modal-overlay"
-                            class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
-                            <div
-                                class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
-                                <div class="check_mark mx-auto mb-4">
-                                    <div class="sa-icon sa-error animate">
-                                        <span class="sa-line sa-left animateXLeft"></span>
-                                        <span class="sa-line sa-right animateXRight"></span>
-                                        <div class="sa-placeholder"></div>
-                                    </div>
-                                </div>
-                                <p class="text-lg font-medium text-gray-700 dark:text-white">${errorMessage}</p>
-                                <button id="ok-error-btn" type="button"
-                                    class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">
-                                    OK
-                                </button>
-                            </div>
-                        </div>
-                    `;
+				<div id="guest-error-modal-overlay"
+					class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+					<div
+						class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+						<div class="check_mark mx-auto mb-4">
+							<div class="sa-icon sa-error animate">
+								<span class="sa-line sa-left animateXLeft"></span>
+								<span class="sa-line sa-right animateXRight"></span>
+								<div class="sa-placeholder"></div>
+							</div>
+						</div>
+						<p class="text-lg font-medium text-gray-700 dark:text-white">${errorMessage}</p>
+						<button id="ok-error-btn" type="button"
+							class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">
+							OK
+						</button>
+					</div>
+				</div>
+			`;
 
 				// Inject modal into body
 				$('body').append(errorModal);
@@ -1786,7 +2895,7 @@ jQuery(document).ready(function ($) {
 		$('#submit-visit-form')
 			.prop('disabled', true)
 			.html(
-				'<span class="animate-spin inline-block w-6 h-6 border-4 border-current border-t-transparent rounded-full mr-2"></span> Registering...'
+				'<span class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2"></span> Registering...'
 			);
 
 		// Clear previous messages and modals
@@ -1966,14 +3075,50 @@ jQuery(document).ready(function ($) {
 
 		const visitId = $(this).data('visit-id');
 		const button = $(this);
-		const originalText = button.text();
+		const guestName = button
+			.closest('tr')
+			.find('td:nth-child(2)')
+			.text()
+			.trim();
 
-		if (!confirm('Are you sure you want to sign in this guest?')) return;
+		// Show confirmation modal
+		const confirmModal = `
+		<div id="sign-in-confirm-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+			<div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+				<div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+					<svg class="h-6 w-6 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+					</svg>
+				</div>
+				<h3 class="mb-2 text-lg font-medium text-gray-900 dark:text-white">Sign In Guest</h3>
+				<p class="mb-6 text-sm text-gray-500 dark:text-gray-400">Sign in "${guestName}" to the system?</p>
+				<div class="flex gap-3">
+					<button id="cancel-sign-in-btn" type="button" class="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">Cancel</button>
+					<button id="confirm-sign-in-btn" type="button" class="flex-1 rounded-lg bg-green-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-green-600" data-visit-id="${visitId}">Sign In</button>
+				</div>
+			</div>
+		</div>
+	`;
+		$('body').append(confirmModal);
+	});
 
-		button
+	// Cancel Sign In
+	$(document).on('click', '#cancel-sign-in-btn', function () {
+		$('#sign-in-confirm-modal-overlay').fadeOut(300, function () {
+			$(this).remove();
+		});
+	});
+
+	// Confirm Sign In
+	$(document).on('click', '#confirm-sign-in-btn', function () {
+		const visitId = $(this).data('visit-id');
+		const button = $(`[id^="sign-in-button-"][data-visit-id="${visitId}"]`);
+
+		// Show loading
+		$(this)
 			.prop('disabled', true)
 			.html(
-				'<span class="animate-spin inline-block w-6 h-6 border-4 border-current border-t-transparent rounded-full"></span>'
+				'<span class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2"></span> Signing In...'
 			);
 
 		$.ajax({
@@ -1986,8 +3131,6 @@ jQuery(document).ready(function ($) {
 			},
 			dataType: 'json',
 			success: function (response) {
-				// console.log('Sign in response:', response);
-
 				if (response.success && response.data.guestData) {
 					const guest = response.data.guestData;
 
@@ -1995,33 +3138,28 @@ jQuery(document).ready(function ($) {
 					const row = button.closest('tr');
 					const statusCell = row.find('td:nth-child(4) span');
 
-					const statusClasses = {
-						approved:
-							'bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-500',
-						unapproved:
-							'bg-warning-50 text-warning-600 dark:bg-warning-500/15 dark:text-orange-400',
-						suspended:
-							'bg-blue-light-50 text-blue-light-500 dark:bg-blue-light-500/15 dark:text-blue-light-500',
-						banned: 'bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500',
-						cancelled:
-							'bg-gray-100 text-gray-700 dark:bg-white/5 dark:text-white/80',
-					};
-
 					// keep the "Approved" badge intact
 					statusCell.text('Approved');
 
-					// Build Sign Out button; fallback to current data if API didn't return visit_id
-					const newVisitId =
-						guest.visit_id || button.data('visit-id');
+					// Build Sign Out button
+					const newVisitId = guest.visit_id || visitId;
 					const signOutBtn = `
-					<button id="sign-out-button-${guest.id}" data-visit-id="${newVisitId}"
-						class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition rounded-lg cursor-pointer whitespace-nowrap bg-purple-500 shadow-theme-xs hover:bg-purple-600">
-						Sign Out
-					</button>
-					`;
+				<button id="sign-out-button-${guest.id}" data-visit-id="${newVisitId}"
+					class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition rounded-lg cursor-pointer whitespace-nowrap bg-purple-500 shadow-theme-xs hover:bg-purple-600">
+					Sign Out
+				</button>
+				`;
 
-					// Swap only the clicked button (keeps the Edit button intact)
+					// Replace the sign in button
 					button.replaceWith(signOutBtn);
+
+					// Close confirm modal
+					$('#sign-in-confirm-modal-overlay').fadeOut(
+						300,
+						function () {
+							$(this).remove();
+						}
+					);
 
 					const successMessage =
 						response.data.messages?.[0] ||
@@ -2032,8 +3170,13 @@ jQuery(document).ready(function ($) {
 						response.data?.messages?.join('<br>') ||
 						'Error signing in guest';
 					showErrorModal(errorMessage);
-					// restore original button text/state on error
-					button.prop('disabled', false).text(originalText);
+					// Close modal on error
+					$('#sign-in-confirm-modal-overlay').fadeOut(
+						300,
+						function () {
+							$(this).remove();
+						}
+					);
 				}
 			},
 			error: function (xhr, status, error) {
@@ -2042,7 +3185,15 @@ jQuery(document).ready(function ($) {
 					xhr.responseJSON?.data?.messages?.join('<br>') ||
 					'An error occurred: ' + error;
 				showErrorModal(errorMessage);
-				button.prop('disabled', false).text(originalText);
+				// Close modal on error
+				$('#sign-in-confirm-modal-overlay').fadeOut(300, function () {
+					$(this).remove();
+				});
+			},
+			complete: function () {
+				$('#confirm-sign-in-btn')
+					.prop('disabled', false)
+					.text('Sign In');
 			},
 		});
 	});
@@ -2053,14 +3204,52 @@ jQuery(document).ready(function ($) {
 
 		const visitId = $(this).data('visit-id');
 		const button = $(this);
-		const originalText = button.text();
+		const guestName = button
+			.closest('tr')
+			.find('td:nth-child(2)')
+			.text()
+			.trim();
 
-		if (!confirm('Are you sure you want to sign out this guest?')) return;
+		// Show confirmation modal
+		const confirmModal = `
+		<div id="sign-out-confirm-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+			<div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+				<div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/30">
+					<svg class="h-6 w-6 text-orange-600 dark:text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+					</svg>
+				</div>
+				<h3 class="mb-2 text-lg font-medium text-gray-900 dark:text-white">Sign Out Guest</h3>
+				<p class="mb-6 text-sm text-gray-500 dark:text-gray-400">Sign out "${guestName}" from the system?</p>
+				<div class="flex gap-3">
+					<button id="cancel-sign-out-btn" type="button" class="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">Cancel</button>
+					<button id="confirm-sign-out-btn" type="button" class="flex-1 rounded-lg bg-orange-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-orange-600" data-visit-id="${visitId}">Sign Out</button>
+				</div>
+			</div>
+		</div>
+	`;
+		$('body').append(confirmModal);
+	});
 
-		button
+	// Cancel Sign Out
+	$(document).on('click', '#cancel-sign-out-btn', function () {
+		$('#sign-out-confirm-modal-overlay').fadeOut(300, function () {
+			$(this).remove();
+		});
+	});
+
+	// Confirm Sign Out
+	$(document).on('click', '#confirm-sign-out-btn', function () {
+		const visitId = $(this).data('visit-id');
+		const button = $(
+			`[id^="sign-out-button-"][data-visit-id="${visitId}"]`
+		);
+
+		// Show loading
+		$(this)
 			.prop('disabled', true)
 			.html(
-				'<span class="animate-spin inline-block w-6 h-6 border-4 border-current border-t-transparent rounded-full"></span>'
+				'<span class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2"></span> Signing Out...'
 			);
 
 		$.ajax({
@@ -2093,11 +3282,19 @@ jQuery(document).ready(function ($) {
 					button.remove();
 
 					parentContainer.append(`
-					<div class="flex flex-col items-center justify-center text-xs px-4">
-						<span class="text-green-600 dark:text-green-400">${formatTime(guest.sign_in_time)}</span>
-						<span class="text-red-600 dark:text-red-400">${formatTime(guest.sign_out_time)}</span>
-					</div>
-					`);
+				<div class="flex flex-col items-center justify-center text-xs px-4">
+					<span class="text-green-600 dark:text-green-400">${formatTime(guest.sign_in_time)}</span>
+					<span class="text-red-600 dark:text-red-400">${formatTime(guest.sign_out_time)}</span>
+				</div>
+				`);
+
+					// Close confirm modal
+					$('#sign-out-confirm-modal-overlay').fadeOut(
+						300,
+						function () {
+							$(this).remove();
+						}
+					);
 
 					const successMessage =
 						response.data.messages?.[0] ||
@@ -2108,7 +3305,13 @@ jQuery(document).ready(function ($) {
 						response.data?.messages?.join('<br>') ||
 						'Error signing out guest';
 					showErrorModal(errorMessage);
-					button.prop('disabled', false).text(originalText);
+					// Close modal on error
+					$('#sign-out-confirm-modal-overlay').fadeOut(
+						300,
+						function () {
+							$(this).remove();
+						}
+					);
 				}
 			},
 			error: function (xhr, status, error) {
@@ -2117,7 +3320,15 @@ jQuery(document).ready(function ($) {
 					xhr.responseJSON?.data?.messages?.join('<br>') ||
 					'An error occurred: ' + error;
 				showErrorModal(errorMessage);
-				button.prop('disabled', false).text(originalText);
+				// Close modal on error
+				$('#sign-out-confirm-modal-overlay').fadeOut(300, function () {
+					$(this).remove();
+				});
+			},
+			complete: function () {
+				$('#confirm-sign-out-btn')
+					.prop('disabled', false)
+					.text('Sign Out');
 			},
 		});
 	});

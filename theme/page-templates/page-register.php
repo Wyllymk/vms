@@ -23,19 +23,36 @@ if ( isset( $_POST['signup'] ) ) {
     error_log( 'Form submitted' );
     error_log( 'POST data: ' . print_r( $_POST, true ) ); 
 
-	// Check if the terms checkbox is ticked
-	if ( ! isset( $_POST['remember_me'] ) ) {
-		$errors[] = 'You must agree to the terms of use.';
-	}
+    // Check if the terms checkbox is ticked
+    if ( ! isset( $_POST['remember_me'] ) ) {
+        $errors[] = 'You must agree to the terms of use.';
+    }
 
-	// Proceed if no errors
-	if ( empty( $errors ) ) {
-		$first_name  = sanitize_text_field( $_POST['first_name'] );
-		$last_name   = sanitize_text_field( $_POST['last_name'] );
-		$member_number  = sanitize_user( $_POST['member_number'] );
-		$user_email  = sanitize_email( $_POST['email'] );
-		$user_number = sanitize_text_field( $_POST['user_number'] );
-		$user_pass   = sanitize_text_field( $_POST['password'] );
+    // Proceed if no errors
+    if ( empty( $errors ) ) {
+        global $wpdb;
+
+        $first_name    = sanitize_text_field( $_POST['first_name'] );
+        $last_name     = sanitize_text_field( $_POST['last_name'] );
+        $member_number = sanitize_user( $_POST['member_number'] );
+        $user_email    = sanitize_email( $_POST['email'] );
+        $user_number   = sanitize_text_field( $_POST['user_number'] );
+        $user_pass     = sanitize_text_field( $_POST['password'] );
+
+        // ✅ Check if member number already exists
+        $existing_member = $wpdb->get_var( $wpdb->prepare(
+            "SELECT user_id FROM {$wpdb->usermeta} 
+             WHERE meta_key = 'member_number' AND meta_value = %s 
+             LIMIT 1",
+            $member_number
+        ) );
+
+        if ( $existing_member ) {
+            $errors[] = 'This member number is already registered. Please use a unique member number.';
+        }
+    }
+
+    if ( empty( $errors ) ) {
         // Generate user_login as firstname.lastname in lowercase
         $user_login = strtolower( $first_name . '.' . $last_name );
 
@@ -48,78 +65,67 @@ if ( isset( $_POST['signup'] ) ) {
             $counter++;
         }
 
-		$data = array(
-			'user_login' => $user_login, // the user's login username.
-			'user_email' => $user_email, // enter email
-			'user_pass'  => $user_pass, // not necessary to hash password ( The plain-text user password ).
-			'role'       => 'member', // give role of member
-			'meta_input' => array(
-				'first_name'           => $first_name,
-				'last_name'            => $last_name,
-				'member_number'        => $member_number,
-                'phone_number'          => $user_number,
-				'receive_messages'     => 'yes',
-				'receive_emails'       => 'yes',
-				'registration_status'  => 'pending',
-				'show_admin_bar_front' => 'false',
-			),
-		);
+        $data = array(
+            'user_login' => $user_login,
+            'user_email' => $user_email,
+            'user_pass'  => $user_pass,
+            'role'       => 'member',
+            'meta_input' => array(
+                'first_name'           => $first_name,
+                'last_name'            => $last_name,
+                'member_number'        => $member_number,
+                'phone_number'         => $user_number,
+                'receive_messages'     => 'yes',
+                'receive_emails'       => 'yes',
+                'registration_status'  => 'pending',
+                'show_admin_bar_front' => 'false',
+            ),
+        );
 
-		$user_id = wp_insert_user( wp_slash( $data ) );
+        $user_id = wp_insert_user( wp_slash( $data ) );
 
-		if ( ! is_wp_error( $user_id ) ) {
+        if ( ! is_wp_error( $user_id ) ) {
             $success_message = 'The account for ' . $user_login . ' has been successfully registered.';
 
-            // ------------------------------------
-            // 1. Email to Administrator
-            // ------------------------------------
+            // 1. Email Admin
             $admin_email   = get_option( 'admin_email' );
             $admin_subject = 'New user registration waiting for approval';
-
-            $admin_message  = "Hello Admin,\n\n";
-            $admin_message .= "A new user has registered and is pending approval:\n\n";
-            $admin_message .= "Name: " . $first_name . " " . $last_name . "\n";
-            $admin_message .= "Username: " . $user_login . "\n";
-            $admin_message .= "Email: " . $user_email . "\n\n";
-            $admin_message .= "Member Number: " . $member_number . "\n";
-            $admin_message .= "Please log into the system to approve or deny this registration.\n\n";
-            $admin_message .= "Nyeri Club Visitor Management System";
-
+            $admin_message = "Hello Admin,\n\n"
+                . "A new user has registered and is pending approval:\n\n"
+                . "Name: {$first_name} {$last_name}\n"
+                . "Username: {$user_login}\n"
+                . "Email: {$user_email}\n\n"
+                . "Member Number: {$member_number}\n"
+                . "Please log into the system to approve or deny this registration.\n\n"
+                . "Nyeri Club Visitor Management System";
             wp_mail( $admin_email, $admin_subject, $admin_message );
 
-            // ------------------------------------
-            // 2. Email to the User
-            // ------------------------------------
+            // 2. Email User
             $user_subject = 'Your registration is pending approval';
-
-            $user_message  = "Hello " . $first_name . ",\n\n";
-            $user_message .= "Thank you for registering with us!\n\n";
-            $user_message .= "Your account details are as follows:\n";
-            $user_message .= "Username: " . $user_login . "\n";
-            $user_message .= "Email: " . $user_email . "\n\n";
-            $user_message .= "Please note that your account is pending approval by our Managerial team. ";
-            $user_message .= "Once approved, you will receive an email notification confirming you can log in.\n\n";
-            $user_message .= "Thank you for your patience, and welcome aboard!\n\n";
-            $user_message .= "Best regards,\n";
-            $user_message .= "Nyeri Club Visitor Management System";
-
+            $user_message = "Hello {$first_name},\n\n"
+                . "Thank you for registering with us!\n\n"
+                . "Your account details are as follows:\n"
+                . "Username: {$user_login}\n"
+                . "Email: {$user_email}\n\n"
+                . "Please note that your account is pending approval by our Managerial team. "
+                . "Once approved, you will receive an email notification confirming you can log in.\n\n"
+                . "Thank you for your patience, and welcome aboard!\n\n"
+                . "Best regards,\nNyeri Club Visitor Management System";
             wp_mail( $user_email, $user_subject, $user_message );
 
-            // ------------------------------------
-            // 3. SMS to the User (shorter version)
-            // ------------------------------------
+            // 3. SMS User
             $sms_message = "Hello {$first_name}, your registration is pending approval. "
-                        . "You’ll be notified once approved. - Nyeri Club VMS";
+                         . "You’ll be notified once approved. - Nyeri Club VMS";
+            \WyllyMk\VMS\VMS_NotificationManager::send_sms( $user_number, $sms_message, $user_id, 'member' );
 
-            \WyllyMk\VMS\VMS_NotificationManager::send_sms($user_number, $sms_message, $user_id, 'member');            
+        } else {
+            $error_code    = array_key_first( $user_id->errors );
+            $error_message = $user_id->errors[ $error_code ][0];
+            $errors[]      = $error_message;
         }
- else {
-			$error_code    = array_key_first( $user_id->errors );
-			$error_message = $user_id->errors[ $error_code ][0];
-			$errors[]      = $error_message;
-		}
-	}
+    }
 }
+
 ?>
 <section class="register-content" x-data="{ page: 'register' }">
     <!-- ===== Page Wrapper Start ===== -->

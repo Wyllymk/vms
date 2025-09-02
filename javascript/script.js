@@ -103,12 +103,13 @@ document.addEventListener('DOMContentLoaded', function () {
 	});
 });
 
-document
-	.getElementById('profile_picture')
-	.addEventListener('change', function (e) {
+const fileInput = document.getElementById('profile_picture');
+const preview = document.getElementById('profile-preview');
+const badge = document.getElementById('photo-selected');
+
+if (fileInput && preview && badge) {
+	fileInput.addEventListener('change', function (e) {
 		const file = e.target.files[0];
-		const preview = document.getElementById('profile-preview');
-		const badge = document.getElementById('photo-selected');
 
 		if (file) {
 			// Show image preview
@@ -124,3 +125,16 @@ document
 			badge.classList.add('hidden');
 		}
 	});
+}
+
+document.addEventListener('alpine:init', () => {
+	Alpine.store('clubModal', {
+		isClubEditModal: false,
+		open() {
+			this.isClubEditModal = true;
+		},
+		close() {
+			this.isClubEditModal = false;
+		},
+	});
+});

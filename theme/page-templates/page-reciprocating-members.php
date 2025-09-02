@@ -1,6 +1,6 @@
 <?php
 /**
- * The template for displaying the guests page
+ * The template for displaying the Reciprocating Members page
  *
  * @package Visitor_Management_System
  */
@@ -18,9 +18,8 @@ if ( ! ( current_user_can( 'administrator' ) || current_user_can( 'general_manag
 get_header();
 ?>
 
-<section x-data="{ page: 'guests', 'isGuestInfoModal': false, 'isCourtesyGuestInfoModal': false}"
-    @close-courtesy-guest-modal.window="isCourtesyGuestInfoModal = false"
-    @close-guest-modal.window="isGuestInfoModal = false">
+<section x-data="{ page: 'reciprocating-members', 'isReciprocationModal': false }"
+    @close-guest-modal.window="isReciprocationModal = false">
     <!-- ===== Page Wrapper Start ===== -->
     <div class="flex h-screen overflow-hidden">
         <!-- ===== Sidebar Start ===== -->
@@ -41,7 +40,7 @@ get_header();
             <main>
                 <div class="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
                     <!-- Breadcrumb Start -->
-                    <div x-data="{ pageName: `Guests`}">
+                    <div x-data="{ pageName: `Reciprocating Members` }">
                         <?php get_template_part( 'template-parts/content/content', 'breadcrumb' ); ?>
                     </div>
                     <!-- Breadcrumb End -->
@@ -51,7 +50,7 @@ get_header();
                             class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
                             <div class="px-5 py-4 sm:px-6 sm:py-5">
                                 <h3 class="text-base font-medium text-gray-800 dark:text-white/90">
-                                    <?php esc_html_e( 'Guests List', 'vms' ); ?>
+                                    <?php esc_html_e( 'Reciprocating Members List', 'vms' ); ?>
                                 </h3>
                             </div>
                             <div class="flex flex-wrap justify-between w-full px-5 mb-4 sm:px-6 ">
@@ -67,7 +66,8 @@ get_header();
                                                         fill="" />
                                                 </svg>
                                             </span>
-                                            <input type="text" placeholder="Filter guests by name..." name="user_search"
+                                            <input type="text" placeholder="Filter members by name..."
+                                                name="user_search"
                                                 class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pr-14 pl-12 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden xl:w-[430px] dark:border-gray-800 dark:bg-gray-900 dark:bg-white/[0.03] dark:text-white/90 dark:placeholder:text-white/30" />
 
                                             <button name="search_users" type="submit"
@@ -82,13 +82,9 @@ get_header();
                                 <!-- Register Button -->
                                 <div
                                     class="flex items-center justify-between md:justify-end w-full md:w-1/2 gap-2 md:gap-4">
-                                    <a @click="isGuestInfoModal = true"
-                                        class="inline-flex items-center justify-center gap-2 px-2 md:px-4 py-3 text-sm font-medium text-white transition rounded-lg cursor-pointer bg-brand-500 shadow-theme-xs hover:bg-brand-600 whitespace-nowrap">
-                                        <?php esc_html_e( 'Register Guest', 'vms' ); ?>
-                                    </a>
-                                    <a @click="isCourtesyGuestInfoModal = true"
-                                        class="inline-flex items-center justify-center gap-2 px-2 md:px-4 py-3 text-sm font-medium transition rounded-lg cursor-pointer shadow-theme-xs text-warning-600 bg-warning-100 hover:bg-warning-200 dark:bg-warning-500/15 dark:hover:bg-warning-500/25 dark:text-orange-500 whitespace-nowrap">
-                                        <?php esc_html_e( 'Register Courtesy Guest', 'vms' ); ?>
+                                    <a @click="isReciprocationModal = true"
+                                        class="inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg cursor-pointer bg-brand-500 shadow-theme-xs hover:bg-brand-600 whitespace-nowrap">
+                                        <?php esc_html_e( 'Register Members', 'vms' ); ?>
                                     </a>
                                 </div>
                             </div>
@@ -153,7 +149,7 @@ get_header();
                             </div>
                             <div class="p-1 border-t border-gray-100 dark:border-gray-800 sm:p-6">
                                 <!-- ====== Table Six Start -->
-                                <?php get_template_part( 'template-parts/content/content', 'guests-table' ); ?>
+                                <?php get_template_part( 'template-parts/content/content', 'reciprocating-table' ); ?>
                                 <!-- ====== Table Six End -->
                             </div>
                         </div>
@@ -167,10 +163,7 @@ get_header();
     <!-- ===== Page Wrapper End ===== -->
 
     <!-- BEGIN MODAL -->
-    <?php get_template_part( 'template-parts/content/content', 'guest-modal' ); ?>
-    <!-- END MODAL -->
-    <!-- BEGIN MODAL -->
-    <?php get_template_part( 'template-parts/content/content', 'courtesy-guest-modal' ); ?>
+    <?php get_template_part( 'template-parts/content/content', 'reciprocation-modal' ); ?>
     <!-- END MODAL -->
 </section>
 

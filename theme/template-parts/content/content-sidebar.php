@@ -52,7 +52,7 @@ defined( 'ABSPATH' ) || exit;
                 <ul class="flex flex-col gap-4 mb-6">
                     <!-- Menu Item Dashboard -->
                     <li>
-                        <a href="<?php echo esc_url( home_url( '/dashboard/' ) ); ?>"
+                        <a href="<?php echo esc_url( home_url( '/dashboard' ) ); ?>"
                             @click="selected = (selected === 'Dashboard' ? '':'Dashboard')"
                             class="<?php echo ( is_page( 'dashboard' ) ) ? 'menu-item group menu-item-active' : 'menu-item group menu-item-inactive'; ?>">
                             <svg class="<?php echo ( is_page( 'Dashboard' ) ) ? 'menu-item-icon-active' : 'menu-item-icon-inactive'; ?>"
@@ -154,6 +154,43 @@ defined( 'ABSPATH' ) || exit;
                     </li>
                     <?php endif; ?>
                     <!-- Menu Item Guests -->
+                    <!-- Menu Item Reciprocating Members -->
+                    <?php if ( ( current_user_can( 'administrator' ) || current_user_can( 'general_manager' ) || current_user_can( 'chairman' ) || current_user_can( 'reception' ) || current_user_can( 'gate' ) ) ) : ?>
+                    <li>
+                        <a href="<?php echo esc_url( home_url( '/reciprocating-members' ) ); ?>"
+                            @click="selected = (selected === 'Guests' ? '':'Guests')"
+                            class="<?php echo ( is_page( array( 'reciprocating-members', 'reciprocating-member-details' ) ) ) ? 'menu-item group menu-item-active' : 'menu-item group menu-item-inactive'; ?>">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                stroke="currentColor" class="size-6">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z" />
+                            </svg>
+
+                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                                <?php esc_html_e( 'Reciprocating Members', 'vms' ); ?>
+                            </span>
+                        </a>
+                    </li>
+                    <?php endif; ?>
+                    <!-- Menu Item Reciprocating Members -->
+                    <!-- Menu Item Clubs -->
+                    <?php if ( ( current_user_can( 'administrator' ) || current_user_can( 'general_manager' ) || current_user_can( 'chairman' ) || current_user_can( 'reception' ) || current_user_can( 'gate' ) ) ) : ?>
+                    <li>
+                        <a href="<?php echo esc_url( home_url( '/clubs' ) ); ?>"
+                            @click="selected = (selected === 'Clubs' ? '':'Clubs')"
+                            class="<?php echo ( is_page( array( 'clubs' ) ) ) ? 'menu-item group menu-item-active' : 'menu-item group menu-item-inactive'; ?>">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                stroke="currentColor" class="size-6">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0 0 12 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75Z" />
+                            </svg>
+                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                                <?php esc_html_e( 'Clubs', 'vms' ); ?>
+                            </span>
+                        </a>
+                    </li>
+                    <?php endif; ?>
+                    <!-- Menu Item Clubs -->
                 </ul>
             </div>
             <!-- Support Group -->

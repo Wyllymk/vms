@@ -1,6 +1,6 @@
 <?php
 /**
- * Template part for displaying guests table with pagination
+ * Template part for displaying members table with pagination
  *
  * @link https://developer.wordpress.org/themes/basics/template-hierarchy/
  *
@@ -9,68 +9,54 @@
 defined( 'ABSPATH' ) || exit;
 
 global $wpdb;
-$guests_table = \WyllyMk\VMS\VMS_Config::get_table_name( \WyllyMk\VMS\VMS_Config::GUESTS_TABLE );
-$guest_visits_table = \WyllyMk\VMS\VMS_Config::get_table_name( \WyllyMk\VMS\VMS_Config::GUEST_VISITS_TABLE );
+$members_table       = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::RECIP_MEMBERS_TABLE);
+$member_visits_table = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::RECIP_MEMBERS_VISITS_TABLE);
+$clubs_table         = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::RECIP_CLUBS_TABLE);
 
 // Pagination
-$guests_per_page = isset($_GET['per_page']) ? max(1, intval($_GET['per_page'])) : 25;
-$current_page = isset($_GET['paged']) ? max(1, intval($_GET['paged'])) : 1;
-$offset = ($current_page - 1) * $guests_per_page;
+$members_per_page = isset($_GET['per_page']) ? max(1, intval($_GET['per_page'])) : 25;
+$current_page     = isset($_GET['paged']) ? max(1, intval($_GET['paged'])) : 1;
+$offset           = ($current_page - 1) * $members_per_page;
 
-// Search functionality
+// Search
 $search_term = '';
 $where_clause = '';
-$where_visits_clause = '';
-
-if (isset($_GET['search_users']) && !empty($_GET['user_search'])) {
+if (!empty($_GET['search_users']) && !empty($_GET['user_search'])) {
     $search_term = sanitize_text_field($_GET['user_search']);
-    $like = '%' . $wpdb->esc_like($search_term) . '%';
-    
-    // For guests table search
+    $like        = '%' . $wpdb->esc_like($search_term) . '%';
     $where_clause = $wpdb->prepare(
-        " WHERE (g.first_name LIKE %s OR g.last_name LIKE %s OR g.id_number LIKE %s OR g.email LIKE %s OR g.phone_number LIKE %s)",
-        $like, $like, $like, $like, $like
-    );
-    
-    // For visits count search - need to join with guests table
-    $where_visits_clause = $wpdb->prepare(
-        " WHERE (g.first_name LIKE %s OR g.last_name LIKE %s OR g.id_number LIKE %s OR g.email LIKE %s OR g.phone_number LIKE %s)",
-        $like, $like, $like, $like, $like
+        " WHERE (m.first_name LIKE %s OR m.last_name LIKE %s OR m.id_number LIKE %s OR m.email LIKE %s OR m.phone_number LIKE %s OR m.reciprocating_member_number LIKE %s)",
+        $like, $like, $like, $like, $like, $like
     );
 }
 
-// Count total guest visits (not just guests)
-$count_visits_query = "SELECT COUNT(DISTINCT v.id) 
-                      FROM {$guest_visits_table} v 
-                      LEFT JOIN {$guests_table} g ON v.guest_id = g.id" . $where_visits_clause;
+// Count total
+$count_query = "SELECT COUNT(DISTINCT v.id)
+                FROM {$member_visits_table} v
+                LEFT JOIN {$members_table} m ON v.member_id = m.id
+                $where_clause";
 
-$total_visits = $wpdb->get_var($count_visits_query);
-$total_pages = ceil($total_visits / $guests_per_page);
+$total_visits = (int) $wpdb->get_var($count_query);
+$total_pages  = ceil($total_visits / $members_per_page);
 
-// Fetch guest visits with guest details
+// Fetch visits
 $query = "SELECT 
-            g.*, 
+            m.*, 
             v.id AS visit_id, 
             v.visit_date, 
             v.sign_in_time, 
             v.sign_out_time, 
-            v.host_member_id,
+            v.status AS visit_status, 
             v.courtesy,
-            v.status AS visit_status,
-            u.display_name,
-            MAX(CASE WHEN um1.meta_key = 'first_name' THEN um1.meta_value END) AS host_first_name,
-            MAX(CASE WHEN um2.meta_key = 'last_name' THEN um2.meta_value END) AS host_last_name
-        FROM {$guest_visits_table} v
-        LEFT JOIN {$guests_table} g ON v.guest_id = g.id
-        LEFT JOIN {$wpdb->users} u ON v.host_member_id = u.ID
-        LEFT JOIN {$wpdb->usermeta} um1 ON (u.ID = um1.user_id AND um1.meta_key = 'first_name')
-        LEFT JOIN {$wpdb->usermeta} um2 ON (u.ID = um2.user_id AND um2.meta_key = 'last_name')
-        " . $where_visits_clause . "
-        GROUP BY v.id
-        ORDER BY v.visit_date DESC, v.id DESC
-        LIMIT {$guests_per_page} OFFSET {$offset}";
+            c.club_name
+          FROM {$member_visits_table} v
+          LEFT JOIN {$members_table} m ON v.member_id = m.id
+          LEFT JOIN {$clubs_table} c ON m.reciprocating_club_id = c.id
+          $where_clause
+          ORDER BY v.visit_date DESC, v.id DESC
+          LIMIT {$members_per_page} OFFSET {$offset}";
 
-$guests = $wpdb->get_results($query);
+$members = $wpdb->get_results($query);
 
 $status_classes = [
     'approved'   => 'bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-500',
@@ -82,8 +68,8 @@ $status_classes = [
 ?>
 
 <div class="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]"
-    x-data="{ perPage: localStorage.getItem('guests_per_page') || '25' }"
-    x-init="$watch('perPage', value => localStorage.setItem('guests_per_page', value))">
+    x-data="{ perPage: localStorage.getItem('members_per_page') || '25' }"
+    x-init="$watch('perPage', value => localStorage.setItem('members_per_page', value))">
 
     <!-- Per Page Controls -->
     <div
@@ -94,9 +80,9 @@ $status_classes = [
                 <select x-model="perPage"
                     @change="window.location.href = updateUrlParameter(window.location.href, 'per_page', $event.target.value)"
                     class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-9 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none py-2 pr-8 pl-3 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30">
-                    <option value="25" <?php selected($guests_per_page, 25); ?>>25</option>
-                    <option value="50" <?php selected($guests_per_page, 50); ?>>50</option>
-                    <option value="100" <?php selected($guests_per_page, 100); ?>>100</option>
+                    <option value="25" <?php selected($members_per_page, 25); ?>>25</option>
+                    <option value="50" <?php selected($members_per_page, 50); ?>>50</option>
+                    <option value="100" <?php selected($members_per_page, 100); ?>>100</option>
                 </select>
                 <span class="absolute top-1/2 right-2 z-30 -translate-y-1/2 text-gray-500 dark:text-gray-400">
                     <svg class="stroke-current" width="16" height="16" viewBox="0 0 16 16" fill="none"
@@ -112,7 +98,7 @@ $status_classes = [
         <div class="text-sm text-gray-500 dark:text-gray-400">
             <?php
             $start = $total_visits > 0 ? $offset + 1 : 0;
-            $end = min($offset + $guests_per_page, $total_visits);
+            $end = min($offset + $members_per_page, $total_visits);
             
             if (!empty($search_term)) {                
                 printf(
@@ -135,8 +121,8 @@ $status_classes = [
         </div>
     </div>
 
-    <div class="max-w-full overflow-x-auto" id="guests-table"
-        data-guest-details-url="<?php echo esc_url(home_url('/guest-details')); ?>">
+    <div class="max-w-full overflow-x-auto" id="recip-members-table"
+        data-member-details-url="<?php echo esc_url(home_url('/member-details')); ?>">
         <table class="min-w-full">
             <!-- table header start -->
             <thead>
@@ -172,14 +158,14 @@ $status_classes = [
                     <th class="px-3 py-3 sm:px-6">
                         <div class="flex items-center">
                             <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
-                                <?php esc_html_e( 'ID Number', 'vms' ); ?>
+                                <?php esc_html_e( 'Club', 'vms' ); ?>
                             </p>
                         </div>
                     </th>
                     <th class="px-3 py-3 sm:px-6">
                         <div class="flex items-center">
                             <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
-                                <?php esc_html_e( 'Host Member', 'vms' ); ?>
+                                <?php esc_html_e( 'Member Number', 'vms' ); ?>
                             </p>
                         </div>
                     </th>
@@ -201,43 +187,30 @@ $status_classes = [
             </thead>
             <!-- table header end -->
             <!-- table body start -->
-            <tbody id="guests-table-body" class="divide-y divide-gray-100 dark:divide-gray-800">
+            <tbody id="recip-members-table-body" class="divide-y divide-gray-100 dark:divide-gray-800">
                 <?php
                 $counter = $offset + 1;
-                if (!empty($guests)) :
-                    foreach ($guests as $guest) :
-                        $visit_date = !empty($guest->visit_date) ? date('M j, Y', strtotime($guest->visit_date)) : 'N/A';
-                        $sign_in_time = !empty($guest->sign_in_time) ? date('g:i a', strtotime($guest->sign_in_time)) : null;
-                        $sign_out_time = !empty($guest->sign_out_time) ? date('g:i a', strtotime($guest->sign_out_time)) : null;
-
+                if (!empty($members)) :
+                    foreach ($members as $member) :
+                        $visit_date   = $member->visit_date ? date('M j, Y', strtotime($member->visit_date)) : 'N/A';
+                        $sign_in_time = $member->sign_in_time ? date('g:i a', strtotime($member->sign_in_time)) : null;
+                        $sign_out_time= $member->sign_out_time ? date('g:i a', strtotime($member->sign_out_time)) : null;
                         // Determine visit status
                         $current_date = current_time('Y-m-d');
-                        $normalized_visit_date = substr($guest->visit_date ?? '', 0, 10);
+                        $normalized_visit_date = substr($member->visit_date ?? '', 0, 10);
                         $is_button_disabled = false;
-                        $visit_status = strtolower($guest->status ?? 'approved'); // fallback to approved                        
+                        $visit_status = strtolower($member->status ?? 'approved'); // fallback to approved                        
 
                         if ($normalized_visit_date && $normalized_visit_date > $current_date) {
                             $visit_status = 'scheduled';
                         } elseif ($normalized_visit_date && $normalized_visit_date === $current_date) {
-                            $visit_status = !empty($guest->sign_in_time) ? (!empty($guest->sign_out_time) ? 'completed' : 'signout') : 'signin';
+                            $visit_status = !empty($member->sign_in_time) ? (!empty($member->sign_out_time) ? 'completed' : 'signout') : 'signin';
                         } elseif ($normalized_visit_date && $normalized_visit_date < $current_date) {
-                            $visit_status = !empty($guest->sign_in_time) ? (!empty($guest->sign_out_time) ? 'completed' : 'signout') : 'missed';
+                            $visit_status = !empty($member->sign_in_time) ? (!empty($member->sign_out_time) ? 'completed' : 'signout') : 'missed';
                         }
-
-                        // Host name
-                        // Safely build host name with null coalescing and proper trimming
-                        $host_first = $guest->host_first_name ?? '';
-                        $host_last = $guest->host_last_name ?? '';
-                        $full_host_name = trim($host_first . ' ' . $host_last);
-
-                        $host_name = !empty($full_host_name) 
-                            ? $full_host_name 
-                            : ($guest->display_name ?? 'N/A');
-
-                        $is_courtesy = empty($full_host_name) && !empty($guest->courtesy);
                 ?>
-                <tr data-guest-id="<?php echo esc_attr($guest->id); ?>"
-                    data-visit-id="<?php echo esc_attr($guest->visit_id); ?>">
+                <tr data-member-id="<?php echo esc_attr($member->id); ?>"
+                    data-visit-id="<?php echo esc_attr($member->visit_id); ?>">
                     <td class="px-3 py-4 sm:px-6">
                         <p class="text-gray-500 text-theme-sm dark:text-gray-400">
                             <?php echo $counter++; ?>
@@ -246,44 +219,37 @@ $status_classes = [
                     <td class="px-3 py-4 sm:px-6">
                         <div class="flex items-center">
                             <p class="text-gray-800 text-theme-sm dark:text-white/90">
-                                <?php echo esc_html($guest->first_name); ?>
+                                <?php echo esc_html($member->first_name); ?>
                             </p>
                         </div>
                     </td>
                     <td class="px-3 py-4 sm:px-6">
                         <div class="flex items-center">
                             <p class="text-gray-800 text-theme-sm dark:text-white/90">
-                                <?php echo esc_html($guest->last_name); ?>
+                                <?php echo esc_html($member->last_name); ?>
                             </p>
                         </div>
                     </td>
                     <td class="px-3 py-4 sm:px-6">
                         <div class="flex items-center">
                             <span
-                                class="inline-flex items-center justify-center gap-1 rounded-full px-2.5 py-0.5 text-sm font-medium capitalize <?php echo $status_classes[$guest->visit_status] ?? $status_classes['approved']; ?>">
-                                <?php echo esc_html($guest->visit_status); ?>
+                                class="inline-flex items-center justify-center gap-1 rounded-full px-2.5 py-0.5 text-sm font-medium capitalize <?php echo $status_classes[$member->visit_status] ?? $status_classes['approved']; ?>">
+                                <?php echo esc_html($member->visit_status); ?>
                             </span>
                         </div>
                     </td>
                     <td class="px-3 py-4 sm:px-6">
                         <div class="flex items-center">
                             <p class="text-gray-500 text-theme-sm dark:text-gray-400">
-                                <?php echo esc_html($guest->id_number); ?>
+                                <?php echo esc_html($member->club_name); ?>
                             </p>
                         </div>
                     </td>
                     <td class="px-3 py-4 sm:px-6">
                         <div class="flex items-center">
-                            <?php if ($is_courtesy): ?>
-                            <span
-                                class="inline-flex items-center justify-center gap-1 rounded-full px-2.5 py-0.5 text-sm font-medium capitalize bg-blue-light-50 text-blue-light-500 dark:bg-blue-light-500/15 dark:text-blue-light-500">
-                                <?php esc_html_e('Courtesy!', 'vms'); ?>
-                            </span>
-                            <?php else: ?>
                             <p class="text-gray-500 text-theme-sm dark:text-gray-400">
-                                <?php echo esc_html($host_name); ?>
+                                <?php echo esc_html($member->reciprocating_member_number); ?>
                             </p>
-                            <?php endif; ?>
                         </div>
                     </td>
                     <td class="px-3 py-4 sm:px-6">
@@ -295,10 +261,10 @@ $status_classes = [
                     </td>
                     <td class="px-3 py-4 sm:px-6">
                         <div class="flex items-center gap-2">
-                            <button id="edit-guest-button-<?php echo $guest->id; ?>"
+                            <button id="edit-reciprocating-member-button-<?php echo $member->id; ?>"
                                 class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 transition bg-white border border-gray-300 rounded-lg cursor-pointer whitespace-nowrap dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
-                                data-guest-id="<?php echo $guest->id; ?>"
-                                data-visit-id="<?php echo $guest->visit_id; ?>">
+                                data-member-id="<?php echo $member->id; ?>"
+                                data-visit-id="<?php echo $member->visit_id; ?>">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
@@ -309,31 +275,31 @@ $status_classes = [
 
                             <?php
 
-                            if ($guest->visit_status === 'cancelled') : ?>
+                            if ($member->visit_status === 'cancelled') : ?>
                             <span
                                 class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg dark:bg-white/5 dark:text-white/80">
                                 <?php esc_html_e('Cancelled', 'vms'); ?>
                             </span>
 
-                            <?php elseif ($guest->visit_status === 'unapproved') : ?>
+                            <?php elseif ($member->visit_status === 'unapproved') : ?>
                             <span
                                 class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-warning-600 bg-warning-50 rounded-lg dark:bg-warning-500/15 dark:text-orange-500">
                                 <?php esc_html_e('Unapproved', 'vms'); ?>
                             </span>
 
-                            <?php elseif ($guest->visit_status === 'suspended') : ?>
+                            <?php elseif ($member->visit_status === 'suspended') : ?>
                             <span
                                 class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-light-500 bg-blue-light-50 rounded-lg dark:bg-blue-light-500/15 dark:text-blue-light-500">
                                 <?php esc_html_e('Suspended', 'vms'); ?>
                             </span>
 
-                            <?php elseif ($guest->visit_status === 'banned') : ?>
+                            <?php elseif ($member->visit_status === 'banned') : ?>
                             <span
                                 class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-error-600 bg-error-50 rounded-lg dark:bg-error-500/15 dark:text-error-500">
                                 <?php esc_html_e('Banned', 'vms'); ?>
                             </span>
 
-                            <?php elseif ($guest->visit_status === 'approved') : ?>
+                            <?php elseif ($member->visit_status === 'approved') : ?>
                             <?php if ($visit_status === 'missed') : ?>
                             <span
                                 class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-warning-600 bg-warning-50 rounded-lg dark:bg-warning-500/15 dark:text-orange-500"><?php esc_html_e('Missed', 'vms'); ?></span>
@@ -343,16 +309,16 @@ $status_classes = [
                                 class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-light-500 bg-blue-light-50 rounded-lg dark:bg-blue-light-500/15 dark:text-blue-light-500"><?php esc_html_e('Scheduled', 'vms'); ?></span>
 
                             <?php elseif ($visit_status === 'signin') : ?>
-                            <button id="sign-in-button-<?php echo esc_attr($guest->id); ?>"
+                            <button id="reciprocating-sign-in-button-<?php echo esc_attr($member->id); ?>"
                                 class="whitespace-nowrap inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-brand-500 rounded-lg cursor-pointer hover:bg-brand-600"
-                                data-visit-id="<?php echo esc_attr($guest->visit_id); ?>">
+                                data-visit-id="<?php echo esc_attr($member->visit_id); ?>">
                                 <?php esc_html_e('Sign In', 'vms'); ?>
                             </button>
 
                             <?php elseif ($visit_status === 'signout') : ?>
-                            <button id="sign-out-button-<?php echo esc_attr($guest->id); ?>"
+                            <button id="reciprocating-sign-out-button-<?php echo esc_attr($member->id); ?>"
                                 class="whitespace-nowrap inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-purple-500 rounded-lg cursor-pointer hover:bg-purple-600"
-                                data-visit-id="<?php echo esc_attr($guest->visit_id); ?>">
+                                data-visit-id="<?php echo esc_attr($member->visit_id); ?>">
                                 <?php esc_html_e('Sign Out', 'vms'); ?>
                             </button>
 
@@ -372,7 +338,7 @@ $status_classes = [
                 <?php
                     endforeach;
                 else:
-                    echo '<tr id="no-guests-row"><td colspan="8" class="px-4 py-4 text-center text-gray-600 dark:text-white">No guests found.</td></tr>';
+                    echo '<tr id="no-members-row"><td colspan="8" class="px-4 py-4 text-center text-gray-600 dark:text-white">No members found.</td></tr>';
                 endif;
                 ?>
             </tbody>
@@ -502,7 +468,7 @@ function updateUrlParameter(url, param, paramVal) {
 
 // Initialize per page selection from localStorage on page load
 document.addEventListener('DOMContentLoaded', function() {
-    const savedPerPage = localStorage.getItem('guests_per_page') || '25';
+    const savedPerPage = localStorage.getItem('members_per_page') || '25';
     const selectElement = document.querySelector('select[x-model="perPage"]');
     if (selectElement) {
         selectElement.value = savedPerPage;

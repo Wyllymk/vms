@@ -177,8 +177,14 @@ defined( 'ABSPATH' ) || exit;
                         <form action="<?php echo esc_url(home_url('/details')); ?>" method="get">
                             <input type="hidden" name="user_id" value="<?php echo esc_attr($user_id); ?>">
                             <button type="submit"
-                                class="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg whitespace-nowrap bg-brand-500 shadow-theme-xs hover:bg-brand-60">
-                                <?php esc_html_e( 'View Details', 'vms' ); ?>
+                                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 transition bg-white border border-gray-300 rounded-lg cursor-pointer whitespace-nowrap dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                data-user-id="<?php echo $user_id; ?>">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                    </path>
+                                </svg>
+                                <?php esc_html_e( 'Edit', 'vms' ); ?>
                             </button>
                         </form>
                     </td>
@@ -274,8 +280,14 @@ defined( 'ABSPATH' ) || exit;
                         <form action="<?php echo esc_url(home_url('/details')); ?>" method="get">
                             <input type="hidden" name="user_id" value="<?php echo esc_attr($user_id); ?>">
                             <button type="submit"
-                                class="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg cursor-pointer whitespace-nowrap bg-brand-500 shadow-theme-xs hover:bg-brand-60">
-                                <?php esc_html_e( 'View Details', 'vms' ); ?>
+                                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 transition bg-white border border-gray-300 rounded-lg cursor-pointer whitespace-nowrap dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                data-user-id="<?php echo $user_id; ?>">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                    </path>
+                                </svg>
+                                <?php esc_html_e( 'Edit', 'vms' ); ?>
                             </button>
                         </form>
                     </td>

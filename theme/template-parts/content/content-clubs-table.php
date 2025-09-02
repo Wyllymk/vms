@@ -1,6 +1,6 @@
 <?php
 /**
- * Template part for displaying guests table with pagination
+ * Template part for displaying clubs table with pagination
  *
  * @link https://developer.wordpress.org/themes/basics/template-hierarchy/
  *
@@ -9,81 +9,46 @@
 defined( 'ABSPATH' ) || exit;
 
 global $wpdb;
-$guests_table = \WyllyMk\VMS\VMS_Config::get_table_name( \WyllyMk\VMS\VMS_Config::GUESTS_TABLE );
-$guest_visits_table = \WyllyMk\VMS\VMS_Config::get_table_name( \WyllyMk\VMS\VMS_Config::GUEST_VISITS_TABLE );
+$clubs_table = \WyllyMk\VMS\VMS_Config::get_table_name( \WyllyMk\VMS\VMS_Config::RECIP_CLUBS_TABLE );
 
 // Pagination
-$guests_per_page = isset($_GET['per_page']) ? max(1, intval($_GET['per_page'])) : 25;
+$clubs_per_page = isset($_GET['per_page']) ? max(1, intval($_GET['per_page'])) : 25;
 $current_page = isset($_GET['paged']) ? max(1, intval($_GET['paged'])) : 1;
-$offset = ($current_page - 1) * $guests_per_page;
+$offset = ($current_page - 1) * $clubs_per_page;
 
 // Search functionality
 $search_term = '';
 $where_clause = '';
-$where_visits_clause = '';
 
-if (isset($_GET['search_users']) && !empty($_GET['user_search'])) {
-    $search_term = sanitize_text_field($_GET['user_search']);
+if (isset($_GET['search_clubs']) && !empty($_GET['club_search'])) {
+    $search_term = sanitize_text_field($_GET['club_search']);
     $like = '%' . $wpdb->esc_like($search_term) . '%';
     
-    // For guests table search
     $where_clause = $wpdb->prepare(
-        " WHERE (g.first_name LIKE %s OR g.last_name LIKE %s OR g.id_number LIKE %s OR g.email LIKE %s OR g.phone_number LIKE %s)",
-        $like, $like, $like, $like, $like
-    );
-    
-    // For visits count search - need to join with guests table
-    $where_visits_clause = $wpdb->prepare(
-        " WHERE (g.first_name LIKE %s OR g.last_name LIKE %s OR g.id_number LIKE %s OR g.email LIKE %s OR g.phone_number LIKE %s)",
-        $like, $like, $like, $like, $like
+        " WHERE club_name LIKE %s",
+        $like
     );
 }
 
-// Count total guest visits (not just guests)
-$count_visits_query = "SELECT COUNT(DISTINCT v.id) 
-                      FROM {$guest_visits_table} v 
-                      LEFT JOIN {$guests_table} g ON v.guest_id = g.id" . $where_visits_clause;
+// Count total clubs
+$count_query = "SELECT COUNT(*) FROM {$clubs_table}" . $where_clause;
+$total_clubs = $wpdb->get_var($count_query);
+$total_pages = ceil($total_clubs / $clubs_per_page);
 
-$total_visits = $wpdb->get_var($count_visits_query);
-$total_pages = ceil($total_visits / $guests_per_page);
-
-// Fetch guest visits with guest details
-$query = "SELECT 
-            g.*, 
-            v.id AS visit_id, 
-            v.visit_date, 
-            v.sign_in_time, 
-            v.sign_out_time, 
-            v.host_member_id,
-            v.courtesy,
-            v.status AS visit_status,
-            u.display_name,
-            MAX(CASE WHEN um1.meta_key = 'first_name' THEN um1.meta_value END) AS host_first_name,
-            MAX(CASE WHEN um2.meta_key = 'last_name' THEN um2.meta_value END) AS host_last_name
-        FROM {$guest_visits_table} v
-        LEFT JOIN {$guests_table} g ON v.guest_id = g.id
-        LEFT JOIN {$wpdb->users} u ON v.host_member_id = u.ID
-        LEFT JOIN {$wpdb->usermeta} um1 ON (u.ID = um1.user_id AND um1.meta_key = 'first_name')
-        LEFT JOIN {$wpdb->usermeta} um2 ON (u.ID = um2.user_id AND um2.meta_key = 'last_name')
-        " . $where_visits_clause . "
-        GROUP BY v.id
-        ORDER BY v.visit_date DESC, v.id DESC
-        LIMIT {$guests_per_page} OFFSET {$offset}";
-
-$guests = $wpdb->get_results($query);
+// Fetch clubs
+$query = "SELECT * FROM {$clubs_table}" . $where_clause . " ORDER BY created_at DESC LIMIT {$clubs_per_page} OFFSET {$offset}";
+$clubs = $wpdb->get_results($query);
 
 $status_classes = [
-    'approved'   => 'bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-500',
-    'unapproved' => 'bg-warning-50 text-warning-600 dark:bg-warning-500/15 dark:text-orange-400',
-    'suspended'  => 'bg-blue-light-50 text-blue-light-500 dark:bg-blue-light-500/15 dark:text-blue-light-500',
-    'banned'     => 'bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500',
-    'cancelled'  => 'bg-gray-100 text-gray-700 dark:bg-white/5 dark:text-white/80'
+    'active'     => 'bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-500',
+    'suspended'  => 'bg-warning-50 text-warning-600 dark:bg-warning-500/15 dark:text-orange-400',
+    'banned'     => 'bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500'
 ];
 ?>
 
 <div class="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]"
-    x-data="{ perPage: localStorage.getItem('guests_per_page') || '25' }"
-    x-init="$watch('perPage', value => localStorage.setItem('guests_per_page', value))">
+    x-data="{ perPage: localStorage.getItem('clubs_per_page') || '25' }"
+    x-init="$watch('perPage', value => localStorage.setItem('clubs_per_page', value))">
 
     <!-- Per Page Controls -->
     <div
@@ -94,13 +59,12 @@ $status_classes = [
                 <select x-model="perPage"
                     @change="window.location.href = updateUrlParameter(window.location.href, 'per_page', $event.target.value)"
                     class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-9 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none py-2 pr-8 pl-3 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30">
-                    <option value="25" <?php selected($guests_per_page, 25); ?>>25</option>
-                    <option value="50" <?php selected($guests_per_page, 50); ?>>50</option>
-                    <option value="100" <?php selected($guests_per_page, 100); ?>>100</option>
+                    <option value="25" <?php selected($clubs_per_page, 25); ?>>25</option>
+                    <option value="50" <?php selected($clubs_per_page, 50); ?>>50</option>
+                    <option value="100" <?php selected($clubs_per_page, 100); ?>>100</option>
                 </select>
                 <span class="absolute top-1/2 right-2 z-30 -translate-y-1/2 text-gray-500 dark:text-gray-400">
-                    <svg class="stroke-current" width="16" height="16" viewBox="0 0 16 16" fill="none"
-                        xmlns="http://www.w3.org/2000/svg">
+                    <svg class="stroke-current" width="16" height="16" viewBox="0 0 16 16" fill="none">
                         <path d="M3.8335 5.9165L8.00016 10.0832L12.1668 5.9165" stroke="" stroke-width="1.2"
                             stroke-linecap="round" stroke-linejoin="round"></path>
                     </svg>
@@ -111,32 +75,29 @@ $status_classes = [
         <!-- Show total entries info -->
         <div class="text-sm text-gray-500 dark:text-gray-400">
             <?php
-            $start = $total_visits > 0 ? $offset + 1 : 0;
-            $end = min($offset + $guests_per_page, $total_visits);
+            $start = $total_clubs > 0 ? $offset + 1 : 0;
+            $end = min($offset + $clubs_per_page, $total_clubs);
             
             if (!empty($search_term)) {                
                 printf(
-                    /* translators: %1$d: start entry number, %2$d: end entry number, %3$d: total filtered entries */
-                    esc_html__('Showing %1$d to %2$d of %3$d entries (filtered from total)', 'vms'),
+                    esc_html__('Showing %1$d to %2$d of %3$d entries (filtered)', 'vms'),
                     $start,
                     $end,
-                    $total_visits
+                    $total_clubs
                 );
             } else {                
                 printf(
-                    /* translators: %1$d: start entry number, %2$d: end entry number, %3$d: total entries */
                     esc_html__('Showing %1$d to %2$d of %3$d entries', 'vms'),
                     $start,
                     $end,
-                    $total_visits
+                    $total_clubs
                 );
             }
             ?>
         </div>
     </div>
 
-    <div class="max-w-full overflow-x-auto" id="guests-table"
-        data-guest-details-url="<?php echo esc_url(home_url('/guest-details')); ?>">
+    <div class="max-w-full overflow-x-auto" id="clubs-table">
         <table class="min-w-full">
             <!-- table header start -->
             <thead>
@@ -151,14 +112,7 @@ $status_classes = [
                     <th class="px-3 py-3 sm:px-6">
                         <div class="flex items-center">
                             <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
-                                <?php esc_html_e( 'First Name', 'vms' ); ?>
-                            </p>
-                        </div>
-                    </th>
-                    <th class="px-3 py-3 sm:px-6">
-                        <div class="flex items-center">
-                            <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
-                                <?php esc_html_e( 'Last Name', 'vms' ); ?>
+                                <?php esc_html_e( 'Club Name', 'vms' ); ?>
                             </p>
                         </div>
                     </th>
@@ -172,21 +126,14 @@ $status_classes = [
                     <th class="px-3 py-3 sm:px-6">
                         <div class="flex items-center">
                             <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
-                                <?php esc_html_e( 'ID Number', 'vms' ); ?>
+                                <?php esc_html_e( 'Creation Date', 'vms' ); ?>
                             </p>
                         </div>
                     </th>
                     <th class="px-3 py-3 sm:px-6">
                         <div class="flex items-center">
                             <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
-                                <?php esc_html_e( 'Host Member', 'vms' ); ?>
-                            </p>
-                        </div>
-                    </th>
-                    <th class="px-3 py-3 sm:px-6">
-                        <div class="flex items-center">
-                            <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
-                                <?php esc_html_e( 'Visit Date', 'vms' ); ?>
+                                <?php esc_html_e( 'Update Date', 'vms' ); ?>
                             </p>
                         </div>
                     </th>
@@ -201,43 +148,15 @@ $status_classes = [
             </thead>
             <!-- table header end -->
             <!-- table body start -->
-            <tbody id="guests-table-body" class="divide-y divide-gray-100 dark:divide-gray-800">
+            <tbody id="clubs-table-body" class="divide-y divide-gray-100 dark:divide-gray-800">
                 <?php
                 $counter = $offset + 1;
-                if (!empty($guests)) :
-                    foreach ($guests as $guest) :
-                        $visit_date = !empty($guest->visit_date) ? date('M j, Y', strtotime($guest->visit_date)) : 'N/A';
-                        $sign_in_time = !empty($guest->sign_in_time) ? date('g:i a', strtotime($guest->sign_in_time)) : null;
-                        $sign_out_time = !empty($guest->sign_out_time) ? date('g:i a', strtotime($guest->sign_out_time)) : null;
-
-                        // Determine visit status
-                        $current_date = current_time('Y-m-d');
-                        $normalized_visit_date = substr($guest->visit_date ?? '', 0, 10);
-                        $is_button_disabled = false;
-                        $visit_status = strtolower($guest->status ?? 'approved'); // fallback to approved                        
-
-                        if ($normalized_visit_date && $normalized_visit_date > $current_date) {
-                            $visit_status = 'scheduled';
-                        } elseif ($normalized_visit_date && $normalized_visit_date === $current_date) {
-                            $visit_status = !empty($guest->sign_in_time) ? (!empty($guest->sign_out_time) ? 'completed' : 'signout') : 'signin';
-                        } elseif ($normalized_visit_date && $normalized_visit_date < $current_date) {
-                            $visit_status = !empty($guest->sign_in_time) ? (!empty($guest->sign_out_time) ? 'completed' : 'signout') : 'missed';
-                        }
-
-                        // Host name
-                        // Safely build host name with null coalescing and proper trimming
-                        $host_first = $guest->host_first_name ?? '';
-                        $host_last = $guest->host_last_name ?? '';
-                        $full_host_name = trim($host_first . ' ' . $host_last);
-
-                        $host_name = !empty($full_host_name) 
-                            ? $full_host_name 
-                            : ($guest->display_name ?? 'N/A');
-
-                        $is_courtesy = empty($full_host_name) && !empty($guest->courtesy);
+                if (!empty($clubs)) :
+                    foreach ($clubs as $club) :
+                        $creation_date = !empty($club->created_at) ? date('M j, Y', strtotime($club->created_at)) : 'N/A';
+                        $update_date = !empty($club->updated_at) ? date('M j, Y', strtotime($club->updated_at)) : 'N/A';
                 ?>
-                <tr data-guest-id="<?php echo esc_attr($guest->id); ?>"
-                    data-visit-id="<?php echo esc_attr($guest->visit_id); ?>">
+                <tr data-club-id="<?php echo esc_attr($club->id); ?>">
                     <td class="px-3 py-4 sm:px-6">
                         <p class="text-gray-500 text-theme-sm dark:text-gray-400">
                             <?php echo $counter++; ?>
@@ -246,59 +165,38 @@ $status_classes = [
                     <td class="px-3 py-4 sm:px-6">
                         <div class="flex items-center">
                             <p class="text-gray-800 text-theme-sm dark:text-white/90">
-                                <?php echo esc_html($guest->first_name); ?>
-                            </p>
-                        </div>
-                    </td>
-                    <td class="px-3 py-4 sm:px-6">
-                        <div class="flex items-center">
-                            <p class="text-gray-800 text-theme-sm dark:text-white/90">
-                                <?php echo esc_html($guest->last_name); ?>
+                                <?php echo esc_html($club->club_name); ?>
                             </p>
                         </div>
                     </td>
                     <td class="px-3 py-4 sm:px-6">
                         <div class="flex items-center">
                             <span
-                                class="inline-flex items-center justify-center gap-1 rounded-full px-2.5 py-0.5 text-sm font-medium capitalize <?php echo $status_classes[$guest->visit_status] ?? $status_classes['approved']; ?>">
-                                <?php echo esc_html($guest->visit_status); ?>
+                                class="inline-flex items-center justify-center gap-1 rounded-full px-2.5 py-0.5 text-sm font-medium capitalize <?php echo $status_classes[$club->status] ?? $status_classes['active']; ?>">
+                                <?php echo esc_html(ucfirst($club->status)); ?>
                             </span>
                         </div>
                     </td>
                     <td class="px-3 py-4 sm:px-6">
                         <div class="flex items-center">
                             <p class="text-gray-500 text-theme-sm dark:text-gray-400">
-                                <?php echo esc_html($guest->id_number); ?>
+                                <?php echo esc_html($creation_date); ?>
                             </p>
                         </div>
                     </td>
                     <td class="px-3 py-4 sm:px-6">
                         <div class="flex items-center">
-                            <?php if ($is_courtesy): ?>
-                            <span
-                                class="inline-flex items-center justify-center gap-1 rounded-full px-2.5 py-0.5 text-sm font-medium capitalize bg-blue-light-50 text-blue-light-500 dark:bg-blue-light-500/15 dark:text-blue-light-500">
-                                <?php esc_html_e('Courtesy!', 'vms'); ?>
-                            </span>
-                            <?php else: ?>
                             <p class="text-gray-500 text-theme-sm dark:text-gray-400">
-                                <?php echo esc_html($host_name); ?>
-                            </p>
-                            <?php endif; ?>
-                        </div>
-                    </td>
-                    <td class="px-3 py-4 sm:px-6">
-                        <div class="flex items-center">
-                            <p class="text-gray-500 text-theme-sm dark:text-gray-400">
-                                <?php echo esc_html($visit_date); ?>
+                                <?php echo esc_html($update_date); ?>
                             </p>
                         </div>
                     </td>
+                    <!-- Updated action buttons section in the clubs table template -->
                     <td class="px-3 py-4 sm:px-6">
                         <div class="flex items-center gap-2">
-                            <button id="edit-guest-button-<?php echo $guest->id; ?>"
-                                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 transition bg-white border border-gray-300 rounded-lg cursor-pointer whitespace-nowrap dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
-                                data-guest-id="<?php echo $guest->id; ?>"
-                                data-visit-id="<?php echo $guest->visit_id; ?>">
+                            <button
+                                class="edit-club-btn inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 transition bg-white border border-gray-300 rounded-lg cursor-pointer whitespace-nowrap dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                data-club-id="<?php echo $club->id; ?>">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
@@ -306,73 +204,23 @@ $status_classes = [
                                 </svg>
                                 <?php esc_html_e( 'Edit', 'vms' ); ?>
                             </button>
-
-                            <?php
-
-                            if ($guest->visit_status === 'cancelled') : ?>
-                            <span
-                                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg dark:bg-white/5 dark:text-white/80">
-                                <?php esc_html_e('Cancelled', 'vms'); ?>
-                            </span>
-
-                            <?php elseif ($guest->visit_status === 'unapproved') : ?>
-                            <span
-                                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-warning-600 bg-warning-50 rounded-lg dark:bg-warning-500/15 dark:text-orange-500">
-                                <?php esc_html_e('Unapproved', 'vms'); ?>
-                            </span>
-
-                            <?php elseif ($guest->visit_status === 'suspended') : ?>
-                            <span
-                                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-light-500 bg-blue-light-50 rounded-lg dark:bg-blue-light-500/15 dark:text-blue-light-500">
-                                <?php esc_html_e('Suspended', 'vms'); ?>
-                            </span>
-
-                            <?php elseif ($guest->visit_status === 'banned') : ?>
-                            <span
-                                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-error-600 bg-error-50 rounded-lg dark:bg-error-500/15 dark:text-error-500">
-                                <?php esc_html_e('Banned', 'vms'); ?>
-                            </span>
-
-                            <?php elseif ($guest->visit_status === 'approved') : ?>
-                            <?php if ($visit_status === 'missed') : ?>
-                            <span
-                                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-warning-600 bg-warning-50 rounded-lg dark:bg-warning-500/15 dark:text-orange-500"><?php esc_html_e('Missed', 'vms'); ?></span>
-
-                            <?php elseif ($visit_status === 'scheduled') : ?>
-                            <span
-                                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-light-500 bg-blue-light-50 rounded-lg dark:bg-blue-light-500/15 dark:text-blue-light-500"><?php esc_html_e('Scheduled', 'vms'); ?></span>
-
-                            <?php elseif ($visit_status === 'signin') : ?>
-                            <button id="sign-in-button-<?php echo esc_attr($guest->id); ?>"
-                                class="whitespace-nowrap inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-brand-500 rounded-lg cursor-pointer hover:bg-brand-600"
-                                data-visit-id="<?php echo esc_attr($guest->visit_id); ?>">
-                                <?php esc_html_e('Sign In', 'vms'); ?>
+                            <button
+                                class="delete-club-btn inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition bg-red-500 border border-red-500 rounded-lg cursor-pointer whitespace-nowrap hover:bg-red-600 dark:hover:bg-red-600"
+                                data-club-id="<?php echo $club->id; ?>">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                                    </path>
+                                </svg>
+                                <?php esc_html_e( 'Delete', 'vms' ); ?>
                             </button>
-
-                            <?php elseif ($visit_status === 'signout') : ?>
-                            <button id="sign-out-button-<?php echo esc_attr($guest->id); ?>"
-                                class="whitespace-nowrap inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-purple-500 rounded-lg cursor-pointer hover:bg-purple-600"
-                                data-visit-id="<?php echo esc_attr($guest->visit_id); ?>">
-                                <?php esc_html_e('Sign Out', 'vms'); ?>
-                            </button>
-
-                            <?php elseif ($visit_status === 'completed') : ?>
-                            <div class="flex flex-col items-center justify-center text-xs px-4">
-                                <span
-                                    class="text-green-600 dark:text-green-400"><?php echo esc_html($sign_in_time); ?></span>
-                                <span
-                                    class="text-red-600 dark:text-red-400"><?php echo esc_html($sign_out_time); ?></span>
-                            </div>
-                            <?php endif; ?>
-                            <?php endif; ?>
                         </div>
                     </td>
-
                 </tr>
                 <?php
                     endforeach;
                 else:
-                    echo '<tr id="no-guests-row"><td colspan="8" class="px-4 py-4 text-center text-gray-600 dark:text-white">No guests found.</td></tr>';
+                    echo '<tr id="no-clubs-row"><td colspan="5" class="px-4 py-4 text-center text-gray-600 dark:text-white">No clubs found.</td></tr>';
                 endif;
                 ?>
             </tbody>
@@ -387,8 +235,7 @@ $status_classes = [
         <?php if ($current_page > 1): ?>
         <a href="<?php echo esc_url(add_query_arg('paged', $current_page - 1)); ?>"
             class="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 sm:px-3.5 sm:py-2.5">
-            <svg class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none"
-                xmlns="http://www.w3.org/2000/svg">
+            <svg class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none">
                 <path fill-rule="evenodd" clip-rule="evenodd"
                     d="M2.58203 9.99868C2.58174 10.1909 2.6549 10.3833 2.80152 10.53L7.79818 15.5301C8.09097 15.8231 8.56584 15.8233 8.85883 15.5305C9.15183 15.2377 9.152 14.7629 8.85921 14.4699L5.13911 10.7472L16.6665 10.7472C17.0807 10.7472 17.4165 10.4114 17.4165 9.99715C17.4165 9.58294 17.0807 9.24715 16.6665 9.24715L5.14456 9.24715L8.85919 5.53016C9.15199 5.23717 9.15184 4.7623 8.85885 4.4695C8.56587 4.1767 8.09099 4.17685 7.79819 4.46984L2.84069 9.43049C2.68224 9.568 2.58203 9.77087 2.58203 9.99715C2.58203 9.99766 2.58203 9.99817 2.58203 9.99868Z">
                 </path>
@@ -398,8 +245,7 @@ $status_classes = [
         <?php else: ?>
         <button disabled
             class="flex items-center gap-2 rounded-lg border border-gray-300 bg-gray-100 px-2 py-2 text-sm font-medium text-gray-400 shadow-theme-xs dark:border-gray-600 dark:bg-gray-700 dark:text-gray-500 sm:px-3.5 sm:py-2.5">
-            <svg class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none"
-                xmlns="http://www.w3.org/2000/svg">
+            <svg class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none">
                 <path fill-rule="evenodd" clip-rule="evenodd"
                     d="M2.58203 9.99868C2.58174 10.1909 2.6549 10.3833 2.80152 10.53L7.79818 15.5301C8.09097 15.8231 8.56584 15.8233 8.85883 15.5305C9.15183 15.2377 9.152 14.7629 8.85921 14.4699L5.13911 10.7472L16.6665 10.7472C17.0807 10.7472 17.4165 10.4114 17.4165 9.99715C17.4165 9.58294 17.0807 9.24715 16.6665 9.24715L5.14456 9.24715L8.85919 5.53016C9.15199 5.23717 9.15184 4.7623 8.85885 4.4695C8.56587 4.1767 8.09099 4.17685 7.79819 4.46984L2.84069 9.43049C2.68224 9.568 2.58203 9.77087 2.58203 9.99715C2.58203 9.99766 2.58203 9.99817 2.58203 9.99868Z">
                 </path>
@@ -411,7 +257,6 @@ $status_classes = [
         <!-- Mobile page indicator -->
         <span class="block text-sm font-medium text-gray-700 dark:text-gray-400 sm:hidden">
             <?php 
-            /* translators: %1$d: current page number, %2$d: total pages */ 
             printf(esc_html__('Page %1$d of %2$d', 'vms'), $current_page, $total_pages); 
             ?>
         </span>
@@ -455,8 +300,7 @@ $status_classes = [
         <a href="<?php echo esc_url(add_query_arg('paged', $current_page + 1)); ?>"
             class="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 sm:px-3.5 sm:py-2.5">
             <span class="hidden sm:inline"><?php esc_html_e('Next', 'vms'); ?></span>
-            <svg class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none"
-                xmlns="http://www.w3.org/2000/svg">
+            <svg class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none">
                 <path fill-rule="evenodd" clip-rule="evenodd"
                     d="M17.4165 9.9986C17.4168 10.1909 17.3437 10.3832 17.197 10.53L12.2004 15.5301C11.9076 15.8231 11.4327 15.8233 11.1397 15.5305C10.8467 15.2377 10.8465 14.7629 11.1393 14.4699L14.8594 10.7472L3.33203 10.7472C2.91782 10.7472 2.58203 10.4114 2.58203 9.99715C2.58203 9.58294 2.91782 9.24715 3.33203 9.24715L14.854 9.24715L11.1393 5.53016C10.8465 5.23717 10.8467 4.7623 11.1397 4.4695C11.4327 4.1767 11.9075 4.17685 12.2003 4.46984L17.1578 9.43049C17.3163 9.568 17.4165 9.77087 17.4165 9.99715C17.4165 9.99763 17.4165 9.99812 17.4165 9.9986Z">
                 </path>
@@ -466,8 +310,7 @@ $status_classes = [
         <button disabled
             class="flex items-center gap-2 rounded-lg border border-gray-300 bg-gray-100 px-2 py-2 text-sm font-medium text-gray-400 shadow-theme-xs dark:border-gray-600 dark:bg-gray-700 dark:text-gray-500 sm:px-3.5 sm:py-2.5">
             <span class="hidden sm:inline"><?php esc_html_e('Next', 'vms'); ?></span>
-            <svg class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none"
-                xmlns="http://www.w3.org/2000/svg">
+            <svg class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none">
                 <path fill-rule="evenodd" clip-rule="evenodd"
                     d="M17.4165 9.9986C17.4168 10.1909 17.3437 10.3832 17.197 10.53L12.2004 15.5301C11.9076 15.8231 11.4327 15.8233 11.1397 15.5305C10.8467 15.2377 10.8465 14.7629 11.1393 14.4699L14.8594 10.7472L3.33203 10.7472C2.91782 10.7472 2.58203 10.4114 2.58203 9.99715C2.58203 9.58294 2.91782 9.24715 3.33203 9.24715L14.854 9.24715L11.1393 5.53016C10.8465 5.23717 10.8467 4.7623 11.1397 4.4695C11.4327 4.1767 11.9075 4.17685 12.2003 4.46984L17.1578 9.43049C17.3163 9.568 17.4165 9.77087 17.4165 9.99715C17.4165 9.99763 17.4165 9.99812 17.4165 9.9986Z">
                 </path>
@@ -502,11 +345,10 @@ function updateUrlParameter(url, param, paramVal) {
 
 // Initialize per page selection from localStorage on page load
 document.addEventListener('DOMContentLoaded', function() {
-    const savedPerPage = localStorage.getItem('guests_per_page') || '25';
+    const savedPerPage = localStorage.getItem('clubs_per_page') || '25';
     const selectElement = document.querySelector('select[x-model="perPage"]');
     if (selectElement) {
         selectElement.value = savedPerPage;
-        // Trigger Alpine.js to update
         selectElement.dispatchEvent(new Event('change'));
     }
 });

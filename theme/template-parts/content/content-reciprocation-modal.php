@@ -1,6 +1,6 @@
 <?php
 /**
- * Template part for displaying info modal
+ * Template part for displaying reciprocation modal
  *
  * @link https://developer.wordpress.org/themes/basics/template-hierarchy/
  *
@@ -11,13 +11,12 @@ defined( 'ABSPATH' ) || exit;
 
 ?>
 
-<div x-show="isCourtesyGuestInfoModal"
-    class="fixed inset-0 flex items-center justify-center p-5 overflow-y-auto z-99999">
+<div x-show="isReciprocationModal" class="fixed inset-0 flex items-center justify-center p-5 overflow-y-auto z-99999">
     <div class="modal-close-btn fixed inset-0 h-full w-full bg-gray-400/50 backdrop-blur-[32px]"></div>
-    <div @click.outside="isCourtesyGuestInfoModal = false"
+    <div @click.outside="isReciprocationModal = false"
         class="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
         <!-- close btn -->
-        <a @click="isCourtesyGuestInfoModal = false"
+        <a @click="isReciprocationModal = false"
             class="cursor-pointer transition-color absolute right-5 top-5 z-999 flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600 dark:bg-gray-700 dark:bg-white/[0.05] dark:text-gray-400 dark:hover:bg-white/[0.07] dark:hover:text-gray-300">
             <svg class="fill-current" width="24" height="24" viewBox="0 0 24 24" fill="none"
                 xmlns="http://www.w3.org/2000/svg">
@@ -28,17 +27,16 @@ defined( 'ABSPATH' ) || exit;
         </a>
         <div class="px-2 pr-14">
             <h4 class="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
-                <?php esc_html_e( 'Register Courtesy Guest', 'vms' ); ?>
+                <?php esc_html_e( 'Register Reciprocation Member', 'vms' ); ?>
             </h4>
             <p class="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
-                <?php esc_html_e( 'Create a Guests Account.', 'vms' ); ?>
+                <?php esc_html_e( 'Create a Reciprocation Member Account.', 'vms' ); ?>
             </p>
         </div>
-        <form id="courtesy-guest-form" class="flex flex-col" method="post" enctype="multipart/form-data">
-            <?php wp_nonce_field('create_user_data', '_wpnonce_create_user_data'); ?>
-            <input type="hidden" name="register_guest" value="1">
+        <form id="reciprocation-form" class="flex flex-col" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="register_reciprocation_member" value="1">
 
-            <div class="custom-scrollbar h-lg overflow-y-auto px-2">
+            <div class="custom-scrollbar h-xl overflow-y-auto px-2">
                 <div class="">
                     <h5 class="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
                         <?php esc_html_e('Personal Information', 'vms'); ?>
@@ -51,10 +49,8 @@ defined( 'ABSPATH' ) || exit;
                                 <?php esc_html_e('First Name', 'vms'); ?>
                                 <span class="text-error-500">*</span>
                             </label>
-                            <input type="text" name="first_name"
-                                value="<?php echo esc_attr($_POST['first_name'] ?? ''); ?>"
-                                class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-                                required />
+                            <input type="text" name="first_name" required
+                                class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" />
                         </div>
 
                         <!-- Last Name -->
@@ -63,10 +59,8 @@ defined( 'ABSPATH' ) || exit;
                                 <?php esc_html_e('Last Name', 'vms'); ?>
                                 <span class="text-error-500">*</span>
                             </label>
-                            <input type="text" name="last_name"
-                                value="<?php echo esc_attr($_POST['last_name'] ?? ''); ?>"
-                                class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-                                required />
+                            <input type="text" name="last_name" required
+                                class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" />
                         </div>
 
                         <!-- Email -->
@@ -75,9 +69,8 @@ defined( 'ABSPATH' ) || exit;
                                 <?php esc_html_e('Email address', 'vms'); ?>
                                 <span class="text-error-500">*</span>
                             </label>
-                            <input type="email" name="email" value="<?php echo esc_attr($_POST['email'] ?? ''); ?>"
-                                class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-                                required />
+                            <input type="email" name="email" required
+                                class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" />
                         </div>
 
                         <!-- Phone -->
@@ -86,48 +79,72 @@ defined( 'ABSPATH' ) || exit;
                                 <?php esc_html_e('Phone', 'vms'); ?>
                                 <span class="text-error-500">*</span>
                             </label>
-                            <input type="tel" name="phone_number"
-                                value="<?php echo esc_attr($_POST['phone_number'] ?? ''); ?>"
-                                class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-                                required />
+                            <input type="tel" name="phone_number" required
+                                class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" />
                             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                                 <?php esc_html_e('Format: +254700123456 or 0700123456', 'vms'); ?>
                             </p>
                         </div>
 
-                        <!-- ID Number -->
+                        <!-- Member Number -->
                         <div class="col-span-2 lg:col-span-1">
                             <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                <?php esc_html_e('ID Number', 'vms'); ?>
+                                <?php esc_html_e('Member Number', 'vms'); ?>
                                 <span class="text-error-500">*</span>
                             </label>
-                            <input type="number" name="id_number"
-                                value="<?php echo esc_attr($_POST['id_number'] ?? ''); ?>"
-                                class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-                                required />
+                            <input type="text" name="member_number" required
+                                class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" />
+                        </div>
+
+                        <!-- Reciprocating Club Dropdown -->
+                        <div class="col-span-2 lg:col-span-1">
+                            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                                <?php esc_html_e('Reciprocating Club', 'vms'); ?>
+                                <span class="text-error-500">*</span>
+                            </label>
+                            <select name="host_member_id" required
+                                class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800">
+                                <option value=""><?php esc_html_e('Select Reciprocating Club', 'vms'); ?></option>
+                                <?php
+                                // Get reciprocating clubs table
+                                global $wpdb;
+                                $clubs_table = \WyllyMk\VMS\VMS_Config::get_table_name( \WyllyMk\VMS\VMS_Config::RECIP_CLUBS_TABLE );
+
+                                
+                                $clubs = $wpdb->get_results("
+                                    SELECT id, club_name, club_email 
+                                    FROM $clubs_table 
+                                    WHERE status = 'active' 
+                                    ORDER BY club_name ASC
+                                ");
+
+                                foreach ($clubs as $club) {
+                                    $selected = isset($_POST['host_member_id']) && $_POST['host_member_id'] == $club->id ? 'selected' : '';
+                                    echo '<option value="' . esc_attr($club->id) . '" ' . $selected . '>'
+                                        . esc_html($club->club_name) . '</option>';
+                                }
+                                ?>
+                            </select>
                         </div>
 
                         <!-- Visit Date -->
-                        <div class="col-span-2 lg:col-span-1">
+                        <div class="col-span-2">
                             <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                                 <?php esc_html_e('Visit Date', 'vms'); ?>
                                 <span class="text-error-500">*</span>
                             </label>
-                            <input type="date" name="visit_date"
-                                value="<?php echo esc_attr($_POST['visit_date'] ?? ''); ?>"
-                                class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-                                required />
+                            <input type="date" name="visit_date" required min="<?php echo date('Y-m-d'); ?>"
+                                class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" />
                         </div>
 
                         <!-- Preferences -->
-                        <div x-data="{ checkboxToggle: <?php echo checked(true, true, false) ? 'true' : 'false'; ?> }">
+                        <div x-data="{ checkboxToggle: true }">
                             <label for="receive_messages"
                                 class="flex cursor-pointer items-center text-sm font-medium text-gray-700 select-none dark:text-gray-400">
                                 <div class="relative">
-                                    <!-- Real checkbox (submits with form) -->
+                                    <!-- Real checkbox -->
                                     <input type="checkbox" id="receive_messages" name="receive_messages" value="yes"
-                                        <?php checked(true); ?> class="sr-only"
-                                        @change="checkboxToggle = !checkboxToggle">
+                                        checked class="sr-only" @change="checkboxToggle = !checkboxToggle">
 
                                     <!-- Custom styled checkbox -->
                                     <div :class="checkboxToggle ? 'border-brand-500 bg-brand-500' : 'bg-transparent border-gray-300 dark:border-gray-700'"
@@ -150,14 +167,13 @@ defined( 'ABSPATH' ) || exit;
                             </label>
                         </div>
 
-                        <div x-data="{ checkboxToggle: <?php echo checked(true, true, false) ? 'true' : 'false'; ?> }">
+                        <div x-data="{ checkboxToggle: true }">
                             <label for="receive_emails"
                                 class="flex cursor-pointer items-center text-sm font-medium text-gray-700 select-none dark:text-gray-400">
                                 <div class="relative">
-                                    <!-- Real checkbox (submits with form) -->
-                                    <input type="checkbox" id="receive_emails" name="receive_emails" value="yes"
-                                        <?php checked(true); ?> class="sr-only"
-                                        @change="checkboxToggle = !checkboxToggle">
+                                    <!-- Real checkbox -->
+                                    <input type="checkbox" id="receive_emails" name="receive_emails" value="yes" checked
+                                        class="sr-only" @change="checkboxToggle = !checkboxToggle">
 
                                     <!-- Custom styled checkbox -->
                                     <div :class="checkboxToggle ? 'border-brand-500 bg-brand-500' : 'bg-transparent border-gray-300 dark:border-gray-700'"
@@ -179,6 +195,7 @@ defined( 'ABSPATH' ) || exit;
                                 </span>
                             </label>
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -188,9 +205,9 @@ defined( 'ABSPATH' ) || exit;
                     class="cursor-pointer flex w-full justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] sm:w-auto">
                     <?php esc_html_e('Reset', 'vms'); ?>
                 </button>
-                <button type="submit" id="submit-courtesy-guest-form"
+                <button type="submit" id="submit-reciprocating-form"
                     class="cursor-pointer flex w-full justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 sm:w-auto">
-                    <?php esc_html_e('Create Guest', 'vms'); ?>
+                    <?php esc_html_e('Create Reciprocating Member', 'vms'); ?>
                 </button>
             </div>
         </form>

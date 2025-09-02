@@ -36,8 +36,8 @@ defined( 'ABSPATH' ) || exit;
         <form id="employee-form" class="flex flex-col" method="post" enctype="multipart/form-data">
             <input type="hidden" name="register_employee" value="1">
 
-            <div class="custom-scrollbar h-[450px] overflow-y-auto px-2">
-                <div class="mt-7">
+            <div class="custom-scrollbar h-lg overflow-y-auto px-2">
+                <div class="">
                     <h5 class="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
                         <?php esc_html_e('Personal Information', 'vms'); ?>
                     </h5>
@@ -118,20 +118,60 @@ defined( 'ABSPATH' ) || exit;
                             </select>
                         </div>
                         <!-- Preferences -->
-                        <div>
-                            <label class="flex items-center">
-                                <input type="checkbox" name="receive_messages" value="yes" <?php checked(true); ?>
-                                    class="border-gray-300 rounded shadow-sm text-brand-500 focus:border-brand-300 focus:ring focus:ring-brand-200 focus:ring-opacity-50" />
+                        <div x-data="{ checkboxToggle: <?php echo checked(true, true, false) ? 'true' : 'false'; ?> }">
+                            <label for="receive_messages"
+                                class="flex cursor-pointer items-center text-sm font-medium text-gray-700 select-none dark:text-gray-400">
+                                <div class="relative">
+                                    <!-- Real checkbox (submits with form) -->
+                                    <input type="checkbox" id="receive_messages" name="receive_messages" value="yes"
+                                        <?php checked(true); ?> class="sr-only"
+                                        @change="checkboxToggle = !checkboxToggle">
+
+                                    <!-- Custom styled checkbox -->
+                                    <div :class="checkboxToggle ? 'border-brand-500 bg-brand-500' : 'bg-transparent border-gray-300 dark:border-gray-700'"
+                                        class="mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px] transition">
+                                        <span :class="checkboxToggle ? '' : 'opacity-0'">
+                                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"
+                                                xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M11.6666 3.5L5.24992 9.91667L2.33325 7" stroke="white"
+                                                    stroke-width="1.94437" stroke-linecap="round"
+                                                    stroke-linejoin="round"></path>
+                                            </svg>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Label text -->
                                 <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
                                     <?php esc_html_e('Receive messages', 'vms'); ?>
                                 </span>
                             </label>
                         </div>
 
-                        <div>
-                            <label class="flex items-center">
-                                <input type="checkbox" name="receive_emails" value="yes" <?php checked(true); ?>
-                                    class="border-gray-300 rounded shadow-sm text-brand-500 focus:border-brand-300 focus:ring focus:ring-brand-200 focus:ring-opacity-50" />
+                        <div x-data="{ checkboxToggle: <?php echo checked(true, true, false) ? 'true' : 'false'; ?> }">
+                            <label for="receive_emails"
+                                class="flex cursor-pointer items-center text-sm font-medium text-gray-700 select-none dark:text-gray-400">
+                                <div class="relative">
+                                    <!-- Real checkbox (submits with form) -->
+                                    <input type="checkbox" id="receive_emails" name="receive_emails" value="yes"
+                                        <?php checked(true); ?> class="sr-only"
+                                        @change="checkboxToggle = !checkboxToggle">
+
+                                    <!-- Custom styled checkbox -->
+                                    <div :class="checkboxToggle ? 'border-brand-500 bg-brand-500' : 'bg-transparent border-gray-300 dark:border-gray-700'"
+                                        class="mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px] transition">
+                                        <span :class="checkboxToggle ? '' : 'opacity-0'">
+                                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"
+                                                xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M11.6666 3.5L5.24992 9.91667L2.33325 7" stroke="white"
+                                                    stroke-width="1.94437" stroke-linecap="round"
+                                                    stroke-linejoin="round"></path>
+                                            </svg>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Label text -->
                                 <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
                                     <?php esc_html_e('Receive emails', 'vms'); ?>
                                 </span>
