@@ -187,7 +187,7 @@ $status_classes = [
             </thead>
             <!-- table header end -->
             <!-- table body start -->
-            <tbody id="recip-members-table-body" class="divide-y divide-gray-100 dark:divide-gray-800">
+            <tbody id="reciprocating-members-table-body" class="divide-y divide-gray-100 dark:divide-gray-800">
                 <?php
                 $counter = $offset + 1;
                 if (!empty($members)) :
@@ -338,7 +338,7 @@ $status_classes = [
                 <?php
                     endforeach;
                 else:
-                    echo '<tr id="no-members-row"><td colspan="8" class="px-4 py-4 text-center text-gray-600 dark:text-white">No members found.</td></tr>';
+                    echo '<tr id="no-reciprocating-members-row"><td colspan="8" class="px-4 py-4 text-center text-gray-600 dark:text-white">No members found.</td></tr>';
                 endif;
                 ?>
             </tbody>

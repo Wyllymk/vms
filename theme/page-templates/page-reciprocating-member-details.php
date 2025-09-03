@@ -1,6 +1,6 @@
 <?php
 /**
- * The template for displaying the guest details page
+ * The template for displaying reciprocating member details page
  *
  * @package Visitor_Management_System
  */
@@ -22,29 +22,29 @@ if ( ! ( current_user_can( 'administrator' ) || current_user_can( 'general_manag
 }
 
 // ===============================================
-// MAIN PAGE LOGIC (place this at the top of your page)
+// MAIN PAGE LOGIC
 // ===============================================
 
 global $wpdb;
 
 // WordPress table prefix
-$guests_table       = $wpdb->prefix . 'vms_guests';
-$guest_visits_table = $wpdb->prefix . 'vms_guest_visits';
-$wp_users_table     = $wpdb->users;
+$recip_members_table = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::RECIP_MEMBERS_TABLE);
+$recip_visits_table = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::RECIP_MEMBERS_VISITS_TABLE);
+$recip_clubs_table = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::RECIP_CLUBS_TABLE);
 
-// Get guest_id from URL
-$guest_id = isset($_GET['guest_id']) ? absint($_GET['guest_id']) : 0;
-if (!$guest_id) {
-    wp_die('Invalid guest ID.');
+// Get member_id from URL
+$member_id = isset($_GET['member_id']) ? absint($_GET['member_id']) : 0;
+if (!$member_id) {
+    wp_die('Invalid member ID.');
 }
 
-// Get guest details
-$guest = $wpdb->get_row(
-    $wpdb->prepare("SELECT * FROM $guests_table WHERE id = %d", $guest_id)
+// Get member details
+$member = $wpdb->get_row(
+    $wpdb->prepare("SELECT rm.*, rc.club_name FROM $recip_members_table rm LEFT JOIN $recip_clubs_table rc ON rm.reciprocating_club_id = rc.id WHERE rm.id = %d", $member_id)
 );
 
-if (!$guest) {
-    wp_die('Guest not found.');
+if (!$member) {
+    wp_die('Member not found.');
 }
 
 // Pagination parameters with proper validation
@@ -55,9 +55,9 @@ if (!in_array($per_page, [10, 25, 50])) {
 $paged = isset($_GET['paged']) ? max(1, intval($_GET['paged'])) : 1;
 $offset = ($paged - 1) * $per_page;
 
-// Count total visits for this guest from guest_visits table
+// Count total visits for this member
 $total_visits = $wpdb->get_var(
-    $wpdb->prepare("SELECT COUNT(*) FROM $guest_visits_table WHERE guest_id = %d", $guest_id)
+    $wpdb->prepare("SELECT COUNT(*) FROM $recip_visits_table WHERE member_id = %d", $member_id)
 );
 
 // Ensure we have a valid total_visits count
@@ -72,17 +72,17 @@ if ($paged > $total_pages) {
     $offset = ($paged - 1) * $per_page;
 }
 
-// Get paged visits with proper ordering from guest_visits table
+// Get paged visits with proper ordering
 $visits = [];
 if ($total_visits > 0) {
     $visits = $wpdb->get_results(
         $wpdb->prepare("
-            SELECT gv.*, gv.id as visit_id
-            FROM $guest_visits_table gv
-            WHERE gv.guest_id = %d
-            ORDER BY gv.visit_date DESC, gv.created_at DESC
+            SELECT rmv.*, rmv.id as visit_id
+            FROM $recip_visits_table rmv
+            WHERE rmv.member_id = %d
+            ORDER BY rmv.visit_date DESC, rmv.created_at DESC
             LIMIT %d OFFSET %d
-        ", $guest_id, $per_page, $offset)
+        ", $member_id, $per_page, $offset)
     );
 }
 
@@ -90,7 +90,7 @@ if ($total_visits > 0) {
 $current_start = $total_visits > 0 ? ($paged - 1) * $per_page + 1 : 0;
 $row_number = $current_start;
 
-// Build compact pagination array (1, ..., current-1, current, current+1, ..., last)
+// Build compact pagination array
 $pages_to_show = [];
 if ($total_pages > 0) {
     $pages_to_show = [1];
@@ -118,91 +118,182 @@ $status_classes = [
     'cancelled'  => 'bg-gray-100 text-gray-700 dark:bg-white/5 dark:text-white/80'
 ];
 
-
-// Handle canceling a guest visit
-if ( isset($_POST['cancel_visit']) && isset($_POST['visit_id']) ) {
-   
-    // Verify nonce for security
-    if ( ! isset($_POST['cancel_visit_nonce']) ||
-         ! wp_verify_nonce($_POST['cancel_visit_nonce'], 'cancel_visit_action') ) {
-        wp_die(__('Security check failed. Please try again.', 'vms'));
-    }
-   
-    $visit_id = intval($_POST['visit_id']);
-   
-    if ( $visit_id > 0 ) {
-        global $wpdb;
+// Handle AJAX requests
+if (wp_doing_ajax()) {
+    
+    // Update member details
+    if (isset($_POST['action']) && $_POST['action'] === 'update_recip_member') {
+        check_ajax_referer('update_recip_member_nonce', 'nonce');
         
-        // Get the visit details before cancelling
-        $visit = $wpdb->get_row($wpdb->prepare(
-            "SELECT guest_id, host_member_id, visit_date FROM $guest_visits_table WHERE id = %d",
-            $visit_id
+        $member_id = intval($_POST['member_id']);
+        $first_name = sanitize_text_field($_POST['first_name']);
+        $last_name = sanitize_text_field($_POST['last_name']);
+        $email = sanitize_email($_POST['email']);
+        $phone_number = sanitize_text_field($_POST['phone_number']);
+        $id_number = sanitize_text_field($_POST['id_number']);
+        $member_status = sanitize_text_field($_POST['member_status']);
+        $receive_messages = isset($_POST['receive_messages']) ? 'yes' : 'no';
+        $receive_emails = isset($_POST['receive_emails']) ? 'yes' : 'no';
+        
+        // Validation
+        $errors = [];
+        if (empty($first_name)) $errors[] = 'First name is required';
+        if (empty($last_name)) $errors[] = 'Last name is required';
+        if (empty($id_number)) $errors[] = 'ID number is required';
+        if (!in_array($member_status, ['active', 'suspended', 'banned'])) $errors[] = 'Invalid status';
+        
+        if (!empty($errors)) {
+            wp_send_json_error(['message' => implode(', ', $errors)]);
+        }
+        
+        $updated = $wpdb->update(
+            $recip_members_table,
+            [
+                'first_name' => $first_name,
+                'last_name' => $last_name,
+                'email' => $email,
+                'phone_number' => $phone_number,
+                'id_number' => $id_number,
+                'member_status' => $member_status,
+                'receive_messages' => $receive_messages,
+                'receive_emails' => $receive_emails
+            ],
+            ['id' => $member_id],
+            ['%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s'],
+            ['%d']
+        );
+        
+        if ($updated !== false) {
+            wp_send_json_success(['message' => 'Member updated successfully']);
+        } else {
+            wp_send_json_error(['message' => 'Failed to update member']);
+        }
+    }
+    
+    // Delete member
+    if (isset($_POST['action']) && $_POST['action'] === 'delete_recip_member') {
+        check_ajax_referer('delete_recip_member_nonce', 'nonce');
+        
+        $member_id = intval($_POST['member_id']);
+        
+        $deleted = $wpdb->delete($recip_members_table, ['id' => $member_id], ['%d']);
+        
+        if ($deleted) {
+            wp_send_json_success(['message' => 'Member deleted successfully', 'redirect' => admin_url('admin.php?page=reciprocating-members')]);
+        } else {
+            wp_send_json_error(['message' => 'Failed to delete member']);
+        }
+    }
+    
+    // Register new visit
+    if (isset($_POST['action']) && $_POST['action'] === 'register_recip_visit') {
+        check_ajax_referer('register_recip_visit_nonce', 'nonce');
+        
+        $member_id = intval($_POST['member_id']);
+        $visit_date = sanitize_text_field($_POST['visit_date']);
+        $courtesy = sanitize_text_field($_POST['courtesy']);
+        
+        // Validation
+        $errors = [];
+        if (empty($visit_date)) $errors[] = 'Visit date is required';
+        if (!empty($errors)) {
+            wp_send_json_error(['message' => implode(', ', $errors)]);
+        }
+        
+        // Check if visit already exists for this date
+        $existing = $wpdb->get_var($wpdb->prepare(
+            "SELECT id FROM $recip_visits_table WHERE member_id = %d AND visit_date = %s",
+            $member_id, $visit_date
         ));
         
-        if (!$visit) {
-            wp_die(__('Visit not found.', 'vms'));
+        if ($existing) {
+            wp_send_json_error(['message' => 'Visit already registered for this date']);
         }
-       
-        // Update visit status to cancelled
-        $updated = $wpdb->update(
-            $guest_visits_table,
-            array( 'status' => 'cancelled' ),
-            array( 'id' => $visit_id ),
-            array( '%s' ),
-            array( '%d' )
+        
+        $inserted = $wpdb->insert(
+            $recip_visits_table,
+            [
+                'member_id' => $member_id,
+                'courtesy' => $courtesy,
+                'visit_date' => $visit_date,
+                'status' => 'approved',
+                'sign_in_time' => current_time('mysql')
+            ],
+            ['%d', '%s', '%s', '%s', '%s']
         );
-       
-        if ( $updated !== false ) {
-            // Trigger automatic status recalculation for the guest
-            VMS_CoreManager::recalculate_guest_visit_statuses($visit->guest_id);
-            
-            // Also recalculate host's daily limits for that date
-            if ($visit->host_member_id) {
-                VMS_CoreManager::recalculate_host_daily_limits($visit->host_member_id, $visit->visit_date);
-            }
-            
-            // Success message or redirect
-            wp_safe_redirect( add_query_arg('visit_cancelled', '1', wp_get_referer()) );
-            exit;
+        
+        if ($inserted) {
+            wp_send_json_success(['message' => 'Visit registered successfully']);
         } else {
-            wp_die(__('Failed to cancel visit. Please try again.', 'vms'));
+            wp_send_json_error(['message' => 'Failed to register visit']);
         }
-    } else {
-        wp_die(__('Invalid visit ID.', 'vms'));
+    }
+    
+    // Cancel visit
+    if (isset($_POST['action']) && $_POST['action'] === 'cancel_recip_visit') {
+        check_ajax_referer('cancel_recip_visit_nonce', 'nonce');
+        
+        $visit_id = intval($_POST['visit_id']);
+        
+        $updated = $wpdb->update(
+            $recip_visits_table,
+            ['status' => 'cancelled'],
+            ['id' => $visit_id],
+            ['%s'],
+            ['%d']
+        );
+        
+        if ($updated !== false) {
+            wp_send_json_success(['message' => 'Visit cancelled successfully']);
+        } else {
+            wp_send_json_error(['message' => 'Failed to cancel visit']);
+        }
     }
 }
 
 get_header();
 ?>
 
-<section id="primary" x-data="{ page: 'guest-details', 'isVisitInfoModal': false}"
-    @close-guest-modal.window="isVisitInfoModal = false">
+<section id="primary" x-data="{ page: 'reciprocating-member-details', 'isVisitInfoModal': false}"
+    @close-visit-modal.window="isVisitInfoModal = false">
     <main id="main">
-        <!-- ===== Page Wrapper Start ===== -->
+        <!-- Page Wrapper Start -->
         <div class="flex h-screen overflow-hidden">
-            <!-- ===== Sidebar Start ===== -->
+            <!-- Sidebar Start -->
             <?php get_template_part('template-parts/content/content', 'sidebar'); ?>
-            <!-- ===== Sidebar End ===== -->
+            <!-- Sidebar End -->
 
-            <!-- ===== Content Area Start ===== -->
+            <!-- Content Area Start -->
             <div class="relative flex flex-col flex-1 overflow-x-hidden overflow-y-auto">
                 <!-- Small Device Overlay Start -->
                 <?php get_template_part('template-parts/content/content', 'overlay'); ?>
                 <!-- Small Device Overlay End -->
 
-                <!-- ===== Header Start ===== -->
+                <!-- Header Start -->
                 <?php get_template_part('template-parts/content/content', 'header'); ?>
-                <!-- ===== Header End ===== -->
+                <!-- Header End -->
 
-                <!-- ===== Main Content Start ===== -->
+                <!-- Main Content Start -->
                 <main>
-
                     <div class="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
                         <!-- Breadcrumb Start -->
-                        <div x-data="{ pageName: `Guest-details`}">
+                        <div x-data="{ pageName: `Reciprocating Member Details`}">
                             <?php get_template_part( 'template-parts/content/content', 'breadcrumb' ); ?>
                         </div>
                         <!-- Breadcrumb End -->
+
+                        <!-- Success/Error Messages -->
+                        <div id="message-container" class="hidden mb-4">
+                            <div id="success-message"
+                                class="hidden bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                                <span id="success-text"></span>
+                            </div>
+                            <div id="error-message"
+                                class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                                <span id="error-text"></span>
+                            </div>
+                        </div>
+
                         <div class="py-8 mx-auto">
                             <div class="flex justify-center">
                                 <div class="w-full lg:w-5/6 xl:4/5 2xl:3/4">
@@ -214,7 +305,7 @@ get_header();
                                             class="flex items-center justify-between px-6 py-4 cursor-pointer">
                                             <h3
                                                 class="text-lg font-semibold font-oswald text-regal-blue dark:text-white">
-                                                <?php esc_html_e( 'Personal Information', 'vms' ); ?>
+                                                Personal Information
                                             </h3>
                                             <!-- SVG arrow icon -->
                                             <svg :class="{'rotate-180': open}"
@@ -225,19 +316,18 @@ get_header();
                                                     d="M19 9l-7 7-7-7" />
                                             </svg>
                                         </div>
+
                                         <!-- Collapsible content section -->
-                                        <!-- In the Personal Information section -->
                                         <div x-show="open" x-transition
                                             class="p-6 border-t border-gray-200 dark:border-gray-700">
-                                            <form id="guest-update-form" action="" method="post"
-                                                enctype="multipart/form-data">
+                                            <form id="member-update-form">
                                                 <div class="-mx-2.5 flex flex-wrap gap-y-4">
 
                                                     <!-- First Name -->
                                                     <div class="w-full px-2.5 md:w-1/2">
                                                         <label for="fname"
                                                             class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                                            <?php esc_html_e('First Name:', 'vms'); ?>
+                                                            First Name:
                                                         </label>
                                                         <div class="relative">
                                                             <span
@@ -252,7 +342,7 @@ get_header();
                                                             </span>
                                                             <input type="text" id="fname" name="first_name"
                                                                 placeholder="First Name"
-                                                                value="<?php echo esc_attr($guest->first_name ?? ''); ?>"
+                                                                value="<?php echo esc_attr($member->first_name ?? ''); ?>"
                                                                 class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pl-20 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" />
                                                         </div>
                                                     </div>
@@ -261,7 +351,7 @@ get_header();
                                                     <div class="w-full px-2.5 md:w-1/2">
                                                         <label for="lname"
                                                             class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                                            <?php esc_html_e('Last Name:', 'vms'); ?>
+                                                            Last Name:
                                                         </label>
                                                         <div class="relative">
                                                             <span
@@ -276,7 +366,7 @@ get_header();
                                                             </span>
                                                             <input type="text" id="lname" name="last_name"
                                                                 placeholder="Last Name"
-                                                                value="<?php echo esc_attr($guest->last_name ?? ''); ?>"
+                                                                value="<?php echo esc_attr($member->last_name ?? ''); ?>"
                                                                 class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pl-20 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" />
                                                         </div>
                                                     </div>
@@ -285,7 +375,7 @@ get_header();
                                                     <div class="w-full px-2.5 md:w-1/2">
                                                         <label for="email"
                                                             class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                                            <?php esc_html_e( 'Email:', 'vms' ); ?>
+                                                            Email:
                                                         </label>
                                                         <div class="relative">
                                                             <span
@@ -297,9 +387,9 @@ get_header();
                                                                         fill="#667085" />
                                                                 </svg>
                                                             </span>
-                                                            <input type="text" id="email" name="email"
+                                                            <input type="email" id="email" name="email"
                                                                 placeholder="info@example.com"
-                                                                value="<?php echo esc_attr($guest->email ?? ''); ?>"
+                                                                value="<?php echo esc_attr($member->email ?? ''); ?>"
                                                                 class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pl-20 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" />
                                                         </div>
                                                     </div>
@@ -308,24 +398,20 @@ get_header();
                                                     <div class="w-full px-2.5 md:w-1/2">
                                                         <label for="pnumber"
                                                             class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                                            <?php esc_html_e( 'Phone Number:', 'vms' ); ?>
+                                                            Phone Number:
                                                         </label>
-
                                                         <div class="relative">
                                                             <span
                                                                 class="absolute top-1/2 left-0 -translate-y-1/2 border-r border-gray-200 px-3 md:px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
-                                                                <!-- Phone SVG -->
                                                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none"
                                                                     viewBox="0 0 24 24" stroke-width="1"
                                                                     stroke="currentColor" class="size-6">
                                                                     <path stroke-linecap="round" stroke-linejoin="round"
                                                                         d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
                                                                 </svg>
-
                                                             </span>
-
                                                             <input id="pnumber" name="phone_number" type="tel"
-                                                                value="<?php echo esc_attr($guest->phone_number ?? ''); ?>"
+                                                                value="<?php echo esc_attr($member->phone_number ?? ''); ?>"
                                                                 placeholder="+254 703 000 000"
                                                                 class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent py-3 pr-4 pl-20 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" />
                                                         </div>
@@ -335,12 +421,11 @@ get_header();
                                                     <div class="w-full px-2.5 md:w-1/2">
                                                         <label for="id_number"
                                                             class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                                            <?php esc_html_e('ID Number:', 'vms'); ?>
+                                                            ID Number:
                                                         </label>
                                                         <div class="relative">
                                                             <span
                                                                 class="absolute top-1/2 left-0 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
-                                                                <!-- ID card icon -->
                                                                 <svg class="fill-current" width="20" height="20"
                                                                     viewBox="0 0 24 24" fill="none"
                                                                     xmlns="http://www.w3.org/2000/svg">
@@ -353,24 +438,75 @@ get_header();
                                                                         stroke-width="2" stroke-linecap="round" />
                                                                 </svg>
                                                             </span>
-                                                            <input type="number" id="id_number" name="id_number"
+                                                            <input type="text" id="id_number" name="id_number"
                                                                 placeholder="33612365"
-                                                                value="<?php echo esc_attr($guest->id_number ?? ''); ?>"
+                                                                value="<?php echo esc_attr($member->id_number ?? ''); ?>"
                                                                 class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pl-20 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" />
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Member Number -->
+                                                    <div class="w-full px-2.5 md:w-1/2">
+                                                        <label for="member_number"
+                                                            class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                                                            Member Number:
+                                                        </label>
+                                                        <div class="relative">
+                                                            <span
+                                                                class="absolute top-1/2 left-0 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
+                                                                <svg class="fill-current" width="20" height="20"
+                                                                    viewBox="0 0 24 24" fill="none"
+                                                                    xmlns="http://www.w3.org/2000/svg">
+                                                                    <path
+                                                                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                                        stroke="currentColor" stroke-width="2"
+                                                                        fill="none" stroke-linecap="round"
+                                                                        stroke-linejoin="round" />
+                                                                </svg>
+                                                            </span>
+                                                            <input type="text" id="member_number"
+                                                                name="reciprocating_member_number" placeholder="RM001"
+                                                                value="<?php echo esc_attr($member->reciprocating_member_number ?? ''); ?>"
+                                                                class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pl-20 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" />
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Club -->
+                                                    <div class="w-full px-2.5 md:w-1/2">
+                                                        <label for="club_name"
+                                                            class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                                                            Club:
+                                                        </label>
+                                                        <div class="relative">
+                                                            <span
+                                                                class="absolute top-1/2 left-0 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
+                                                                <svg class="fill-current" width="20" height="20"
+                                                                    viewBox="0 0 24 24" fill="none"
+                                                                    xmlns="http://www.w3.org/2000/svg">
+                                                                    <path
+                                                                        d="M19 21v-2a4 4 0 00-4-4H9a4 4 0 00-4 4v2M16 3.13a4 4 0 010 7.75M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                                                                        stroke="currentColor" stroke-width="2"
+                                                                        fill="none" stroke-linecap="round"
+                                                                        stroke-linejoin="round" />
+                                                                </svg>
+                                                            </span>
+                                                            <input type="text" id="club_name" name="club_name"
+                                                                placeholder="Club Name" readonly
+                                                                value="<?php echo esc_attr($member->club_name ?? ''); ?>"
+                                                                class="dark:bg-dark-900 shadow-theme-xs h-11 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2.5 pl-20 text-sm text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400" />
                                                         </div>
                                                     </div>
 
                                                     <!-- Status -->
                                                     <div class="w-full px-2.5 md:w-1/2">
-                                                        <label for="guest_status"
+                                                        <label for="member_status"
                                                             class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                                            <?php esc_html_e('Status:', 'vms'); ?>
+                                                            Status:
                                                         </label>
                                                         <div x-data="{ isOptionSelected: false }"
                                                             class="relative z-20 bg-transparent">
                                                             <span
                                                                 class="absolute top-1/2 left-0 -translate-y-1/2 border-r border-gray-200 px-3.5 md:px-4 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
-                                                                <!-- Status badge icon -->
                                                                 <svg class="stroke-current" width="20" height="20"
                                                                     viewBox="0 0 24 24" fill="none"
                                                                     xmlns="http://www.w3.org/2000/svg">
@@ -381,25 +517,23 @@ get_header();
                                                                         stroke-linejoin="round" />
                                                                 </svg>
                                                             </span>
-
-                                                            <select id="guest_status" name="guest_status"
+                                                            <select id="member_status" name="member_status"
                                                                 class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none pl-20 pr-11 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
                                                                 :class="isOptionSelected && 'text-gray-800 dark:text-white/90'"
                                                                 @change="isOptionSelected = true">
                                                                 <option value="active"
-                                                                    <?php selected($guest->guest_status ?? '', 'active'); ?>>
-                                                                    <?php esc_html_e('Active', 'vms'); ?>
+                                                                    <?php selected($member->member_status ?? '', 'active'); ?>>
+                                                                    Active
                                                                 </option>
                                                                 <option value="suspended"
-                                                                    <?php selected($guest->guest_status ?? '', 'suspended'); ?>>
-                                                                    <?php esc_html_e('Suspended', 'vms'); ?>
+                                                                    <?php selected($member->member_status ?? '', 'suspended'); ?>>
+                                                                    Suspended
                                                                 </option>
                                                                 <option value="banned"
-                                                                    <?php selected($guest->guest_status ?? '', 'banned'); ?>>
-                                                                    <?php esc_html_e('Banned', 'vms'); ?>
+                                                                    <?php selected($member->member_status ?? '', 'banned'); ?>>
+                                                                    Banned
                                                                 </option>
                                                             </select>
-
                                                             <!-- Dropdown arrow -->
                                                             <span
                                                                 class="pointer-events-none absolute top-1/2 right-4 z-30 -translate-y-1/2 text-gray-500 dark:text-gray-400">
@@ -415,102 +549,93 @@ get_header();
                                                         </div>
                                                     </div>
 
-
                                                     <!-- Communication Preferences -->
                                                     <div class="w-full px-2.5">
                                                         <hr class="my-4 border-gray-300 dark:border-gray-600">
                                                         <div class="mb-4"
-                                                            x-data="{ switcherToggle: <?php echo ($guest->receive_messages ?? 'no') === 'yes' ? 'true' : 'false'; ?> }">
-
+                                                            x-data="{ switcherToggle: <?php echo ($member->receive_messages ?? 'no') === 'yes' ? 'true' : 'false'; ?> }">
                                                             <label for="receive_messages"
                                                                 class="flex cursor-pointer items-center gap-3 text-sm font-medium text-gray-700 select-none dark:text-gray-400">
-
                                                                 <div class="relative">
                                                                     <input type="checkbox" id="receive_messages"
                                                                         name="receive_messages" value="yes"
                                                                         class="sr-only"
-                                                                        <?php checked($guest->receive_messages ?? 'no', 'yes'); ?>
+                                                                        <?php checked($member->receive_messages ?? 'no', 'yes'); ?>
                                                                         x-model="switcherToggle" />
-
                                                                     <!-- Track -->
                                                                     <div class="block h-6 w-11 rounded-full"
                                                                         :class="switcherToggle ? 'bg-brand-500 dark:bg-brand-500' : 'bg-gray-200 dark:bg-white/10'">
                                                                     </div>
-
                                                                     <!-- Knob -->
                                                                     <div class="shadow-theme-sm absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white duration-300 ease-linear"
                                                                         :class="switcherToggle ? 'translate-x-full' : 'translate-x-0'">
                                                                     </div>
                                                                 </div>
-                                                                <?php esc_html_e( 'Receive Messages?', 'vms' ); ?>
+                                                                Receive Messages?
                                                             </label>
                                                         </div>
 
                                                         <div class="mb-4"
-                                                            x-data="{ switcherToggle: <?php echo ($guest->receive_emails ?? 'no') === 'yes' ? 'true' : 'false'; ?> }">
+                                                            x-data="{ switcherToggle: <?php echo ($member->receive_emails ?? 'no') === 'yes' ? 'true' : 'false'; ?> }">
                                                             <label for="receive_emails"
                                                                 class="flex cursor-pointer items-center gap-3 text-sm font-medium text-gray-700 select-none dark:text-gray-400">
-
                                                                 <div class="relative">
                                                                     <input type="checkbox" id="receive_emails"
                                                                         name="receive_emails" value="yes"
                                                                         class="sr-only"
-                                                                        <?php checked($guest->receive_emails ?? 'no', 'yes'); ?>
+                                                                        <?php checked($member->receive_emails ?? 'no', 'yes'); ?>
                                                                         x-model="switcherToggle" />
-
                                                                     <!-- Track -->
                                                                     <div class="block h-6 w-11 rounded-full"
                                                                         :class="switcherToggle ? 'bg-brand-500 dark:bg-brand-500' : 'bg-gray-200 dark:bg-white/10'">
                                                                     </div>
-
                                                                     <!-- Knob -->
                                                                     <div class="shadow-theme-sm absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white duration-300 ease-linear"
                                                                         :class="switcherToggle ? 'translate-x-full' : 'translate-x-0'">
                                                                     </div>
                                                                 </div>
-                                                                <?php esc_html_e( 'Receive Emails?', 'vms' ); ?>
+                                                                Receive Emails?
                                                             </label>
                                                         </div>
                                                     </div>
                                                 </div>
 
                                                 <div class="flex flex-col md:flex-row justify-center mt-4 gap-2">
-                                                    <input type="hidden" name="guest_id"
-                                                        value="<?php echo esc_attr($guest_id); ?>">
-                                                    <button type="submit" name="update_guest" id="update-guest-btn"
+                                                    <input type="hidden" name="member_id"
+                                                        value="<?php echo esc_attr($member_id); ?>">
+                                                    <button type="submit" id="update-member-btn"
                                                         class="inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600 cursor-pointer">
-                                                        <?php esc_html_e( 'Update Guest', 'vms' ); ?>
+                                                        Update Member
                                                     </button>
                                                     <button type="reset"
                                                         class="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs ring-1 ring-inset ring-gray-300 transition hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-white/[0.03] cursor-pointer">
-                                                        <?php esc_html_e( 'Reset', 'vms' ); ?>
+                                                        Reset
                                                     </button>
-                                                    <button type="submit" name="delete_guest" id="delete-guest-btn"
-                                                        data-guest-name="<?php echo $guest->first_name; ?>"
+                                                    <button type="button" id="delete-member-btn"
+                                                        data-member-name="<?php echo esc_attr($member->first_name); ?>"
                                                         class="px-4 py-2 text-white bg-error-500 rounded-lg hover:bg-error-600 inline-flex items-center justify-center gap-2 shadow-theme-xs transition cursor-pointer">
-                                                        <?php esc_html_e( 'Delete Guest', 'vms' ); ?>
+                                                        Delete Member
                                                     </button>
                                                 </div>
                                             </form>
-
                                         </div>
                                     </div>
                                     <!-- End of Personal Information Section -->
 
                                     <!-- Visits Section -->
-                                    <div class="mt-10" id="payment">
+                                    <div class="mt-10" id="visits-section">
                                         <div
                                             class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
                                             <div class="flex items-center justify-between px-5 py-4 sm:px-6 sm:py-5">
                                                 <h3 class="text-base font-medium text-gray-800 dark:text-white/90">
-                                                    <?php esc_html_e('Guest Visits -', 'vms'); ?>
-                                                    <?php echo esc_html($guest->first_name . ' ' . $guest->last_name); ?>
+                                                    Member Visits -
+                                                    <?php echo esc_html($member->first_name . ' ' . $member->last_name); ?>
                                                 </h3>
                                                 <div class="flex items-center justify-end w-full md:w-1/2">
-                                                    <a @click="isVisitInfoModal = true"
+                                                    <button type="button" @click="isVisitInfoModal = true"
                                                         class="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg cursor-pointer bg-brand-500 shadow-theme-xs hover:bg-brand-600">
-                                                        <?php esc_html_e('Register New Visit', 'vms'); ?>
-                                                    </a>
+                                                        Register New Visit
+                                                    </button>
                                                 </div>
                                             </div>
 
@@ -564,73 +689,58 @@ get_header();
                                                     </div>
 
                                                     <div class="max-w-full overflow-x-auto">
-                                                        <div id="visits-table" class="min-w-[1102px]">
+                                                        <div id="visits-table" class="min-w-[900px]">
                                                             <!-- Table Header -->
                                                             <div id="visits-header"
-                                                                class="grid grid-cols-12 border-t border-gray-200 dark:border-gray-800">
+                                                                class="grid grid-cols-10 border-t border-gray-200 dark:border-gray-800">
                                                                 <!-- # -->
                                                                 <div
                                                                     class="col-span-1 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
                                                                     <p
                                                                         class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
-                                                                        <?php esc_html_e( '#', 'vms' ); ?>
-                                                                    </p>
+                                                                        #</p>
                                                                 </div>
-                                                                <!-- Host Member -->
+                                                                <!-- Courtesy -->
                                                                 <div
                                                                     class="col-span-2 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
                                                                     <p
                                                                         class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
-                                                                        <?php esc_html_e( 'Host Member', 'vms' ); ?>
-                                                                    </p>
+                                                                        Courtesy</p>
                                                                 </div>
                                                                 <!-- Visit Date -->
                                                                 <div
                                                                     class="col-span-2 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
                                                                     <p
                                                                         class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
-                                                                        <?php esc_html_e( 'Visit Date', 'vms' ); ?>
-                                                                    </p>
+                                                                        Visit Date</p>
                                                                 </div>
                                                                 <!-- Sign In Time -->
                                                                 <div
                                                                     class="col-span-1 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
                                                                     <p
                                                                         class="whitespace-nowrap text-theme-xs font-medium text-gray-700 dark:text-gray-400">
-                                                                        <?php esc_html_e( 'Sign In Time', 'vms' ); ?>
-                                                                    </p>
+                                                                        Sign In</p>
                                                                 </div>
                                                                 <!-- Sign Out Time -->
                                                                 <div
                                                                     class="col-span-1 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
                                                                     <p
                                                                         class="whitespace-nowrap text-theme-xs font-medium text-gray-700 dark:text-gray-400">
-                                                                        <?php esc_html_e( 'Sign Out Time', 'vms' ); ?>
-                                                                    </p>
-                                                                </div>
-                                                                <!-- Duration -->
-                                                                <div
-                                                                    class="col-span-1 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
-                                                                    <p
-                                                                        class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
-                                                                        <?php esc_html_e( 'Duration', 'vms' ); ?>
-                                                                    </p>
+                                                                        Sign Out</p>
                                                                 </div>
                                                                 <!-- Status -->
                                                                 <div
                                                                     class="col-span-2 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
                                                                     <p
                                                                         class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
-                                                                        <?php esc_html_e( 'Status', 'vms' ); ?>
-                                                                    </p>
+                                                                        Status</p>
                                                                 </div>
                                                                 <!-- Action -->
                                                                 <div
-                                                                    class="col-span-2 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
+                                                                    class="col-span-1 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
                                                                     <p
                                                                         class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
-                                                                        <?php esc_html_e( 'Action', 'vms' ); ?>
-                                                                    </p>
+                                                                        Action</p>
                                                                 </div>
                                                             </div>
 
@@ -639,7 +749,7 @@ get_header();
                                                                 <?php if (!empty($visits)): ?>
                                                                 <?php foreach ($visits as $visit): ?>
                                                                 <div id="visit-div-<?php echo esc_attr($visit->id); ?>"
-                                                                    class="grid grid-cols-12 border-y border-gray-100 dark:border-gray-800">
+                                                                    class="grid grid-cols-10 border-y border-gray-100 dark:border-gray-800">
                                                                     <!-- Row Number -->
                                                                     <div
                                                                         class="col-span-1 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
@@ -649,39 +759,13 @@ get_header();
                                                                         </p>
                                                                     </div>
 
-                                                                    <!-- Host -->
+                                                                    <!-- Courtesy -->
                                                                     <div
                                                                         class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
-                                                                        <?php
-                                                                            $host_display = 'N/A';
-                                                                            if (!empty($visit->host_member_id)) {
-                                                                                $host_user = get_userdata($visit->host_member_id);
-                                                                                if ($host_user) {
-                                                                                    $first_name = get_user_meta($visit->host_member_id, 'first_name', true);
-                                                                                    $last_name = get_user_meta($visit->host_member_id, 'last_name', true);
-                                                                                    $host_display = (!empty($first_name) || !empty($last_name))
-                                                                                        ? trim($first_name . ' ' . $last_name)
-                                                                                        : $host_user->user_login;
-                                                                                }
-                                                                            } elseif( !empty($visit->courtesy)) {
-                                                                                $host_display = $visit->courtesy;                                                                                
-                                                                            }
-                                                                            $is_courtesy = empty($host_member_id) && !empty($visit->courtesy);
-                                                                           
-                                                                        ?>
-                                                                        <div class="flex items-center">
-                                                                            <?php if ($is_courtesy): ?>
-                                                                            <span
-                                                                                class="inline-flex items-center justify-center gap-1 rounded-full px-2.5 py-0.5 text-sm font-medium capitalize bg-blue-light-50 text-blue-light-500 dark:bg-blue-light-500/15 dark:text-blue-light-500">
-                                                                                <?php esc_html_e('Courtesy!', 'vms'); ?>
-                                                                            </span>
-                                                                            <?php else: ?>
-                                                                            <p
-                                                                                class="text-gray-500 text-theme-sm dark:text-gray-400">
-                                                                                <?php echo esc_html($host_display); ?>
-                                                                            </p>
-                                                                            <?php endif; ?>
-                                                                        </div>
+                                                                        <p
+                                                                            class="text-theme-sm text-gray-700 dark:text-gray-400">
+                                                                            <?php echo esc_html($visit->courtesy ?: 'N/A'); ?>
+                                                                        </p>
                                                                     </div>
 
                                                                     <!-- Visit Date -->
@@ -711,15 +795,6 @@ get_header();
                                                                         </p>
                                                                     </div>
 
-                                                                    <!-- Duration -->
-                                                                    <div
-                                                                        class="col-span-1 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
-                                                                        <p
-                                                                            class="text-theme-sm text-gray-700 dark:text-gray-400">
-                                                                            <?php echo esc_html(VMS_CoreManager::calculate_duration($visit->sign_in_time, $visit->sign_out_time)); ?>
-                                                                        </p>
-                                                                    </div>
-
                                                                     <!-- Status -->
                                                                     <div
                                                                         class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
@@ -728,28 +803,23 @@ get_header();
                                                                             <?php echo esc_html($visit->status); ?>
                                                                         </span>
                                                                     </div>
+
                                                                     <!-- Action -->
                                                                     <div
-                                                                        class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
-                                                                        <form method="post"
-                                                                            onsubmit="return confirm('Are you sure you want to cancel this visit?');">
-                                                                            <input type="hidden" name="visit_id"
-                                                                                value="<?php echo esc_attr( $visit->visit_id ); ?>">
-                                                                            <?php wp_nonce_field( 'cancel_visit_action', 'cancel_visit_nonce' ); ?>
-                                                                            <button type="submit" name="cancel_visit"
-                                                                                class="px-3 py-1 text-xs font-medium text-white bg-red-500 rounded-lg hover:bg-red-600">
-                                                                                <?php esc_html_e( 'Cancel', 'vms' ); ?>
-                                                                            </button>
-                                                                        </form>
+                                                                        class="col-span-1 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
+                                                                        <button type="button"
+                                                                            onclick="cancelVisit(<?php echo esc_attr($visit->visit_id); ?>)"
+                                                                            class="px-3 py-1 text-xs font-medium text-white bg-red-500 rounded-lg hover:bg-red-600">
+                                                                            Cancel
+                                                                        </button>
                                                                     </div>
                                                                 </div>
                                                                 <?php endforeach; ?>
                                                                 <?php else: ?>
                                                                 <div id="no-visits-div"
                                                                     class="border-t border-gray-100 px-4 py-8 text-center dark:border-gray-800">
-                                                                    <p class="text-gray-500 dark:text-gray-400">
-                                                                        <?php esc_html_e( 'No visits found', 'vms' ); ?>
-                                                                    </p>
+                                                                    <p class="text-gray-500 dark:text-gray-400">No
+                                                                        visits found</p>
                                                                 </div>
                                                                 <?php endif; ?>
                                                             </div>
@@ -800,7 +870,6 @@ get_header();
                                                             $last_shown = 0;
                                                             foreach ($pages_to_show as $page_num):
                                                                 if ($last_shown && ($page_num - $last_shown) > 1):
-                                                                    // Show ellipsis
                                                                     ?>
                                                             <li>
                                                                 <span
@@ -854,16 +923,6 @@ get_header();
                                                         </span>
                                                         <?php endif; ?>
                                                     </div>
-                                                    <?php else: ?>
-                                                    <!-- No pagination needed, but show entry count -->
-                                                    <div class="px-6 py-4">
-                                                        <div
-                                                            class="text-sm text-gray-500 dark:text-gray-400 text-center">
-                                                            <?php if ($total_visits > 0): ?>
-                                                            Showing all <?php echo esc_html($total_visits); ?> entries
-                                                            <?php endif; ?>
-                                                        </div>
-                                                    </div>
                                                     <?php endif; ?>
 
                                                 </div>
@@ -876,20 +935,229 @@ get_header();
                         </div>
                     </div>
 
-                    <!-- BEGIN MODAL -->
-                    <?php get_template_part( 'template-parts/content/content', 'visit-modal' ); ?>
-                    <!-- END MODAL -->
+                    <!-- Visit Registration Modal -->
+                    <div x-show="isVisitInfoModal" x-transition.opacity class="fixed inset-0 z-50 overflow-y-auto"
+                        style="display: none;">
+                        <div class="flex items-center justify-center min-h-screen px-4">
+                            <div class="fixed inset-0 bg-black opacity-50" @click="isVisitInfoModal = false"></div>
+                            <div
+                                class="relative bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full mx-auto">
+                                <div class="p-6">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <h3 class="text-lg font-medium text-gray-900 dark:text-white">Register New Visit
+                                        </h3>
+                                        <button @click="isVisitInfoModal = false"
+                                            class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M6 18L18 6M6 6l12 12"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+
+                                    <form id="visit-registration-form">
+                                        <div class="space-y-4">
+                                            <div>
+                                                <label for="visit_date"
+                                                    class="block text-sm font-medium text-gray-700 dark:text-gray-300">Visit
+                                                    Date</label>
+                                                <input type="date" id="visit_date" name="visit_date" required
+                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                            </div>
+
+                                            <div>
+                                                <label for="courtesy"
+                                                    class="block text-sm font-medium text-gray-700 dark:text-gray-300">Courtesy
+                                                    (Optional)</label>
+                                                <input type="text" id="courtesy" name="courtesy"
+                                                    placeholder="Special courtesy or notes"
+                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-6 flex justify-end space-x-3">
+                                            <button type="button" @click="isVisitInfoModal = false"
+                                                class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 dark:bg-gray-600 dark:text-gray-300 dark:border-gray-500 dark:hover:bg-gray-700">
+                                                Cancel
+                                            </button>
+                                            <button type="submit"
+                                                class="px-4 py-2 text-sm font-medium text-white bg-brand-500 border border-transparent rounded-md hover:bg-brand-600">
+                                                Register Visit
+                                            </button>
+                                        </div>
+
+                                        <input type="hidden" name="member_id"
+                                            value="<?php echo esc_attr($member_id); ?>">
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Footer -->
                     <?php get_template_part('template-parts/content/content-footer', 'content'); ?>
 
                 </main>
-                <!-- ===== Main Content End ===== -->
+                <!-- Main Content End -->
             </div>
-            <!-- ===== Content Area End ===== -->
+            <!-- Content Area End -->
         </div>
     </main>
 </section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Update member form
+    document.getElementById('member-update-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        formData.append('action', 'update_recip_member');
+        formData.append('nonce', '<?php echo wp_create_nonce('update_recip_member_nonce'); ?>');
+
+        const updateBtn = document.getElementById('update-member-btn');
+        const originalText = updateBtn.textContent;
+        updateBtn.textContent = 'Updating...';
+        updateBtn.disabled = true;
+
+        fetch('<?php echo admin_url('admin-ajax.php'); ?>', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage('success', data.data.message);
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showMessage('error', data.data.message);
+                }
+            })
+            .catch(error => {
+                showMessage('error', 'An error occurred while updating the member');
+            })
+            .finally(() => {
+                updateBtn.textContent = originalText;
+                updateBtn.disabled = false;
+            });
+    });
+
+    // Delete member
+    document.getElementById('delete-member-btn').addEventListener('click', function() {
+        const memberName = this.dataset.memberName;
+        if (confirm(`Are you sure you want to delete ${memberName}? This action cannot be undone.`)) {
+            const formData = new FormData();
+            formData.append('action', 'delete_recip_member');
+            formData.append('member_id', '<?php echo $member_id; ?>');
+            formData.append('nonce', '<?php echo wp_create_nonce('delete_recip_member_nonce'); ?>');
+
+            fetch('<?php echo admin_url('admin-ajax.php'); ?>', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showMessage('success', data.data.message);
+                        setTimeout(() => {
+                            window.location.href = data.data.redirect;
+                        }, 1500);
+                    } else {
+                        showMessage('error', data.data.message);
+                    }
+                })
+                .catch(error => {
+                    showMessage('error', 'An error occurred while deleting the member');
+                });
+        }
+    });
+
+    // Visit registration form
+    document.getElementById('visit-registration-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        formData.append('action', 'register_recip_visit');
+        formData.append('nonce', '<?php echo wp_create_nonce('register_recip_visit_nonce'); ?>');
+
+        fetch('<?php echo admin_url('admin-ajax.php'); ?>', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage('success', data.data.message);
+                    // Close modal
+                    document.querySelector('[x-data]').__x.$data.isVisitInfoModal = false;
+                    // Reset form
+                    this.reset();
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showMessage('error', data.data.message);
+                }
+            })
+            .catch(error => {
+                showMessage('error', 'An error occurred while registering the visit');
+            });
+    });
+});
+
+// Cancel visit function
+function cancelVisit(visitId) {
+    if (confirm('Are you sure you want to cancel this visit?')) {
+        const formData = new FormData();
+        formData.append('action', 'cancel_recip_visit');
+        formData.append('visit_id', visitId);
+        formData.append('nonce', '<?php echo wp_create_nonce('cancel_recip_visit_nonce'); ?>');
+
+        fetch('<?php echo admin_url('admin-ajax.php'); ?>', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage('success', data.data.message);
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showMessage('error', data.data.message);
+                }
+            })
+            .catch(error => {
+                showMessage('error', 'An error occurred while cancelling the visit');
+            });
+    }
+}
+
+// Show success/error messages
+function showMessage(type, message) {
+    const container = document.getElementById('message-container');
+    const successDiv = document.getElementById('success-message');
+    const errorDiv = document.getElementById('error-message');
+    const successText = document.getElementById('success-text');
+    const errorText = document.getElementById('error-text');
+
+    // Hide all messages first
+    successDiv.classList.add('hidden');
+    errorDiv.classList.add('hidden');
+
+    if (type === 'success') {
+        successText.textContent = message;
+        successDiv.classList.remove('hidden');
+    } else {
+        errorText.textContent = message;
+        errorDiv.classList.remove('hidden');
+    }
+
+    container.classList.remove('hidden');
+
+    // Auto hide after 5 seconds
+    setTimeout(() => {
+        container.classList.add('hidden');
+    }, 5000);
+}
+</script>
 
 <?php
 get_footer();

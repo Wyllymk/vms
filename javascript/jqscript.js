@@ -1217,6 +1217,8 @@ jQuery(document).ready(function ($) {
 				if (response.success && response.data.memberData) {
 					const member = response.data.memberData;
 
+					console.log(member);
+
 					// Format visit date
 					let formattedDate = 'N/A';
 					if (member.visit_date) {
@@ -1262,7 +1264,7 @@ jQuery(document).ready(function ($) {
 					// Build row
 					const newRow = `
 						<tr data-member-id="${member.id}" data-visit-id="${member.visit_id}">
-						<td class="px-3 py-4 sm:px-6"><p class="text-gray-500 text-theme-sm dark:text-gray-400">${$('tbody tr').length + 1}</p></td>
+							<td class="px-3 py-4 sm:px-6"><p class="text-gray-500 text-theme-sm dark:text-gray-400">${$('tbody tr').length + 1}</p></td>
 							<td class="px-3 py-4 sm:px-6"><p class="text-gray-800 text-theme-sm dark:text-white/90">${member.first_name || 'N/A'}</p></td>
 							<td class="px-3 py-4 sm:px-6"><p class="text-gray-800 text-theme-sm dark:text-white/90">${member.last_name || 'N/A'}</p></td>
 							<td class="px-3 py-4 sm:px-6"><span class="inline-flex items-center justify-center px-2.5 gap-1 py-0.5 text-sm font-medium capitalize rounded-full ${statusClasses[member.status] || ''}">
@@ -1362,7 +1364,7 @@ jQuery(document).ready(function ($) {
                         <button id="ok-error-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">OK</button>
                     </div>
                 </div>
-            `;
+            	`;
 					$('body').append(errorModal);
 					$(document)
 						.off('click', '#ok-error-btn')
@@ -1507,22 +1509,22 @@ jQuery(document).ready(function ($) {
 			},
 			dataType: 'json',
 			success: function (response) {
-				if (response.success && response.data.guestData) {
-					const guest = response.data.guestData;
+				if (response.success) {
+					const member = response.data.memberData;
+					//console.log('Sign in successful:', response);
 
 					// Update row badge
 					const row = button.closest('tr');
 					const statusCell = row.find('td:nth-child(4) span');
-					statusCell.text('Approved');
+					statusCell.text('Signed In');
 
 					// Replace sign in button with sign out button
-					const newVisitId = guest.visit_id || visitId;
 					const signOutBtn = `
-					<button class="sign-out-btn inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition rounded-lg cursor-pointer whitespace-nowrap bg-purple-500 shadow-theme-xs hover:bg-purple-600"
-						data-visit-id="${newVisitId}" data-member-id="${guest.id}">
-						Sign Out
-					</button>
-					`;
+                    <button id="reciprocating-sign-out-button-${member.id}" class="sign-out-btn inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition rounded-lg cursor-pointer whitespace-nowrap bg-purple-500 shadow-theme-xs hover:bg-purple-600"
+                        data-visit-id="${member.visit_id}" data-member-id="${member.id}">
+                        Sign Out
+                    </button>
+                	`;
 					button.replaceWith(signOutBtn);
 
 					// Close modal
@@ -1535,16 +1537,15 @@ jQuery(document).ready(function ($) {
 
 					// Show success modal
 					const successMessage =
-						response.data.messages?.[0] ||
-						'Guest signed in successfully';
+						response.data.message ||
+						'Reciprocating Member signed in successfully';
 					showSuccessModal(successMessage);
 				} else {
 					console.error('Sign in failed:', response);
 					const errorMessage =
-						response.data?.messages?.join('<br>') ||
-						'Error signing in guest';
+						response.data?.message ||
+						'Error signing in Reciprocating Member';
 					showErrorModal(errorMessage);
-
 					$('.sign-in-confirm-modal-overlay').fadeOut(
 						300,
 						function () {
@@ -1556,10 +1557,9 @@ jQuery(document).ready(function ($) {
 			error: function (xhr, status, error) {
 				console.error('Sign in error:', error);
 				const errorMessage =
-					xhr.responseJSON?.data?.messages?.join('<br>') ||
+					xhr.responseJSON?.data?.message ||
 					'An error occurred: ' + error;
 				showErrorModal(errorMessage);
-
 				$('.sign-in-confirm-modal-overlay').fadeOut(300, function () {
 					$(this).remove();
 				});
@@ -1587,22 +1587,22 @@ jQuery(document).ready(function ($) {
 
 			// Show confirmation modal
 			const confirmModal = `
-		<div id="sign-out-confirm-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
-			<div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
-				<div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
-					<svg class="h-6 w-6 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-					</svg>
+				<div id="sign-out-confirm-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+					<div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+						<div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
+							<svg class="h-6 w-6 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+							</svg>
+						</div>
+						<h3 class="mb-2 text-lg font-medium text-gray-900 dark:text-white">Sign Out Reciprocating Member</h3>
+						<p class="mb-6 text-sm text-gray-500 dark:text-gray-400">Sign out "${memberName}" from the system?</p>
+						<div class="flex gap-3">
+							<button class="cancel-sign-out-btn flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">Cancel</button>
+							<button class="confirm-sign-out-btn flex-1 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600" data-visit-id="${visitId}">Sign Out</button>
+						</div>
+					</div>
 				</div>
-				<h3 class="mb-2 text-lg font-medium text-gray-900 dark:text-white">Sign Out Reciprocating Member</h3>
-				<p class="mb-6 text-sm text-gray-500 dark:text-gray-400">Sign out "${memberName}" from the system?</p>
-				<div class="flex gap-3">
-					<button class="cancel-sign-out-btn flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">Cancel</button>
-					<button class="confirm-sign-out-btn flex-1 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600" data-visit-id="${visitId}">Sign Out</button>
-				</div>
-			</div>
-		</div>
-	`;
+				`;
 			$('body').append(confirmModal);
 		}
 	);
@@ -3144,11 +3144,11 @@ jQuery(document).ready(function ($) {
 					// Build Sign Out button
 					const newVisitId = guest.visit_id || visitId;
 					const signOutBtn = `
-				<button id="sign-out-button-${guest.id}" data-visit-id="${newVisitId}"
-					class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition rounded-lg cursor-pointer whitespace-nowrap bg-purple-500 shadow-theme-xs hover:bg-purple-600">
-					Sign Out
-				</button>
-				`;
+					<button id="sign-out-button-${guest.id}" data-visit-id="${newVisitId}"
+						class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition rounded-lg cursor-pointer whitespace-nowrap bg-purple-500 shadow-theme-xs hover:bg-purple-600">
+						Sign Out
+					</button>
+					`;
 
 					// Replace the sign in button
 					button.replaceWith(signOutBtn);
