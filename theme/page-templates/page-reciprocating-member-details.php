@@ -119,8 +119,7 @@ $status_classes = [
 ];
 
 // Handle AJAX requests
-if (wp_doing_ajax()) {
-    
+if (wp_doing_ajax()) {    
     // Update member details
     if (isset($_POST['action']) && $_POST['action'] === 'update_recip_member') {
         check_ajax_referer('update_recip_member_nonce', 'nonce');
@@ -183,71 +182,56 @@ if (wp_doing_ajax()) {
         } else {
             wp_send_json_error(['message' => 'Failed to delete member']);
         }
+    }  
+}
+
+// Handle canceling a reciprocating member visit
+if ( isset($_POST['cancel_recip_visit']) && isset($_POST['visit_id']) ) {
+   
+    // Verify nonce for security
+    if ( ! isset($_POST['cancel_recip_visit_nonce']) ||
+         ! wp_verify_nonce($_POST['cancel_recip_visit_nonce'], 'cancel_recip_visit_action') ) {
+        wp_die(__('Security check failed. Please try again.', 'vms'));
     }
-    
-    // Register new visit
-    if (isset($_POST['action']) && $_POST['action'] === 'register_recip_visit') {
-        check_ajax_referer('register_recip_visit_nonce', 'nonce');
+   
+    $visit_id = intval($_POST['visit_id']);
+   
+    if ( $visit_id > 0 ) {
+        global $wpdb;
         
-        $member_id = intval($_POST['member_id']);
-        $visit_date = sanitize_text_field($_POST['visit_date']);
-        $courtesy = sanitize_text_field($_POST['courtesy']);
-        
-        // Validation
-        $errors = [];
-        if (empty($visit_date)) $errors[] = 'Visit date is required';
-        if (!empty($errors)) {
-            wp_send_json_error(['message' => implode(', ', $errors)]);
-        }
-        
-        // Check if visit already exists for this date
-        $existing = $wpdb->get_var($wpdb->prepare(
-            "SELECT id FROM $recip_visits_table WHERE member_id = %d AND visit_date = %s",
-            $member_id, $visit_date
+        $recip_visits_table = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::RECIP_MEMBERS_VISITS_TABLE);
+       
+        // Get the visit details before cancelling
+        $visit = $wpdb->get_row($wpdb->prepare(
+            "SELECT member_id, visit_date FROM $recip_visits_table WHERE id = %d",
+            $visit_id
         ));
-        
-        if ($existing) {
-            wp_send_json_error(['message' => 'Visit already registered for this date']);
+       
+        if (!$visit) {
+            wp_die(__('Visit not found.', 'vms'));
         }
-        
-        $inserted = $wpdb->insert(
-            $recip_visits_table,
-            [
-                'member_id' => $member_id,
-                'courtesy' => $courtesy,
-                'visit_date' => $visit_date,
-                'status' => 'approved',
-                'sign_in_time' => current_time('mysql')
-            ],
-            ['%d', '%s', '%s', '%s', '%s']
-        );
-        
-        if ($inserted) {
-            wp_send_json_success(['message' => 'Visit registered successfully']);
-        } else {
-            wp_send_json_error(['message' => 'Failed to register visit']);
-        }
-    }
-    
-    // Cancel visit
-    if (isset($_POST['action']) && $_POST['action'] === 'cancel_recip_visit') {
-        check_ajax_referer('cancel_recip_visit_nonce', 'nonce');
-        
-        $visit_id = intval($_POST['visit_id']);
-        
+       
+        // Update visit status to cancelled
         $updated = $wpdb->update(
             $recip_visits_table,
-            ['status' => 'cancelled'],
-            ['id' => $visit_id],
-            ['%s'],
-            ['%d']
+            array( 'status' => 'cancelled' ),
+            array( 'id' => $visit_id ),
+            array( '%s' ),
+            array( '%d' )
         );
-        
-        if ($updated !== false) {
-            wp_send_json_success(['message' => 'Visit cancelled successfully']);
+       
+        if ( $updated !== false ) {
+            // Trigger automatic status recalculation for the member
+            VMS_CoreManager::recalculate_member_visit_statuses($visit->member_id);            
+           
+            // Success message or redirect
+            wp_safe_redirect( add_query_arg('visit_cancelled', '1', wp_get_referer()) );
+            exit;
         } else {
-            wp_send_json_error(['message' => 'Failed to cancel visit']);
+            wp_die(__('Failed to cancel visit. Please try again.', 'vms'));
         }
+    } else {
+        wp_die(__('Invalid visit ID.', 'vms'));
     }
 }
 
@@ -700,13 +684,6 @@ get_header();
                                                                         class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
                                                                         #</p>
                                                                 </div>
-                                                                <!-- Courtesy -->
-                                                                <div
-                                                                    class="col-span-2 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
-                                                                    <p
-                                                                        class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
-                                                                        Courtesy</p>
-                                                                </div>
                                                                 <!-- Visit Date -->
                                                                 <div
                                                                     class="col-span-2 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
@@ -716,21 +693,28 @@ get_header();
                                                                 </div>
                                                                 <!-- Sign In Time -->
                                                                 <div
-                                                                    class="col-span-1 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
+                                                                    class="col-span-2 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
                                                                     <p
                                                                         class="whitespace-nowrap text-theme-xs font-medium text-gray-700 dark:text-gray-400">
                                                                         Sign In</p>
                                                                 </div>
                                                                 <!-- Sign Out Time -->
                                                                 <div
-                                                                    class="col-span-1 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
+                                                                    class="col-span-2 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
                                                                     <p
                                                                         class="whitespace-nowrap text-theme-xs font-medium text-gray-700 dark:text-gray-400">
                                                                         Sign Out</p>
                                                                 </div>
+                                                                <!-- Duration -->
+                                                                <div
+                                                                    class="col-span-1 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
+                                                                    <p
+                                                                        class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
+                                                                        Duration</p>
+                                                                </div>
                                                                 <!-- Status -->
                                                                 <div
-                                                                    class="col-span-2 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
+                                                                    class="col-span-1 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
                                                                     <p
                                                                         class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
                                                                         Status</p>
@@ -759,15 +743,6 @@ get_header();
                                                                         </p>
                                                                     </div>
 
-                                                                    <!-- Courtesy -->
-                                                                    <div
-                                                                        class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
-                                                                        <p
-                                                                            class="text-theme-sm text-gray-700 dark:text-gray-400">
-                                                                            <?php echo esc_html($visit->courtesy ?: 'N/A'); ?>
-                                                                        </p>
-                                                                    </div>
-
                                                                     <!-- Visit Date -->
                                                                     <div
                                                                         class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
@@ -779,7 +754,7 @@ get_header();
 
                                                                     <!-- Sign In -->
                                                                     <div
-                                                                        class="col-span-1 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
+                                                                        class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
                                                                         <p
                                                                             class="text-theme-sm text-gray-700 dark:text-gray-400">
                                                                             <?php echo esc_html(VMS_CoreManager::format_time($visit->sign_in_time)); ?>
@@ -788,16 +763,25 @@ get_header();
 
                                                                     <!-- Sign Out -->
                                                                     <div
-                                                                        class="col-span-1 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
+                                                                        class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
                                                                         <p
                                                                             class="text-theme-sm text-gray-700 dark:text-gray-400">
                                                                             <?php echo esc_html(VMS_CoreManager::format_time($visit->sign_out_time)); ?>
                                                                         </p>
                                                                     </div>
 
+                                                                    <!-- Duration -->
+                                                                    <div
+                                                                        class="col-span-1 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
+                                                                        <p
+                                                                            class="text-theme-sm text-gray-700 dark:text-gray-400">
+                                                                            <?php echo esc_html(VMS_CoreManager::calculate_duration($visit->sign_in_time, $visit->sign_out_time)); ?>
+                                                                        </p>
+                                                                    </div>
+
                                                                     <!-- Status -->
                                                                     <div
-                                                                        class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
+                                                                        class="col-span-1 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
                                                                         <span
                                                                             class="inline-flex items-center justify-center gap-1 rounded-full px-2.5 py-0.5 text-sm font-medium capitalize <?php echo $status_classes[$visit->status] ?? $status_classes['approved']; ?>">
                                                                             <?php echo esc_html($visit->status); ?>
@@ -807,11 +791,17 @@ get_header();
                                                                     <!-- Action -->
                                                                     <div
                                                                         class="col-span-1 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
-                                                                        <button type="button"
-                                                                            onclick="cancelVisit(<?php echo esc_attr($visit->visit_id); ?>)"
-                                                                            class="px-3 py-1 text-xs font-medium text-white bg-red-500 rounded-lg hover:bg-red-600">
-                                                                            Cancel
-                                                                        </button>
+                                                                        <form method="post"
+                                                                            onsubmit="return confirm('Are you sure you want to cancel this visit?');">
+                                                                            <input type="hidden" name="visit_id"
+                                                                                value="<?php echo esc_attr( $visit->id ); ?>">
+                                                                            <?php wp_nonce_field( 'cancel_recip_visit_action', 'cancel_recip_visit_nonce' ); ?>
+                                                                            <button type="submit"
+                                                                                name="cancel_recip_visit"
+                                                                                class="px-3 py-1 text-xs font-medium text-white bg-red-500 rounded-lg hover:bg-red-600">
+                                                                                <?php esc_html_e( 'Cancel', 'vms' ); ?>
+                                                                            </button>
+                                                                        </form>
                                                                     </div>
                                                                 </div>
                                                                 <?php endforeach; ?>
@@ -934,65 +924,9 @@ get_header();
                             </div>
                         </div>
                     </div>
-
-                    <!-- Visit Registration Modal -->
-                    <div x-show="isVisitInfoModal" x-transition.opacity class="fixed inset-0 z-50 overflow-y-auto"
-                        style="display: none;">
-                        <div class="flex items-center justify-center min-h-screen px-4">
-                            <div class="fixed inset-0 bg-black opacity-50" @click="isVisitInfoModal = false"></div>
-                            <div
-                                class="relative bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full mx-auto">
-                                <div class="p-6">
-                                    <div class="flex items-center justify-between mb-4">
-                                        <h3 class="text-lg font-medium text-gray-900 dark:text-white">Register New Visit
-                                        </h3>
-                                        <button @click="isVisitInfoModal = false"
-                                            class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M6 18L18 6M6 6l12 12"></path>
-                                            </svg>
-                                        </button>
-                                    </div>
-
-                                    <form id="visit-registration-form">
-                                        <div class="space-y-4">
-                                            <div>
-                                                <label for="visit_date"
-                                                    class="block text-sm font-medium text-gray-700 dark:text-gray-300">Visit
-                                                    Date</label>
-                                                <input type="date" id="visit_date" name="visit_date" required
-                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                                            </div>
-
-                                            <div>
-                                                <label for="courtesy"
-                                                    class="block text-sm font-medium text-gray-700 dark:text-gray-300">Courtesy
-                                                    (Optional)</label>
-                                                <input type="text" id="courtesy" name="courtesy"
-                                                    placeholder="Special courtesy or notes"
-                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                                            </div>
-                                        </div>
-
-                                        <div class="mt-6 flex justify-end space-x-3">
-                                            <button type="button" @click="isVisitInfoModal = false"
-                                                class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 dark:bg-gray-600 dark:text-gray-300 dark:border-gray-500 dark:hover:bg-gray-700">
-                                                Cancel
-                                            </button>
-                                            <button type="submit"
-                                                class="px-4 py-2 text-sm font-medium text-white bg-brand-500 border border-transparent rounded-md hover:bg-brand-600">
-                                                Register Visit
-                                            </button>
-                                        </div>
-
-                                        <input type="hidden" name="member_id"
-                                            value="<?php echo esc_attr($member_id); ?>">
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- BEGIN MODAL -->
+                    <?php get_template_part( 'template-parts/content/content', 'recip-visit-modal' ); ?>
+                    <!-- END MODAL -->
 
                     <!-- Footer -->
                     <?php get_template_part('template-parts/content/content-footer', 'content'); ?>
@@ -1004,160 +938,6 @@ get_header();
         </div>
     </main>
 </section>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Update member form
-    document.getElementById('member-update-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        const formData = new FormData(this);
-        formData.append('action', 'update_recip_member');
-        formData.append('nonce', '<?php echo wp_create_nonce('update_recip_member_nonce'); ?>');
-
-        const updateBtn = document.getElementById('update-member-btn');
-        const originalText = updateBtn.textContent;
-        updateBtn.textContent = 'Updating...';
-        updateBtn.disabled = true;
-
-        fetch('<?php echo admin_url('admin-ajax.php'); ?>', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showMessage('success', data.data.message);
-                    setTimeout(() => location.reload(), 1500);
-                } else {
-                    showMessage('error', data.data.message);
-                }
-            })
-            .catch(error => {
-                showMessage('error', 'An error occurred while updating the member');
-            })
-            .finally(() => {
-                updateBtn.textContent = originalText;
-                updateBtn.disabled = false;
-            });
-    });
-
-    // Delete member
-    document.getElementById('delete-member-btn').addEventListener('click', function() {
-        const memberName = this.dataset.memberName;
-        if (confirm(`Are you sure you want to delete ${memberName}? This action cannot be undone.`)) {
-            const formData = new FormData();
-            formData.append('action', 'delete_recip_member');
-            formData.append('member_id', '<?php echo $member_id; ?>');
-            formData.append('nonce', '<?php echo wp_create_nonce('delete_recip_member_nonce'); ?>');
-
-            fetch('<?php echo admin_url('admin-ajax.php'); ?>', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showMessage('success', data.data.message);
-                        setTimeout(() => {
-                            window.location.href = data.data.redirect;
-                        }, 1500);
-                    } else {
-                        showMessage('error', data.data.message);
-                    }
-                })
-                .catch(error => {
-                    showMessage('error', 'An error occurred while deleting the member');
-                });
-        }
-    });
-
-    // Visit registration form
-    document.getElementById('visit-registration-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        const formData = new FormData(this);
-        formData.append('action', 'register_recip_visit');
-        formData.append('nonce', '<?php echo wp_create_nonce('register_recip_visit_nonce'); ?>');
-
-        fetch('<?php echo admin_url('admin-ajax.php'); ?>', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showMessage('success', data.data.message);
-                    // Close modal
-                    document.querySelector('[x-data]').__x.$data.isVisitInfoModal = false;
-                    // Reset form
-                    this.reset();
-                    setTimeout(() => location.reload(), 1500);
-                } else {
-                    showMessage('error', data.data.message);
-                }
-            })
-            .catch(error => {
-                showMessage('error', 'An error occurred while registering the visit');
-            });
-    });
-});
-
-// Cancel visit function
-function cancelVisit(visitId) {
-    if (confirm('Are you sure you want to cancel this visit?')) {
-        const formData = new FormData();
-        formData.append('action', 'cancel_recip_visit');
-        formData.append('visit_id', visitId);
-        formData.append('nonce', '<?php echo wp_create_nonce('cancel_recip_visit_nonce'); ?>');
-
-        fetch('<?php echo admin_url('admin-ajax.php'); ?>', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showMessage('success', data.data.message);
-                    setTimeout(() => location.reload(), 1500);
-                } else {
-                    showMessage('error', data.data.message);
-                }
-            })
-            .catch(error => {
-                showMessage('error', 'An error occurred while cancelling the visit');
-            });
-    }
-}
-
-// Show success/error messages
-function showMessage(type, message) {
-    const container = document.getElementById('message-container');
-    const successDiv = document.getElementById('success-message');
-    const errorDiv = document.getElementById('error-message');
-    const successText = document.getElementById('success-text');
-    const errorText = document.getElementById('error-text');
-
-    // Hide all messages first
-    successDiv.classList.add('hidden');
-    errorDiv.classList.add('hidden');
-
-    if (type === 'success') {
-        successText.textContent = message;
-        successDiv.classList.remove('hidden');
-    } else {
-        errorText.textContent = message;
-        errorDiv.classList.remove('hidden');
-    }
-
-    container.classList.remove('hidden');
-
-    // Auto hide after 5 seconds
-    setTimeout(() => {
-        container.classList.add('hidden');
-    }, 5000);
-}
-</script>
 
 <?php
 get_footer();

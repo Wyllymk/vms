@@ -2482,6 +2482,356 @@ jQuery(document).ready(function ($) {
 		});
 	});
 
+	// Member Update FORM
+	$('#member-update-form').on('submit', function (e) {
+		e.preventDefault();
+
+		// Show loading indicator
+		$('#update-member-btn')
+			.prop('disabled', true)
+			.html(
+				'<span class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2"></span> Updating...'
+			);
+
+		// Clear previous messages and modals
+		$('.alert-message').remove();
+		$('#success-modal-overlay, #member-error-modal-overlay').remove();
+
+		// Collect form data
+		var formData = new FormData(this);
+		formData.append('action', 'update_member');
+		formData.append('nonce', vms_script_ajax.nonce);
+
+		// AJAX request
+		$.ajax({
+			url: vms_script_ajax.ajaxurl,
+			type: 'POST',
+			data: formData,
+			processData: false,
+			contentType: false,
+			dataType: 'json',
+			success: function (response) {
+				if (response.success) {
+					// Show success message
+					const message =
+						response.data.message || 'Member updated successfully';
+
+					// Create and show success animation modal
+					const successModal = `
+                        <div id="success-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+                            <div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+                                <div class="check_mark mx-auto mb-4">
+                                    <div class="sa-icon sa-success animate">
+                                        <span class="sa-line sa-tip animateSuccessTip"></span>
+                                        <span class="sa-line sa-long animateSuccessLong"></span>
+                                        <div class="sa-placeholder"></div>
+                                        <div class="sa-fix"></div>
+                                    </div>
+                                </div>
+                                <p class="text-lg font-medium text-gray-700 dark:text-white">${message}</p>
+                                <button id="ok-success-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 transition">
+                                    OK
+                                </button>
+                            </div>
+                        </div>
+                    	`;
+
+					// Inject modal into body
+					$('body').append(successModal);
+
+					// Handle OK button click
+					$(document)
+						.off('click', '#ok-success-btn')
+						.on('click', '#ok-success-btn', function (e) {
+							e.preventDefault();
+							$('#success-modal-overlay').fadeOut(
+								300,
+								function () {
+									$(this).remove();
+								}
+							);
+						});
+				} else {
+					// Show error messages in a single modal
+					const errorMessages = response.data.messages || [
+						'An error occurred during member update',
+					];
+					const errorMessageHtml = errorMessages
+						.map(
+							(msg) =>
+								`<p class="text-lg font-medium text-gray-700 dark:text-white">${msg}</p>`
+						)
+						.join('');
+
+					// Create and show error animation modal
+					const errorModal = `
+                        <div id="member-error-modal-overlay"
+                            class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+                            <div
+                                class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+                                <div class="check_mark mx-auto mb-4">
+                                    <div class="sa-icon sa-error animate">
+                                        <span class="sa-line sa-left animateXLeft"></span>
+                                        <span class="sa-line sa-right animateXRight"></span>
+                                        <div class="sa-placeholder"></div>
+                                    </div>
+                                </div>
+                                ${errorMessageHtml}
+                                <button id="ok-error-btn" type="button"
+                                    class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">
+                                    OK
+                                </button>
+                            </div>
+                        </div>
+                    	`;
+
+					// Inject modal into body
+					$('body').append(errorModal);
+
+					// Handle OK button click
+					$(document)
+						.off('click', '#ok-error-btn')
+						.on('click', '#ok-error-btn', function (e) {
+							e.preventDefault();
+							$('#member-error-modal-overlay').fadeOut(
+								300,
+								function () {
+									$(this).remove();
+								}
+							);
+						});
+				}
+			},
+			error: function (xhr, status, error) {
+				// Show error message in a modal
+				const errorMessage =
+					xhr.responseJSON?.data?.messages?.join('<br>') ||
+					'An error occurred: ' + error;
+
+				// Create and show error animation modal
+				const errorModal = `
+                    <div id="member-error-modal-overlay"
+                        class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+                        <div
+                            class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+                            <div class="check_mark mx-auto mb-4">
+                                <div class="sa-icon sa-error animate">
+                                    <span class="sa-line sa-left animateXLeft"></span>
+                                    <span class="sa-line sa-right animateXRight"></span>
+                                    <div class="sa-placeholder"></div>
+                                </div>
+                            </div>
+                            <p class="text-lg font-medium text-gray-700 dark:text-white">${errorMessage}</p>
+                            <button id="ok-error-btn" type="button"
+                                class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">
+                                OK
+                            </button>
+                        </div>
+                    </div>
+                	`;
+
+				// Inject modal into body
+				$('body').append(errorModal);
+
+				// Handle OK button click
+				$(document)
+					.off('click', '#ok-error-btn')
+					.on('click', '#ok-error-btn', function (e) {
+						e.preventDefault();
+						$('#member-error-modal-overlay').fadeOut(
+							300,
+							function () {
+								$(this).remove();
+							}
+						);
+					});
+			},
+			complete: function () {
+				// Reset button
+				$('#update-member-btn')
+					.prop('disabled', false)
+					.text('Update Member');
+			},
+		});
+	});
+
+	// Delete Member Button
+	$('#delete-member-btn').on('click', function (e) {
+		e.preventDefault();
+
+		const memberName = $(this).data('member-name') || 'this member';
+
+		// Show confirmation modal
+		const confirmModal = `
+			<div id="delete-member-confirm-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+				<div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+					<div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
+						<svg class="h-6 w-6 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+						</svg>
+					</div>
+					<h3 class="mb-2 text-lg font-medium text-gray-900 dark:text-white">Delete Member</h3>
+					<p class="mb-6 text-sm text-gray-500 dark:text-gray-400">Are you sure you want to delete "${memberName}"? This action is irreversible.</p>
+					<div class="flex gap-3">
+						<button id="cancel-delete-member-btn" type="button" class="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">Cancel</button>
+						<button id="confirm-delete-member-btn" type="button" class="flex-1 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600">Delete</button>
+					</div>
+				</div>
+			</div>
+		`;
+		$('body').append(confirmModal);
+
+		// Handle confirmation modal buttons
+		$(document).on('click', '#cancel-delete-member-btn', function (e) {
+			e.preventDefault();
+			$('#delete-member-confirm-modal-overlay').fadeOut(300, function () {
+				$(this).remove();
+			});
+		});
+
+		$(document).on('click', '#confirm-delete-member-btn', function (e) {
+			e.preventDefault();
+
+			// Show loading state
+			$(this)
+				.prop('disabled', true)
+				.html(
+					'<span class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2"></span> Deleting...'
+				);
+
+			// Get member ID from the form
+			const memberId = $('input[name="member_id"]').val();
+
+			// AJAX request to delete member
+			$.ajax({
+				url: vms_script_ajax.ajaxurl,
+				type: 'POST',
+				data: {
+					action: 'delete_member',
+					member_id: memberId,
+					nonce: vms_script_ajax.nonce,
+				},
+				dataType: 'json',
+				success: function (response) {
+					// Close confirmation modal
+					$('#delete-member-confirm-modal-overlay').remove();
+
+					if (response.success) {
+						// Show success modal
+						const message =
+							response.data.message ||
+							'Member deleted successfully';
+						const successModal = `
+						<div id="success-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+							<div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+								<div class="check_mark mx-auto mb-4">
+									<div class="sa-icon sa-success animate">
+										<span class="sa-line sa-tip animateSuccessTip"></span>
+										<span class="sa-line sa-long animateSuccessLong"></span>
+										<div class="sa-placeholder"></div>
+										<div class="sa-fix"></div>
+									</div>
+								</div>
+								<p class="text-lg font-medium text-gray-700 dark:text-white">${message}</p>
+								<button id="ok-success-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 transition">
+									OK
+								</button>
+							</div>
+						</div>
+						`;
+						$('body').append(successModal);
+
+						// Redirect after success
+						$(document).on(
+							'click',
+							'#ok-success-btn',
+							function (e) {
+								e.preventDefault();
+								window.location.href = '/members/'; // Adjust URL as needed
+							}
+						);
+					} else {
+						// Show error modal
+						const errorMessages = response.data.messages || [
+							'Failed to delete member',
+						];
+						const errorMessageHtml = errorMessages
+							.map(
+								(msg) =>
+									`<p class="text-lg font-medium text-gray-700 dark:text-white">${msg}</p>`
+							)
+							.join('');
+
+						const errorModal = `
+						<div id="member-error-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+							<div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+								<div class="check_mark mx-auto mb-4">
+									<div class="sa-icon sa-error animate">
+										<span class="sa-line sa-left animateXLeft"></span>
+										<span class="sa-line sa-right animateXRight"></span>
+										<div class="sa-placeholder"></div>
+									</div>
+								</div>
+								${errorMessageHtml}
+								<button id="ok-error-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">
+									OK
+								</button>
+							</div>
+						</div>
+						`;
+						$('body').append(errorModal);
+
+						$(document).on('click', '#ok-error-btn', function (e) {
+							e.preventDefault();
+							$('#member-error-modal-overlay').fadeOut(
+								300,
+								function () {
+									$(this).remove();
+								}
+							);
+						});
+					}
+				},
+				error: function (xhr, status, error) {
+					// Close confirmation modal
+					$('#delete-member-confirm-modal-overlay').remove();
+
+					const errorMessage =
+						xhr.responseJSON?.data?.messages?.join('<br>') ||
+						'An error occurred: ' + error;
+					const errorModal = `
+					<div id="member-error-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+						<div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+							<div class="check_mark mx-auto mb-4">
+								<div class="sa-icon sa-error animate">
+									<span class="sa-line sa-left animateXLeft"></span>
+									<span class="sa-line sa-right animateXRight"></span>
+									<div class="sa-placeholder"></div>
+								</div>
+							</div>
+							<p class="text-lg font-medium text-gray-700 dark:text-white">${errorMessage}</p>
+							<button id="ok-error-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">
+								OK
+							</button>
+						</div>
+					</div>
+					`;
+					$('body').append(errorModal);
+
+					$(document).on('click', '#ok-error-btn', function (e) {
+						e.preventDefault();
+						$('#member-error-modal-overlay').fadeOut(
+							300,
+							function () {
+								$(this).remove();
+							}
+						);
+					});
+				},
+			});
+		});
+	});
+
 	// Guest Update FORM
 	$('#guest-update-form').on('submit', function (e) {
 		e.preventDefault();
@@ -3050,6 +3400,173 @@ jQuery(document).ready(function ($) {
 				$('#submit-visit-form')
 					.prop('disabled', false)
 					.text('Register Visit');
+			},
+		});
+	});
+
+	// RECIPROCATING MEMBER VISIT FORM
+	$('#recip-visit-form').on('submit', function (e) {
+		e.preventDefault();
+
+		// Show loading indicator
+		$('#submit-visit-form')
+			.prop('disabled', true)
+			.html(
+				'<span class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2"></span> Registering...'
+			);
+
+		// Clear previous messages and modals
+		$('#alert-message').remove();
+		$('#success-modal-overlay, #visit-error-modal-overlay').remove();
+
+		// Collect form data
+		var formData = new FormData(this);
+		formData.append('action', 'register_reciprocation_member_visit');
+		formData.append('nonce', vms_script_ajax.nonce);
+
+		// AJAX request
+		$.ajax({
+			url: vms_script_ajax.ajaxurl,
+			type: 'POST',
+			data: formData,
+			processData: false,
+			contentType: false,
+			dataType: 'json',
+			success: function (response) {
+				if (response.success) {
+					// Success modal
+					const message =
+						response.data.messages?.[0] ||
+						'Visit registered successfully';
+					const successModal = `
+                <div id="success-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+                    <div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+                        <div class="check_mark mx-auto mb-4">
+                            <div class="sa-icon sa-success animate">
+                                <span class="sa-line sa-tip animateSuccessTip"></span>
+                                <span class="sa-line sa-long animateSuccessLong"></span>
+                                <div class="sa-placeholder"></div>
+                                <div class="sa-fix"></div>
+                            </div>
+                        </div>
+                        <p class="text-lg font-medium text-gray-700 dark:text-white">${message}</p>
+                        <button id="ok-success-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 transition">
+                            OK
+                        </button>
+                    </div>
+                </div>
+            `;
+					$('body').append(successModal);
+
+					// Close success modal
+					$(document)
+						.off('click', '#ok-success-btn')
+						.on('click', '#ok-success-btn', function (e) {
+							e.preventDefault();
+							$('#success-modal-overlay').fadeOut(
+								300,
+								function () {
+									$(this).remove();
+									window.dispatchEvent(
+										new Event('close-visit-modal')
+									);
+									$('#recip-visit-form')[0].reset();
+
+									// Reload same URL
+									window.location.reload();
+								}
+							);
+						});
+				} else {
+					// Error messages
+					const errorMessages = response.data.messages || [
+						'An error occurred during visit registration',
+					];
+					const errorMessageHtml = errorMessages
+						.map(
+							(msg) =>
+								`<p class="text-lg font-medium text-gray-700 dark:text-white">${msg}</p>`
+						)
+						.join('');
+
+					const errorModal = `
+                <div id="visit-error-modal-overlay"
+                    class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+                    <div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+                        <div class="check_mark mx-auto mb-4">
+                            <div class="sa-icon sa-error animate">
+                                <span class="sa-line sa-left animateXLeft"></span>
+                                <span class="sa-line sa-right animateXRight"></span>
+                                <div class="sa-placeholder"></div>
+                            </div>
+                        </div>
+                        ${errorMessageHtml}
+                        <button id="ok-error-btn" type="button"
+                            class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">
+                            OK
+                        </button>
+                    </div>
+                </div>
+            `;
+					$('body').append(errorModal);
+
+					// Close error modal
+					$(document)
+						.off('click', '#ok-error-btn')
+						.on('click', '#ok-error-btn', function (e) {
+							e.preventDefault();
+							$('#visit-error-modal-overlay').fadeOut(
+								300,
+								function () {
+									$(this).remove();
+								}
+							);
+						});
+				}
+			},
+			error: function (xhr, status, error) {
+				const errorMessage =
+					xhr.responseJSON?.data?.messages?.join('<br>') ||
+					'An error occurred: ' + error;
+
+				const errorModal = `
+            <div id="visit-error-modal-overlay"
+                class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+                <div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+                    <div class="check_mark mx-auto mb-4">
+                        <div class="sa-icon sa-error animate">
+                            <span class="sa-line sa-left animateXLeft"></span>
+                            <span class="sa-line sa-right animateXRight"></span>
+                            <div class="sa-placeholder"></div>
+                        </div>
+                    </div>
+                    <p class="text-lg font-medium text-gray-700 dark:text-white">${errorMessage}</p>
+                    <button id="ok-error-btn" type="button"
+                        class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">
+                        OK
+                    </button>
+                </div>
+            </div>
+        `;
+				$('body').append(errorModal);
+
+				// Close error modal
+				$(document)
+					.off('click', '#ok-error-btn')
+					.on('click', '#ok-error-btn', function (e) {
+						e.preventDefault();
+						$('#visit-error-modal-overlay').fadeOut(
+							300,
+							function () {
+								$(this).remove();
+							}
+						);
+					});
+			},
+			complete: function () {
+				$('#submit-visit-form')
+					.prop('disabled', false)
+					.text('Create Visit');
 			},
 		});
 	});

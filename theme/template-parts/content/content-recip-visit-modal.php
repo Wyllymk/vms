@@ -33,9 +33,9 @@ defined( 'ABSPATH' ) || exit;
                 <?php esc_html_e( 'Create a New Visit.', 'vms' ); ?>
             </p>
         </div>
-        <?php $guest_id = isset($_GET['guest_id']) ? absint($_GET['guest_id']) : 0;?>
-        <form id="visit-form" class="flex flex-col" method="post" enctype="multipart/form-data">
-            <input type="hidden" name="guest_id" value="<?php echo esc_attr($guest_id); ?>">
+        <?php $member_id = isset($_GET['member_id']) ? absint($_GET['member_id']) : 0;?>
+        <form id="recip-visit-form" class="flex flex-col" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="member_id" value="<?php echo esc_attr($member_id); ?>">
 
             <div class="custom-scrollbar h-lg overflow-y-auto px-2">
                 <div class="">
@@ -44,39 +44,6 @@ defined( 'ABSPATH' ) || exit;
                     </h5>
 
                     <div class="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
-                        <!-- Host Member Dropdown -->
-                        <div class="col-span-2">
-                            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                <?php esc_html_e('Host Member', 'vms'); ?>
-                                <span class="text-error-500">*</span>
-                            </label>
-                            <select name="host_member_id" required
-                                class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800">
-                                <option value=""><?php esc_html_e('Select Host Member', 'vms'); ?></option>
-                                <?php
-                                // Get all users with 'member' or 'chairman' role
-                                $members = get_users(array(
-                                    'role__in' => array('member', 'chairman'),
-                                    'orderby'  => 'display_name',
-                                    'fields'   => array('ID', 'display_name', 'user_email')
-                                ));
-
-                                foreach ($members as $member) {
-                                    // Only include users with registration_status = 'active'
-                                    $status = get_user_meta($member->ID, 'registration_status', true);
-                                    if ($status !== 'active') {
-                                        continue;
-                                    }
-
-                                    $selected = isset($_POST['host_member_id']) && $_POST['host_member_id'] == $member->ID ? 'selected' : '';
-                                    echo '<option value="' . esc_attr($member->ID) . '" ' . $selected . '>' 
-                                        . esc_html($member->display_name) . ' (' . esc_html($member->user_email) . ')' 
-                                        . '</option>';
-                                }
-                                ?>
-                            </select>
-
-                        </div>
 
                         <!-- Visit Date -->
                         <div class="col-span-2">
