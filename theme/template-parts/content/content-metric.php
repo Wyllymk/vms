@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
     function get_guest_statistics() {
         global $wpdb;
         
-        $guests_table  = $wpdb->prefix . 'vms_guests';
+        $guests_table  = \WyllyMk\VMS\VMS_Config::get_table_name( \WyllyMk\VMS\VMS_Config::GUESTS_TABLE );
         
         // Get total guests count
         $total_guests = $wpdb->get_var("SELECT COUNT(*) FROM $guests_table WHERE guest_status = 'active'");
@@ -48,9 +48,9 @@ defined( 'ABSPATH' ) || exit;
         }
         
         return [
-            'total_guests' => $total_guests,
-            'current_month' => $current_month,
-            'previous_month' => $previous_month,
+            'total_guests'      => $total_guests,
+            'current_month'     => $current_month,
+            'previous_month'    => $previous_month,
             'percentage_change' => $percentage_change
         ];
     }
@@ -74,17 +74,18 @@ defined( 'ABSPATH' ) || exit;
                 <?php if ($stats['percentage_change'] >= 0): ?>
                 <span
                     class="flex items-center gap-1 rounded-full bg-success-50 px-2 py-0.5 text-theme-xs font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">
-                    +<?php echo number_format($stats['percentage_change'], 0); ?>%
+                    +<?php echo number_format($stats['percentage_change'], 1); ?>%
                 </span>
                 <?php else: ?>
                 <span
                     class="flex items-center gap-1 rounded-full bg-error-50 px-2 py-0.5 text-theme-xs font-medium text-error-600 dark:bg-error-500/15 dark:text-error-500">
-                    <?php echo number_format($stats['percentage_change'], 0); ?>%
+                    <?php echo number_format($stats['percentage_change'], 1); ?>%
                 </span>
                 <?php endif; ?>
 
                 <span class="text-theme-xs text-gray-500 dark:text-gray-400">
                     <?php esc_html_e('Vs last month', 'vms'); ?>
+                    (<?php echo esc_html($stats['previous_month']); ?>)
                 </span>
             </div>
         </div>
@@ -97,7 +98,7 @@ defined( 'ABSPATH' ) || exit;
     function get_reciprocating_member_statistics() {
         global $wpdb;
         
-        $recip_table = $wpdb->prefix . 'vms_reciprocating_members';
+        $recip_table = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::RECIP_MEMBERS_TABLE);
         
         // Get total reciprocating members count
         $total_members = $wpdb->get_var("SELECT COUNT(*) FROM $recip_table WHERE member_status = 'active'");
@@ -127,9 +128,9 @@ defined( 'ABSPATH' ) || exit;
         }
         
         return [
-            'total_members' => $total_members,
-            'current_month' => $current_month,
-            'previous_month' => $previous_month,
+            'total_members'     => $total_members,
+            'current_month'     => $current_month,
+            'previous_month'    => $previous_month,
             'percentage_change' => $percentage_change
         ];
     }
@@ -153,22 +154,24 @@ defined( 'ABSPATH' ) || exit;
                 <?php if ($member_stats['percentage_change'] >= 0): ?>
                 <span
                     class="flex items-center gap-1 rounded-full bg-success-50 px-2 py-0.5 text-theme-xs font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">
-                    +<?php echo number_format($member_stats['percentage_change'], 0); ?>%
+                    +<?php echo number_format($member_stats['percentage_change'], 1); ?>%
                 </span>
                 <?php else: ?>
                 <span
                     class="flex items-center gap-1 rounded-full bg-error-50 px-2 py-0.5 text-theme-xs font-medium text-error-600 dark:bg-error-500/15 dark:text-error-500">
-                    <?php echo number_format($member_stats['percentage_change'], 0); ?>%
+                    <?php echo number_format($member_stats['percentage_change'], 1); ?>%
                 </span>
                 <?php endif; ?>
 
                 <span class="text-theme-xs text-gray-500 dark:text-gray-400">
                     <?php esc_html_e('Vs last month', 'vms'); ?>
+                    (<?php echo esc_html($member_stats['previous_month']); ?>)
                 </span>
             </div>
         </div>
     </div>
     <!-- Reciprocating Members End -->
+
 
     <!-- Members Start -->
     <?php
@@ -251,17 +254,19 @@ defined( 'ABSPATH' ) || exit;
 
                 <span class="text-theme-xs text-gray-500 dark:text-gray-400">
                     <?php esc_html_e('Vs last month', 'vms'); ?>
+                    (<?php echo esc_html($member_stats['previous_month']); ?>)
                 </span>
             </div>
         </div>
     </div>
     <!-- Members End -->
 
-    <!-- Metric Item Start -->
+
+    <!-- Visits Start -->
     <?php 
     function vms_get_monthly_guest_visits($year, $month) {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'vms_guest_visits';
+        $table_name = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::GUEST_VISITS_TABLE);
 
         $start_date = sprintf('%04d-%02d-01', $year, $month);
         $end_date   = date('Y-m-t', strtotime($start_date));
@@ -278,37 +283,62 @@ defined( 'ABSPATH' ) || exit;
         return (int) $count;
     }
 
-    function vms_get_guest_visit_stats() {
+    function vms_get_monthly_recip_visits($year, $month) {
+        global $wpdb;
+        $table_name = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::RECIP_MEMBERS_VISITS_TABLE);
+
+        $start_date = sprintf('%04d-%02d-01', $year, $month);
+        $end_date   = date('Y-m-t', strtotime($start_date));
+
+        $count = $wpdb->get_var(
+            $wpdb->prepare(
+                "SELECT COUNT(*) FROM $table_name 
+                WHERE visit_date BETWEEN %s AND %s",
+                $start_date,
+                $end_date
+            )
+        );
+
+        return (int) $count;
+    }
+
+    function vms_get_total_visit_stats() {
         $year  = date('Y');
         $month = date('n');
 
-        $this_month  = vms_get_monthly_guest_visits($year, $month);
+        // Current month
+        $this_month_guests = vms_get_monthly_guest_visits($year, $month);
+        $this_month_recip  = vms_get_monthly_recip_visits($year, $month);
+        $this_month_total  = $this_month_guests + $this_month_recip;
 
-        // last month
+        // Last month
         $last_month = ($month == 1) ? 12 : $month - 1;
         $last_year  = ($month == 1) ? $year - 1 : $year;
 
-        $prev_month = vms_get_monthly_guest_visits($last_year, $last_month);
+        $prev_month_guests = vms_get_monthly_guest_visits($last_year, $last_month);
+        $prev_month_recip  = vms_get_monthly_recip_visits($last_year, $last_month);
+        $prev_month_total  = $prev_month_guests + $prev_month_recip;
 
+        // Calculate percentage
         $percentage = 0;
-        if ($prev_month > 0) {
-            $percentage = (($this_month - $prev_month) / $prev_month) * 100;
+        if ($prev_month_total > 0) {
+            $percentage = (($this_month_total - $prev_month_total) / $prev_month_total) * 100;
         }
 
         return [
-            'this_month' => $this_month,
-            'last_month' => $prev_month,
+            'this_month' => $this_month_total,
+            'last_month' => $prev_month_total,
             'percentage' => round($percentage, 1),
         ];
     }
 
-
-    $stats = vms_get_guest_visit_stats(); 
+    $stats = vms_get_total_visit_stats(); 
     ?>
 
-    <!-- Metric Item Start -->
     <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
-        <p class="text-theme-sm text-gray-500 dark:text-gray-400">Guest Visits (This Month)</p>
+        <p class="text-theme-sm text-gray-500 dark:text-gray-400">
+            <?php esc_html_e('Total Visits (This Month)', 'vms'); ?>
+        </p>
 
         <div class="mt-3 flex items-end justify-between">
             <div>
@@ -319,20 +349,21 @@ defined( 'ABSPATH' ) || exit;
 
             <div class="flex items-center gap-1">
                 <span class="flex items-center gap-1 rounded-full 
-                <?php echo $stats['percentage'] >= 0 
-                    ? 'bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-500' 
-                    : 'bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500'; ?>
-                px-2 py-0.5 text-theme-xs font-medium">
+            <?php echo $stats['percentage'] >= 0 
+                ? 'bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-500' 
+                : 'bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500'; ?>
+            px-2 py-0.5 text-theme-xs font-medium">
                     <?php echo ($stats['percentage'] >= 0 ? '+' : '') . esc_html($stats['percentage']); ?>%
                 </span>
 
                 <span class="text-theme-xs text-gray-500 dark:text-gray-400">
-                    Vs last month (<?php echo esc_html($stats['last_month']); ?>)
+                    <?php esc_html_e('Vs last month', 'vms'); ?>(<?php echo esc_html($stats['last_month']); ?>)
                 </span>
             </div>
         </div>
     </div>
-    <!-- Metric Item End -->
+    <!-- Visits End -->
+
 
 </div>
 <!-- Metric Group Two -->

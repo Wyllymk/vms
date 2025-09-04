@@ -149,10 +149,11 @@ $guest_visits_table = $wpdb->prefix . 'vms_guest_visits';
                     $guests = $wpdb->get_results($query);
 
                     $status_classes = [
-                        'approved' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-                        'unapproved' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-                        'suspended' => 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
-                        'banned' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                        'approved'   => 'bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-500',
+                        'unapproved' => 'bg-warning-50 text-warning-600 dark:bg-warning-500/15 dark:text-orange-400',
+                        'suspended'  => 'bg-blue-light-50 text-blue-light-500 dark:bg-blue-light-500/15 dark:text-blue-light-500',
+                        'banned'     => 'bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500',
+                        'cancelled'  => 'bg-gray-100 text-gray-700 dark:bg-white/5 dark:text-white/80'
                     ];
 
                     if (!empty($guests)) {

@@ -16,9 +16,7 @@ import Alpine from 'alpinejs';
 import persist from '@alpinejs/persist';
 
 // Import chart modules
-import chart01 from './charts/chart-01';
 import chart02 from './charts/chart-02';
-import chart03 from './charts/chart-03';
 import './image-resize';
 
 // Initialize Alpine.js with persist plugin
@@ -34,9 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Document Loaded
 document.addEventListener('DOMContentLoaded', () => {
 	// Initialize charts
-	chart01();
 	chart02();
-	chart03();
 
 	// Update copyright year
 	const year = document.getElementById('year');

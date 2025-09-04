@@ -28,8 +28,8 @@ if ( ! ( current_user_can( 'administrator' ) || current_user_can( 'general_manag
 global $wpdb;
 
 // WordPress table prefix
-$guests_table       = $wpdb->prefix . 'vms_guests';
-$guest_visits_table = $wpdb->prefix . 'vms_guest_visits';
+$guests_table       = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::GUESTS_TABLE);
+$guest_visits_table = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::GUEST_VISITS_TABLE);
 $wp_users_table     = $wpdb->users;
 
 // Get guest_id from URL
