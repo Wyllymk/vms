@@ -6,7 +6,7 @@ on:
       - "v*" # Runs only when you push a version tag like v1.0.0
 
 permissions:
-  contents: write # ✅ Required for creating releases with GITHUB_TOKEN
+  contents: write # Required for creating releases with GITHUB_TOKEN
 
 jobs:
   build:
@@ -21,18 +21,19 @@ jobs:
       - name: Prepare build
         run: |
           mkdir -p build/vms
-          rsync -av ./ build/vms/ \
-            --exclude build \
-            --exclude .git \
-            --exclude .github \
-            --exclude node_modules \
-            --exclude tests
+          rsync -av --exclude build \
+                    --exclude .git \
+                    --exclude .github \
+                    --exclude node_modules \
+                    --exclude tests \
+                    ./ build/vms/
 
       # 3. Create theme ZIP
       - name: Build theme zip
         run: |
           cd build
-          zip -r vms.zip vms
+          # Ensure ZIP has 'vms/' at root
+          zip -r -q vms.zip vms
 
       # 4. Create GitHub Release and upload the theme ZIP
       - name: Create GitHub Release
@@ -41,4 +42,3 @@ jobs:
           files: build/vms.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-

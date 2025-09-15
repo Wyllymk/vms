@@ -26,12 +26,12 @@ use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 
 $myThemeUpdateChecker = PucFactory::buildUpdateChecker(
     'https://github.com/Wyllymk/vms/',
-    get_theme_file_path('functions.php'),
+    get_theme_file_path('style.css'), // ✅ use style.css instead of functions.php
     'vms'
 );
 
 // Same thing: point to branch if needed
 $myThemeUpdateChecker->setBranch('main');
-$myThemeUpdateChecker->setAuthentication('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');
+$myThemeUpdateChecker->setAuthentication('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');
 // Tell PUC to use the release asset (vms.zip) instead of auto-generated zips
 $myThemeUpdateChecker->getVcsApi()->enableReleaseAssets();
