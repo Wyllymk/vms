@@ -1,44 +1,33 @@
-name: Build & Release Theme
+name: Release Pre-Built Theme
 
 on:
   push:
     tags:
-      - "v*" # Runs only when you push a version tag like v1.0.0
+      - "v*" # Run on version tags like v1.0.5
 
 permissions:
-  contents: write # Required for creating releases with GITHUB_TOKEN
+  contents: write # Required for creating releases
 
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout code
-      - name: Checkout code
+      # 1. Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2. Prepare build folder (exclude unnecessary files)
-      - name: Prepare build
+      # 2. Install Node dependencies and run your build scripts (optional)
+      #    Only if you want to regenerate vms.zip via npm scripts
+      - name: Build theme assets
         run: |
-          mkdir -p build/vms
-          rsync -av --exclude build \
-                    --exclude .git \
-                    --exclude .github \
-                    --exclude node_modules \
-                    --exclude tests \
-                    ./ build/vms/
+          npm ci
+          npm run bundle # This should produce vms.zip at the repo root
 
-      # 3. Create theme ZIP
-      - name: Build theme zip
-        run: |
-          cd build
-          # Ensure ZIP has 'vms/' at root
-          zip -r -q vms.zip vms
-
-      # 4. Create GitHub Release and upload the theme ZIP
-      - name: Create GitHub Release
+      # 3. Upload the pre-built ZIP as a GitHub Release
+      - name: Publish GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          files: build/vms.zip
+          files: vms.zip # <-- point directly to your pre-built ZIP
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}

@@ -26,7 +26,7 @@ use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 
 $myThemeUpdateChecker = PucFactory::buildUpdateChecker(
     'https://github.com/Wyllymk/vms/',
-    get_theme_file_path('style.css'), // ✅ use style.css instead of functions.php
+    get_theme_file_path('functions.php'),
     'vms'
 );
 
