@@ -220,7 +220,7 @@ $status_classes = [
                 <?php
                     endforeach;
                 else:
-                    echo '<tr id="no-clubs-row"><td colspan="5" class="px-4 py-4 text-center text-gray-600 dark:text-white">No clubs found.</td></tr>';
+                    echo '<tr id="no-clubs-row"><td colspan="6" class="px-4 py-4 text-center text-gray-600 dark:text-white">No clubs found.</td></tr>';
                 endif;
                 ?>
             </tbody>

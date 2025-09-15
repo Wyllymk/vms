@@ -69,17 +69,6 @@ defined( 'ABSPATH' ) || exit;
                                 required />
                         </div>
 
-                        <!-- Email -->
-                        <div class="col-span-2 lg:col-span-1">
-                            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                <?php esc_html_e('Email address', 'vms'); ?>
-                                <span class="text-error-500">*</span>
-                            </label>
-                            <input type="email" name="email" value="<?php echo esc_attr($_POST['email'] ?? ''); ?>"
-                                class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-                                required />
-                        </div>
-
                         <!-- Phone -->
                         <div class="col-span-2 lg:col-span-1">
                             <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
@@ -95,18 +84,6 @@ defined( 'ABSPATH' ) || exit;
                             </p>
                         </div>
 
-                        <!-- ID Number -->
-                        <div class="col-span-2 lg:col-span-1">
-                            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                <?php esc_html_e('ID Number', 'vms'); ?>
-                                <span class="text-error-500">*</span>
-                            </label>
-                            <input type="number" name="id_number"
-                                value="<?php echo esc_attr($_POST['id_number'] ?? ''); ?>"
-                                class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-                                required />
-                        </div>
-
                         <!-- Visit Date -->
                         <div class="col-span-2 lg:col-span-1">
                             <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
@@ -119,74 +96,14 @@ defined( 'ABSPATH' ) || exit;
                                 required />
                         </div>
 
-                        <!-- Preferences -->
-                        <div x-data="{ checkboxToggle: <?php echo checked(true, true, false) ? 'true' : 'false'; ?> }">
-                            <label for="receive_messages"
-                                class="flex cursor-pointer items-center text-sm font-medium text-gray-700 select-none dark:text-gray-400">
-                                <div class="relative">
-                                    <!-- Real checkbox (submits with form) -->
-                                    <input type="checkbox" id="receive_messages" name="receive_messages" value="yes"
-                                        <?php checked(true); ?> class="sr-only"
-                                        @change="checkboxToggle = !checkboxToggle">
-
-                                    <!-- Custom styled checkbox -->
-                                    <div :class="checkboxToggle ? 'border-brand-500 bg-brand-500' : 'bg-transparent border-gray-300 dark:border-gray-700'"
-                                        class="mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px] transition">
-                                        <span :class="checkboxToggle ? '' : 'opacity-0'">
-                                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"
-                                                xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M11.6666 3.5L5.24992 9.91667L2.33325 7" stroke="white"
-                                                    stroke-width="1.94437" stroke-linecap="round"
-                                                    stroke-linejoin="round"></path>
-                                            </svg>
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <!-- Label text -->
-                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                                    <?php esc_html_e('Receive messages', 'vms'); ?>
-                                </span>
-                            </label>
-                        </div>
-
-                        <div x-data="{ checkboxToggle: <?php echo checked(true, true, false) ? 'true' : 'false'; ?> }">
-                            <label for="receive_emails"
-                                class="flex cursor-pointer items-center text-sm font-medium text-gray-700 select-none dark:text-gray-400">
-                                <div class="relative">
-                                    <!-- Real checkbox (submits with form) -->
-                                    <input type="checkbox" id="receive_emails" name="receive_emails" value="yes"
-                                        <?php checked(true); ?> class="sr-only"
-                                        @change="checkboxToggle = !checkboxToggle">
-
-                                    <!-- Custom styled checkbox -->
-                                    <div :class="checkboxToggle ? 'border-brand-500 bg-brand-500' : 'bg-transparent border-gray-300 dark:border-gray-700'"
-                                        class="mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px] transition">
-                                        <span :class="checkboxToggle ? '' : 'opacity-0'">
-                                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"
-                                                xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M11.6666 3.5L5.24992 9.91667L2.33325 7" stroke="white"
-                                                    stroke-width="1.94437" stroke-linecap="round"
-                                                    stroke-linejoin="round"></path>
-                                            </svg>
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <!-- Label text -->
-                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                                    <?php esc_html_e('Receive emails', 'vms'); ?>
-                                </span>
-                            </label>
-                        </div>
                     </div>
                 </div>
             </div>
 
             <div class="flex items-center gap-3 px-2 mt-6 lg:justify-end">
-                <button type="reset"
+                <button @click="isCourtesyGuestInfoModal = false"
                     class="cursor-pointer flex w-full justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] sm:w-auto">
-                    <?php esc_html_e('Reset', 'vms'); ?>
+                    <?php esc_html_e('Close', 'vms'); ?>
                 </button>
                 <button type="submit" id="submit-courtesy-guest-form"
                     class="cursor-pointer flex w-full justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 sm:w-auto">

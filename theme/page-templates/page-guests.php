@@ -9,7 +9,7 @@
 defined('ABSPATH') || exit;
 
 // Check if the current user is an Administrator or Manager or Advocate
-if ( ! ( current_user_can( 'administrator' ) || current_user_can( 'general_manager' ) || current_user_can( 'chairman' ) || current_user_can( 'reception' ) || current_user_can( 'gate' ) ) ) {
+if ( ! ( current_user_can( 'administrator' ) || current_user_can( 'general_manager' ) || current_user_can( 'chairman' ) || current_user_can( 'member' ) || current_user_can( 'reception' ) || current_user_can( 'gate' ) ) ) {
 	// Redirect unauthorized users to the front page
 	wp_redirect( home_url() );
 	exit;
@@ -86,10 +86,12 @@ get_header();
                                         class="inline-flex items-center justify-center gap-2 px-2 md:px-4 py-3 text-sm font-medium text-white transition rounded-lg cursor-pointer bg-brand-500 shadow-theme-xs hover:bg-brand-600 whitespace-nowrap">
                                         <?php esc_html_e( 'Register Guest', 'vms' ); ?>
                                     </a>
+                                    <?php if ( ( current_user_can( 'administrator' ) || current_user_can( 'general_manager' ) || current_user_can( 'chairman' ) ) ) : ?>
                                     <a @click="isCourtesyGuestInfoModal = true"
                                         class="inline-flex items-center justify-center gap-2 px-2 md:px-4 py-3 text-sm font-medium transition rounded-lg cursor-pointer shadow-theme-xs text-warning-600 bg-warning-100 hover:bg-warning-200 dark:bg-warning-500/15 dark:hover:bg-warning-500/25 dark:text-orange-500 whitespace-nowrap">
                                         <?php esc_html_e( 'Register Courtesy Guest', 'vms' ); ?>
                                     </a>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                             <div class="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
@@ -161,6 +163,10 @@ get_header();
                 </div>
             </main>
             <!-- ===== Main Content End ===== -->
+
+            <!-- ===== Footer Start ===== -->
+            <?php get_template_part( 'template-parts/content/content', 'footer' ); ?>
+            <!-- ===== Footer End ===== -->
         </div>
         <!-- ===== Content Area End ===== -->
     </div>

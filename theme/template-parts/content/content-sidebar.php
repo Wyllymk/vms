@@ -8,8 +8,22 @@
  */
 // Exit if accessed directly
 defined( 'ABSPATH' ) || exit;
+$current_user = wp_get_current_user();
+$user_id      = $current_user->ID;
+$user_data    = get_userdata( $user_id );
+$user_avatar  = get_avatar_url( $user_id );
 
+// Get first and last name
+$first_name = get_user_meta( $user_id, 'first_name', true );
+$last_name  = get_user_meta( $user_id, 'last_name', true );
+
+// Or fallback to display_name if empty
+$full_name = trim( $first_name . ' ' . $last_name );
+if ( empty( $full_name ) ) {
+    $full_name = $user_data->display_name;
+}
 ?>
+<?php if ( ( current_user_can( 'administrator' ) || current_user_can( 'chairman' ) || current_user_can( 'general_manager' ) || current_user_can( 'reception' ) || current_user_can( 'gate' ) ) ) : ?>
 
 <aside :class="sidebarToggle ? 'translate-x-0 lg:w-[90px]' : '-translate-x-full'"
     class="sidebar fixed left-0 top-0 z-99999 flex h-screen w-[290px] flex-col overflow-y-hidden border-r border-gray-200 bg-white px-5 dark:border-gray-800 dark:bg-black lg:static lg:translate-x-0">
@@ -29,7 +43,7 @@ defined( 'ABSPATH' ) || exit;
         </a>
     </div>
     <!-- SIDEBAR HEADER -->
-
+    <!-- SIDEBAR BODY -->
     <div class="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar mt-10 lg:mt-0">
         <!-- Sidebar Menu -->
         <nav x-data="{selected: $persist('Dashboard')}">
@@ -51,6 +65,7 @@ defined( 'ABSPATH' ) || exit;
 
                 <ul class="flex flex-col gap-4 mb-6">
                     <!-- Menu Item Dashboard -->
+                    <?php if ( ( current_user_can( 'administrator' ) || current_user_can( 'chairman' ) || current_user_can( 'general_manager' ) || current_user_can( 'reception' ) ) ) : ?>
                     <li>
                         <a href="<?php echo esc_url( home_url( '/dashboard' ) ); ?>"
                             @click="selected = (selected === 'Dashboard' ? '':'Dashboard')"
@@ -68,9 +83,11 @@ defined( 'ABSPATH' ) || exit;
                             </span>
                         </a>
                     </li>
+                    <?php endif; ?>
                     <!-- Menu Item Dashboard -->
 
                     <!-- Menu Item Profile -->
+                    <?php if ( ( current_user_can( 'administrator' ) || current_user_can( 'chairman' ) || current_user_can( 'general_manager' ) || current_user_can( 'reception' ) ) ) : ?>
                     <li>
                         <a href="<?php echo esc_url( home_url( '/profile' ) ); ?>"
                             @click="selected = (selected === 'Profile' ? '':'Profile')"
@@ -88,6 +105,7 @@ defined( 'ABSPATH' ) || exit;
                             </span>
                         </a>
                     </li>
+                    <?php endif; ?>
                     <!-- Menu Item Profile -->
 
                     <!-- Menu Item Members -->
@@ -236,4 +254,24 @@ defined( 'ABSPATH' ) || exit;
         </nav>
         <!-- Sidebar Menu -->
     </div>
+    <!-- SIDEBAR BODY -->
+    <!-- SIDEBAR FOOTER -->
+    <div class="w-65 flex flex-col fixed bottom-0 overflow-hidden duration-300 ease-linear no-scrollbar mt-10 lg:mt-0">
+
+        <!-- Gradient divider line -->
+        <div class="h-px w-full bg-gradient-to-r from-transparent via-black/30 to-transparent dark:via-white/30">
+        </div>
+
+        <div class="text-center mt-2">
+            <span class="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
+                <?php echo esc_html( $full_name ); ?>
+            </span>
+            <span class="text-theme-xs mt-0.5 block text-brand-500">
+                <?php esc_html_e( 'Version 1.0.0', 'vms' ); ?>
+            </span>
+        </div>
+    </div>
+    <!-- SIDEBAR FOOTER -->
 </aside>
+
+<?php endif; ?>

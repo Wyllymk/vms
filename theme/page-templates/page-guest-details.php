@@ -47,6 +47,23 @@ if (!$guest) {
     wp_die('Guest not found.');
 }
 
+// Get current user and their role for filtering
+$current_user_id = get_current_user_id();
+$current_user = wp_get_current_user();
+$user_roles = $current_user->roles;
+
+// Check if user has member or chairman role
+$restricted_roles = ['member', 'chairman'];
+$has_restricted_role = !empty(array_intersect($restricted_roles, $user_roles));
+
+// Build the WHERE clause for host filtering
+$host_filter = '';
+$host_filter_params = [$guest_id];
+if ($has_restricted_role) {
+    $host_filter = ' AND gv.host_member_id = %d';
+    $host_filter_params[] = $current_user_id;
+}
+
 // Pagination parameters with proper validation
 $per_page = isset($_GET['per_page']) ? absint($_GET['per_page']) : 10;
 if (!in_array($per_page, [10, 25, 50])) {
@@ -55,9 +72,10 @@ if (!in_array($per_page, [10, 25, 50])) {
 $paged = isset($_GET['paged']) ? max(1, intval($_GET['paged'])) : 1;
 $offset = ($paged - 1) * $per_page;
 
-// Count total visits for this guest from guest_visits table
+// Count total visits for this guest from guest_visits table with role filtering
+$count_query = "SELECT COUNT(*) FROM $guest_visits_table gv WHERE gv.guest_id = %d" . $host_filter;
 $total_visits = $wpdb->get_var(
-    $wpdb->prepare("SELECT COUNT(*) FROM $guest_visits_table WHERE guest_id = %d", $guest_id)
+    $wpdb->prepare($count_query, ...$host_filter_params)
 );
 
 // Ensure we have a valid total_visits count
@@ -72,17 +90,20 @@ if ($paged > $total_pages) {
     $offset = ($paged - 1) * $per_page;
 }
 
-// Get paged visits with proper ordering from guest_visits table
+// Get paged visits with proper ordering from guest_visits table with role filtering
 $visits = [];
 if ($total_visits > 0) {
+    $visits_query = "
+        SELECT gv.*, gv.id as visit_id
+        FROM $guest_visits_table gv
+        WHERE gv.guest_id = %d" . $host_filter . "
+        ORDER BY gv.visit_date DESC, gv.created_at DESC
+        LIMIT %d OFFSET %d
+    ";
+    $visits_params = array_merge($host_filter_params, [$per_page, $offset]);
+    
     $visits = $wpdb->get_results(
-        $wpdb->prepare("
-            SELECT gv.*, gv.id as visit_id
-            FROM $guest_visits_table gv
-            WHERE gv.guest_id = %d
-            ORDER BY gv.visit_date DESC, gv.created_at DESC
-            LIMIT %d OFFSET %d
-        ", $guest_id, $per_page, $offset)
+        $wpdb->prepare($visits_query, ...$visits_params)
     );
 }
 
@@ -121,29 +142,53 @@ $status_classes = [
 
 // Handle canceling a guest visit
 if ( isset($_POST['cancel_visit']) && isset($_POST['visit_id']) ) {
-   
+
     // Verify nonce for security
     if ( ! isset($_POST['cancel_visit_nonce']) ||
          ! wp_verify_nonce($_POST['cancel_visit_nonce'], 'cancel_visit_action') ) {
-        wp_die(__('Security check failed. Please try again.', 'vms'));
+        echo "<script>alert('Security check failed. Please try again.'); window.history.back();</script>";
+        exit;
     }
-   
+
     $visit_id = intval($_POST['visit_id']);
-   
+
     if ( $visit_id > 0 ) {
         global $wpdb;
-        
+        $guest_visits_table = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::GUEST_VISITS_TABLE);
+
         // Get the visit details before cancelling
         $visit = $wpdb->get_row($wpdb->prepare(
-            "SELECT guest_id, host_member_id, visit_date FROM $guest_visits_table WHERE id = %d",
+            "SELECT guest_id, host_member_id, visit_date, sign_in_time, status 
+             FROM $guest_visits_table 
+             WHERE id = %d",
             $visit_id
         ));
-        
-        if (!$visit) {
-            wp_die(__('Visit not found.', 'vms'));
+
+        if ( ! $visit ) {
+            echo "<script>alert('Visit not found.'); window.history.back();</script>";
+            exit;
         }
-       
-        // Update visit status to cancelled
+
+        // ❌ Prevent cancel if guest already signed in
+        if ( ! empty($visit->sign_in_time) ) {
+            echo "<script>alert('This visit cannot be cancelled because the guest has already signed in.'); window.history.back();</script>";
+            exit;
+        }
+
+        // ❌ Prevent cancel if date is in the past
+        $today = current_time('Y-m-d');
+        if ( $visit->visit_date < $today ) {
+            echo "<script>alert('This visit cannot be cancelled because the visit date has already passed.'); window.history.back();</script>";
+            exit;
+        }
+
+        // ❌ Prevent cancel if already cancelled
+        if ( $visit->status === 'cancelled' ) {
+            echo "<script>alert('This visit is already cancelled.'); window.history.back();</script>";
+            exit;
+        }
+
+        // ✅ Update visit status to cancelled
         $updated = $wpdb->update(
             $guest_visits_table,
             array( 'status' => 'cancelled' ),
@@ -151,24 +196,26 @@ if ( isset($_POST['cancel_visit']) && isset($_POST['visit_id']) ) {
             array( '%s' ),
             array( '%d' )
         );
-       
+
         if ( $updated !== false ) {
             // Trigger automatic status recalculation for the guest
             VMS_CoreManager::recalculate_guest_visit_statuses($visit->guest_id);
-            
-            // Also recalculate host's daily limits for that date
+
+            // Also recalc host's daily limits for that date
             if ($visit->host_member_id) {
                 VMS_CoreManager::recalculate_host_daily_limits($visit->host_member_id, $visit->visit_date);
             }
-            
-            // Success message or redirect
+
+            // Success redirect
             wp_safe_redirect( add_query_arg('visit_cancelled', '1', wp_get_referer()) );
             exit;
         } else {
-            wp_die(__('Failed to cancel visit. Please try again.', 'vms'));
+            echo "<script>alert('Failed to cancel visit. Please try again.'); window.history.back();</script>";
+            exit;
         }
     } else {
-        wp_die(__('Invalid visit ID.', 'vms'));
+        echo "<script>alert('Invalid visit ID.'); window.history.back();</script>";
+        exit;
     }
 }
 
@@ -197,12 +244,25 @@ get_header();
                 <!-- ===== Main Content Start ===== -->
                 <main>
 
-                    <div class="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
+                    <div class="p-4 mx-auto max-w-(--breakpoint-2xl) min-h-screen md:p-6">
                         <!-- Breadcrumb Start -->
-                        <div x-data="{ pageName: `Guest-details`}">
-                            <?php get_template_part( 'template-parts/content/content', 'breadcrumb' ); ?>
+                        <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+                            <a href="<?php echo esc_url( home_url( '/guests' ) ); ?>"
+                                class="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+                                <svg class="stroke-current" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                    viewBox="0 0 20 20" fill="none">
+                                    <path d="M12.7083 5L7.5 10.2083L12.7083 15.4167" stroke="" stroke-width="1.5"
+                                        stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                <?php esc_html_e( 'Back to Guests', 'vms' ); ?>
+                            </a>
+
+                            <h2 class="text-xl font-semibold text-gray-800 dark:text-white/90">
+                                <?php esc_html_e( 'Guest Details', 'vms' ); ?>
+                            </h2>
                         </div>
                         <!-- Breadcrumb End -->
+
                         <div class="py-8 mx-auto">
                             <div class="flex justify-center">
                                 <div class="w-full lg:w-5/6 xl:4/5 2xl:3/4">
@@ -481,6 +541,7 @@ get_header();
                                                         class="inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600 cursor-pointer">
                                                         <?php esc_html_e( 'Update Guest', 'vms' ); ?>
                                                     </button>
+                                                    <?php if ( ( current_user_can( 'administrator' ) || current_user_can( 'chairman' ) || current_user_can( 'general_manager' ) ) ) : ?>
                                                     <button type="reset"
                                                         class="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs ring-1 ring-inset ring-gray-300 transition hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-white/[0.03] cursor-pointer">
                                                         <?php esc_html_e( 'Reset', 'vms' ); ?>
@@ -490,6 +551,7 @@ get_header();
                                                         class="px-4 py-2 text-white bg-error-500 rounded-lg hover:bg-error-600 inline-flex items-center justify-center gap-2 shadow-theme-xs transition cursor-pointer">
                                                         <?php esc_html_e( 'Delete Guest', 'vms' ); ?>
                                                     </button>
+                                                    <?php endif; ?>
                                                 </div>
                                             </form>
 
@@ -876,15 +938,16 @@ get_header();
                         </div>
                     </div>
 
-                    <!-- BEGIN MODAL -->
-                    <?php get_template_part( 'template-parts/content/content', 'visit-modal' ); ?>
-                    <!-- END MODAL -->
-
-                    <!-- Footer -->
-                    <?php get_template_part('template-parts/content/content-footer', 'content'); ?>
-
                 </main>
                 <!-- ===== Main Content End ===== -->
+
+                <!-- BEGIN MODAL -->
+                <?php get_template_part( 'template-parts/content/content', 'visit-modal' ); ?>
+                <!-- END MODAL -->
+
+                <!-- ===== Footer Start ===== -->
+                <?php get_template_part( 'template-parts/content/content', 'footer' ); ?>
+                <!-- ===== Footer End ===== -->
             </div>
             <!-- ===== Content Area End ===== -->
         </div>

@@ -38,7 +38,7 @@ get_header();
 
             <!-- ===== Main Content Start ===== -->
             <main>
-                <div class="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
+                <div class="p-4 mx-auto max-w-(--breakpoint-2xl) min-h-screen md:p-6">
                     <!-- Breadcrumb Start -->
                     <div x-data="{ pageName: `Members`}">
                         <?php get_template_part( 'template-parts/content/content', 'breadcrumb' ); ?>
@@ -55,7 +55,7 @@ get_header();
                             </div>
                             <div class="flex flex-wrap w-full justify-between mb-4 px-5 sm:px-6 ">
                                 <!-- Search Form -->
-                                <div class="flex w-full items-center  md:w-1/2 mb-4 md:mb-0">
+                                <div class="flex w-full items-center md:w-1/2 mb-4 md:mb-0">
                                     <form action="" method="get">
                                         <div class="relative">
                                             <span class="absolute top-1/2 left-4 -translate-y-1/2">
@@ -134,6 +134,10 @@ get_header();
                 </div>
             </main>
             <!-- ===== Main Content End ===== -->
+
+            <!-- ===== Footer Start ===== -->
+            <?php get_template_part( 'template-parts/content/content', 'footer' ); ?>
+            <!-- ===== Footer End ===== -->
         </div>
         <!-- ===== Content Area End ===== -->
     </div>

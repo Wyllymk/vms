@@ -47,7 +47,7 @@ $last_checked_time = get_option( 'vms_sms_last_check', 'Never' );
 
             <!-- ===== Main Content Start ===== -->
             <main>
-                <div class="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
+                <div class="p-4 mx-auto max-w-(--breakpoint-2xl) min-h-screen md:p-6">
                     <!-- Breadcrumb Start -->
                     <div x-data="{ pageName: `SMS Settings`}">
                         <?php get_template_part( 'template-parts/content/content', 'breadcrumb' ); ?>
@@ -269,6 +269,10 @@ $last_checked_time = get_option( 'vms_sms_last_check', 'Never' );
                 </div>
             </main>
             <!-- ===== Main Content End ===== -->
+
+            <!-- ===== Footer Start ===== -->
+            <?php get_template_part( 'template-parts/content/content', 'footer' ); ?>
+            <!-- ===== Footer End ===== -->
         </div>
         <!-- ===== Content Area End ===== -->
     </div>

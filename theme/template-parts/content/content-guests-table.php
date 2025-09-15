@@ -1,6 +1,6 @@
 <?php
 /**
- * Template part for displaying guests table with pagination
+ * Template part for displaying guests table with pagination and role-based filtering
  *
  * @link https://developer.wordpress.org/themes/basics/template-hierarchy/
  *
@@ -11,6 +11,29 @@ defined( 'ABSPATH' ) || exit;
 global $wpdb;
 $guests_table = \WyllyMk\VMS\VMS_Config::get_table_name( \WyllyMk\VMS\VMS_Config::GUESTS_TABLE );
 $guest_visits_table = \WyllyMk\VMS\VMS_Config::get_table_name( \WyllyMk\VMS\VMS_Config::GUEST_VISITS_TABLE );
+
+// Get current user and their role
+$current_user = wp_get_current_user();
+$current_user_id = $current_user->ID;
+$user_roles = $current_user->roles;
+
+// Determine role-based filtering
+$role_filter = '';
+$role_filter_count = '';
+$is_member_or_chairman = in_array('member', $user_roles) || in_array('chairman', $user_roles);
+$is_gate = in_array('gate', $user_roles);
+
+if ($is_member_or_chairman) {
+    // Show only visits where current user is the host
+    $role_filter = $wpdb->prepare(" AND v.host_member_id = %d", $current_user_id);
+    $role_filter_count = $wpdb->prepare(" AND v.host_member_id = %d", $current_user_id);
+} elseif ($is_gate) {
+    // Show only today's visits
+    $today = current_time('Y-m-d');
+    $role_filter = $wpdb->prepare(" AND DATE(v.visit_date) = %s", $today);
+    $role_filter_count = $wpdb->prepare(" AND DATE(v.visit_date) = %s", $today);
+}
+// For other roles (admin, etc.), no additional filter is applied (show all)
 
 // Pagination
 $guests_per_page = isset($_GET['per_page']) ? max(1, intval($_GET['per_page'])) : 25;
@@ -39,15 +62,35 @@ if (isset($_GET['search_users']) && !empty($_GET['user_search'])) {
     );
 }
 
-// Count total guest visits (not just guests)
+// Build the complete WHERE clause for role filtering
+$complete_where_clause = $where_visits_clause;
+if (!empty($role_filter_count)) {
+    if (!empty($complete_where_clause)) {
+        $complete_where_clause .= $role_filter_count;
+    } else {
+        $complete_where_clause = " WHERE 1=1" . $role_filter_count;
+    }
+}
+
+// Count total guest visits with role filtering
 $count_visits_query = "SELECT COUNT(DISTINCT v.id) 
                       FROM {$guest_visits_table} v 
-                      LEFT JOIN {$guests_table} g ON v.guest_id = g.id" . $where_visits_clause;
+                      LEFT JOIN {$guests_table} g ON v.guest_id = g.id" . $complete_where_clause;
 
 $total_visits = $wpdb->get_var($count_visits_query);
 $total_pages = ceil($total_visits / $guests_per_page);
 
-// Fetch guest visits with guest details
+// Build the complete WHERE clause for main query
+$complete_main_where = $where_visits_clause;
+if (!empty($role_filter)) {
+    if (!empty($complete_main_where)) {
+        $complete_main_where .= $role_filter;
+    } else {
+        $complete_main_where = " WHERE 1=1" . $role_filter;
+    }
+}
+
+// Fetch guest visits with guest details and role filtering
 $query = "SELECT 
             g.*, 
             v.id AS visit_id, 
@@ -65,7 +108,7 @@ $query = "SELECT
         LEFT JOIN {$wpdb->users} u ON v.host_member_id = u.ID
         LEFT JOIN {$wpdb->usermeta} um1 ON (u.ID = um1.user_id AND um1.meta_key = 'first_name')
         LEFT JOIN {$wpdb->usermeta} um2 ON (u.ID = um2.user_id AND um2.meta_key = 'last_name')
-        " . $where_visits_clause . "
+        " . $complete_main_where . "
         GROUP BY v.id
         ORDER BY v.visit_date DESC, v.id DESC
         LIMIT {$guests_per_page} OFFSET {$offset}";
@@ -235,6 +278,9 @@ $status_classes = [
                             : ($guest->display_name ?? 'N/A');
 
                         $is_courtesy = empty($full_host_name) && !empty($guest->courtesy);
+
+                        $current_role = $current_user->roles;
+                        $is_member_or_chairman = in_array('member', $current_role) || in_array('chairman', $current_role);
                 ?>
                 <tr data-guest-id="<?php echo esc_attr($guest->id); ?>"
                     data-visit-id="<?php echo esc_attr($guest->visit_id); ?>">
@@ -344,15 +390,17 @@ $status_classes = [
 
                             <?php elseif ($visit_status === 'signin') : ?>
                             <button id="sign-in-button-<?php echo esc_attr($guest->id); ?>"
-                                class="whitespace-nowrap inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-brand-500 rounded-lg cursor-pointer hover:bg-brand-600"
-                                data-visit-id="<?php echo esc_attr($guest->visit_id); ?>">
+                                class="whitespace-nowrap inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-brand-500 rounded-lg cursor-pointer hover:bg-brand-600 <?php echo $is_member_or_chairman ? 'opacity-50 !cursor-not-allowed' : ''; ?>"
+                                data-visit-id="<?php echo esc_attr($guest->visit_id); ?>"
+                                <?php echo $is_member_or_chairman ? 'disabled' : ''; ?>>
                                 <?php esc_html_e('Sign In', 'vms'); ?>
                             </button>
 
                             <?php elseif ($visit_status === 'signout') : ?>
                             <button id="sign-out-button-<?php echo esc_attr($guest->id); ?>"
-                                class="whitespace-nowrap inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-purple-500 rounded-lg cursor-pointer hover:bg-purple-600"
-                                data-visit-id="<?php echo esc_attr($guest->visit_id); ?>">
+                                class="whitespace-nowrap inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-purple-500 rounded-lg cursor-pointer hover:bg-purple-600 <?php echo $is_member_or_chairman ? 'opacity-50 !cursor-not-allowed' : ''; ?>"
+                                data-visit-id="<?php echo esc_attr($guest->visit_id); ?>"
+                                <?php echo $is_member_or_chairman ? 'disabled' : ''; ?>>
                                 <?php esc_html_e('Sign Out', 'vms'); ?>
                             </button>
 

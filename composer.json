@@ -18,5 +18,8 @@
 		"allow-plugins": {
 			"dealerdirect/phpcodesniffer-composer-installer": true
 		}
+	},
+	"require": {
+		"yahnis-elsts/plugin-update-checker": "^5.6"
 	}
 }

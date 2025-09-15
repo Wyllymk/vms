@@ -15,3 +15,21 @@ add_filter('redirect_canonical', function($redirect_url, $requested_url) {
     }
     return $redirect_url;
 }, 10, 2);
+
+/**
+ * Update Checker
+ * https://github.com/YahnisElsts/plugin-update-checker
+ */
+require get_template_directory() . '/vendor/autoload.php';
+
+use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
+
+$myThemeUpdateChecker = PucFactory::buildUpdateChecker(
+    'https://github.com/Wyllymk/vms/',
+    get_theme_file_path('functions.php'),
+    'vms'
+);
+
+// Same thing: point to branch if needed
+$myThemeUpdateChecker->setBranch('main');
+$myThemeUpdateChecker->setAuthentication('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');

@@ -50,32 +50,69 @@ defined( 'ABSPATH' ) || exit;
                                 <?php esc_html_e('Host Member', 'vms'); ?>
                                 <span class="text-error-500">*</span>
                             </label>
-                            <select name="host_member_id" required
-                                class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800">
+
+                            <?php
+                            $current_user = wp_get_current_user();
+                            $user_roles   = (array) $current_user->roles;
+
+                            $is_locked = in_array( 'member', $user_roles, true ) || in_array( 'chairman', $user_roles, true );
+
+                            // Get all active members and chairmen
+                            $members = get_users( array(
+                                'role__in'   => array( 'member', 'chairman' ),
+                                'orderby'    => 'display_name', // order still by display_name
+                                'fields'     => array( 'ID', 'user_email' ),
+                                'meta_query' => array(
+                                    array(
+                                        'key'     => 'registration_status',
+                                        'value'   => 'active',
+                                        'compare' => '='
+                                    )
+                                )
+                            ) );
+
+                            // helper to get full name
+                            function vms_get_full_name( $user_id ) {
+                                $first = get_user_meta( $user_id, 'first_name', true );
+                                $last  = get_user_meta( $user_id, 'last_name', true );
+                                $full  = trim( $first . ' ' . $last );
+                                return $full ?: get_the_author_meta( 'display_name', $user_id );
+                            }
+                            ?>
+
+                            <select name="host_member_id" required <?php echo $is_locked ? 'disabled' : ''; ?>
+                                class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800">
+
+                                <?php if ( ! $is_locked ) : ?>
                                 <option value=""><?php esc_html_e('Select Host Member', 'vms'); ?></option>
+                                <?php endif; ?>
+
                                 <?php
-                                // Get all users with 'member' or 'chairman' role
-                                $members = get_users(array(
-                                    'role__in' => array('member', 'chairman'),
-                                    'orderby'  => 'display_name',
-                                    'fields'   => array('ID', 'display_name', 'user_email')
-                                ));
-
-                                foreach ($members as $member) {
-                                    // Only include users with registration_status = 'active'
-                                    $status = get_user_meta($member->ID, 'registration_status', true);
-                                    if ($status !== 'active') {
-                                        continue;
-                                    }
-
-                                    $selected = isset($_POST['host_member_id']) && $_POST['host_member_id'] == $member->ID ? 'selected' : '';
-                                    echo '<option value="' . esc_attr($member->ID) . '" ' . $selected . '>' 
-                                        . esc_html($member->display_name) . ' (' . esc_html($member->user_email) . ')' 
+                                if ( $is_locked ) {
+                                    // Always show the current user (locked)
+                                    $full_name = vms_get_full_name( $current_user->ID );
+                                    echo '<option value="' . esc_attr( $current_user->ID ) . '" selected>'
+                                        . esc_html( $full_name ) 
                                         . '</option>';
+                                } else {
+                                    // Show all active members/chairmen
+                                    foreach ( $members as $member ) {
+                                        $selected  = ( isset( $_POST['host_member_id'] ) && (int) $_POST['host_member_id'] === $member->ID ) ? 'selected' : '';
+                                        $full_name = vms_get_full_name( $member->ID );
+
+                                        echo '<option value="' . esc_attr( $member->ID ) . '" ' . $selected . '>'
+                                            . esc_html( $full_name ) 
+                                            . '</option>';
+                                    }
                                 }
                                 ?>
                             </select>
 
+                            <?php if ( $is_locked ) : ?>
+                            <!-- Hidden field ensures the locked user's ID still gets submitted -->
+                            <input type="hidden" name="host_member_id"
+                                value="<?php echo esc_attr( $current_user->ID ); ?>">
+                            <?php endif; ?>
                         </div>
 
                         <!-- Visit Date -->

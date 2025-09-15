@@ -61,7 +61,7 @@ $user_role        = !empty($current_user->roles) ? $current_user->roles[0] : 'gu
 
             <!-- ===== Main Content Start ===== -->
             <main>
-                <div class="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
+                <div class="p-4 mx-auto max-w-(--breakpoint-2xl) min-h-screen md:p-6">
                     <!-- Breadcrumb Start -->
                     <div x-data="{ pageName: `Profile`}">
                         <?php get_template_part( 'template-parts/content/content', 'breadcrumb' ); ?>
@@ -344,6 +344,10 @@ $user_role        = !empty($current_user->roles) ? $current_user->roles[0] : 'gu
                 </div>
             </main>
             <!-- ===== Main Content End ===== -->
+
+            <!-- ===== Footer Start ===== -->
+            <?php get_template_part( 'template-parts/content/content', 'footer' ); ?>
+            <!-- ===== Footer End ===== -->
         </div>
         <!-- ===== Content Area End ===== -->
     </div>

@@ -37,7 +37,7 @@ defined( 'ABSPATH' ) || exit;
             <?php wp_nonce_field('create_user_data', '_wpnonce_create_user_data'); ?>
             <input type="hidden" name="register_guest" value="1">
 
-            <div class="custom-scrollbar h-xl overflow-y-auto px-2">
+            <div class="custom-scrollbar h-2xl overflow-y-auto px-2">
                 <div class="">
                     <h5 class="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
                         <?php esc_html_e('Personal Information', 'vms'); ?>
@@ -68,17 +68,6 @@ defined( 'ABSPATH' ) || exit;
                                 required />
                         </div>
 
-                        <!-- Email -->
-                        <div class="col-span-2 lg:col-span-1">
-                            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                <?php esc_html_e('Email address', 'vms'); ?>
-                                <span class="text-error-500">*</span>
-                            </label>
-                            <input type="email" name="email" value="<?php echo esc_attr($_POST['email'] ?? ''); ?>"
-                                class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-                                required />
-                        </div>
-
                         <!-- Phone -->
                         <div class="col-span-2 lg:col-span-1">
                             <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
@@ -94,51 +83,75 @@ defined( 'ABSPATH' ) || exit;
                             </p>
                         </div>
 
-                        <!-- ID Number -->
-                        <div class="col-span-2 lg:col-span-1">
-                            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                <?php esc_html_e('ID Number', 'vms'); ?>
-                                <span class="text-error-500">*</span>
-                            </label>
-                            <input type="number" name="id_number"
-                                value="<?php echo esc_attr($_POST['id_number'] ?? ''); ?>"
-                                class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-                                required />
-                        </div>
-
                         <!-- Host Member Dropdown -->
                         <div class="col-span-2 lg:col-span-1">
                             <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                                 <?php esc_html_e('Host Member', 'vms'); ?>
                                 <span class="text-error-500">*</span>
                             </label>
-                            <select name="host_member_id" required
-                                class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800">
-                                <option value=""><?php esc_html_e('Select Host Member', 'vms'); ?></option>
-                                <?php
-                                // Get all members who are either 'member' or 'chairman' AND have registration_status = active
-                                $members = get_users(array(
-                                    'role__in'   => array('member', 'chairman'),
-                                    'orderby'    => 'display_name',
-                                    'fields'     => array('ID', 'display_name', 'user_email'),
-                                    'meta_query' => array(
-                                        array(
-                                            'key'     => 'registration_status',
-                                            'value'   => 'active',
-                                            'compare' => '='
-                                        )
-                                    )
-                                ));
 
-                                foreach ($members as $member) {
-                                    $selected = isset($_POST['host_member_id']) && $_POST['host_member_id'] == $member->ID ? 'selected' : '';
-                                    echo '<option value="' . esc_attr($member->ID) . '" ' . $selected . '>'
-                                        . esc_html($member->display_name) . ' (' . esc_html($member->user_email) . ')'
+                            <?php
+                            $current_user = wp_get_current_user();
+                            $user_roles   = (array) $current_user->roles;
+
+                            $is_locked = in_array( 'member', $user_roles, true ) || in_array( 'chairman', $user_roles, true );
+
+                            // Get all active members and chairmen
+                            $members = get_users( array(
+                                'role__in'   => array( 'member', 'chairman' ),
+                                'orderby'    => 'display_name', // order still by display_name
+                                'fields'     => array( 'ID', 'user_email' ),
+                                'meta_query' => array(
+                                    array(
+                                        'key'     => 'registration_status',
+                                        'value'   => 'active',
+                                        'compare' => '='
+                                    )
+                                )
+                            ) );
+
+                            // helper to get full name
+                            function vms_get_full_name( $user_id ) {
+                                $first = get_user_meta( $user_id, 'first_name', true );
+                                $last  = get_user_meta( $user_id, 'last_name', true );
+                                $full  = trim( $first . ' ' . $last );
+                                return $full ?: get_the_author_meta( 'display_name', $user_id );
+                            }
+                            ?>
+
+                            <select name="host_member_id" required <?php echo $is_locked ? 'disabled' : ''; ?>
+                                class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800">
+
+                                <?php if ( ! $is_locked ) : ?>
+                                <option value=""><?php esc_html_e('Select Host Member', 'vms'); ?></option>
+                                <?php endif; ?>
+
+                                <?php
+                                if ( $is_locked ) {
+                                    // Always show the current user (locked)
+                                    $full_name = vms_get_full_name( $current_user->ID );
+                                    echo '<option value="' . esc_attr( $current_user->ID ) . '" selected>'
+                                        . esc_html( $full_name ) 
                                         . '</option>';
+                                } else {
+                                    // Show all active members/chairmen
+                                    foreach ( $members as $member ) {
+                                        $selected  = ( isset( $_POST['host_member_id'] ) && (int) $_POST['host_member_id'] === $member->ID ) ? 'selected' : '';
+                                        $full_name = vms_get_full_name( $member->ID );
+
+                                        echo '<option value="' . esc_attr( $member->ID ) . '" ' . $selected . '>'
+                                            . esc_html( $full_name ) 
+                                            . '</option>';
+                                    }
                                 }
                                 ?>
                             </select>
 
+                            <?php if ( $is_locked ) : ?>
+                            <!-- Hidden field ensures the locked user's ID still gets submitted -->
+                            <input type="hidden" name="host_member_id"
+                                value="<?php echo esc_attr( $current_user->ID ); ?>">
+                            <?php endif; ?>
                         </div>
 
                         <!-- Visit Date -->
@@ -153,74 +166,14 @@ defined( 'ABSPATH' ) || exit;
                                 required />
                         </div>
 
-                        <!-- Preferences -->
-                        <div x-data="{ checkboxToggle: <?php echo checked(true, true, false) ? 'true' : 'false'; ?> }">
-                            <label for="receive_messages"
-                                class="flex cursor-pointer items-center text-sm font-medium text-gray-700 select-none dark:text-gray-400">
-                                <div class="relative">
-                                    <!-- Real checkbox (submits with form) -->
-                                    <input type="checkbox" id="receive_messages" name="receive_messages" value="yes"
-                                        <?php checked(true); ?> class="sr-only"
-                                        @change="checkboxToggle = !checkboxToggle">
-
-                                    <!-- Custom styled checkbox -->
-                                    <div :class="checkboxToggle ? 'border-brand-500 bg-brand-500' : 'bg-transparent border-gray-300 dark:border-gray-700'"
-                                        class="mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px] transition">
-                                        <span :class="checkboxToggle ? '' : 'opacity-0'">
-                                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"
-                                                xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M11.6666 3.5L5.24992 9.91667L2.33325 7" stroke="white"
-                                                    stroke-width="1.94437" stroke-linecap="round"
-                                                    stroke-linejoin="round"></path>
-                                            </svg>
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <!-- Label text -->
-                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                                    <?php esc_html_e('Receive messages', 'vms'); ?>
-                                </span>
-                            </label>
-                        </div>
-
-                        <div x-data="{ checkboxToggle: <?php echo checked(true, true, false) ? 'true' : 'false'; ?> }">
-                            <label for="receive_emails"
-                                class="flex cursor-pointer items-center text-sm font-medium text-gray-700 select-none dark:text-gray-400">
-                                <div class="relative">
-                                    <!-- Real checkbox (submits with form) -->
-                                    <input type="checkbox" id="receive_emails" name="receive_emails" value="yes"
-                                        <?php checked(true); ?> class="sr-only"
-                                        @change="checkboxToggle = !checkboxToggle">
-
-                                    <!-- Custom styled checkbox -->
-                                    <div :class="checkboxToggle ? 'border-brand-500 bg-brand-500' : 'bg-transparent border-gray-300 dark:border-gray-700'"
-                                        class="mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px] transition">
-                                        <span :class="checkboxToggle ? '' : 'opacity-0'">
-                                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"
-                                                xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M11.6666 3.5L5.24992 9.91667L2.33325 7" stroke="white"
-                                                    stroke-width="1.94437" stroke-linecap="round"
-                                                    stroke-linejoin="round"></path>
-                                            </svg>
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <!-- Label text -->
-                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                                    <?php esc_html_e('Receive emails', 'vms'); ?>
-                                </span>
-                            </label>
-                        </div>
                     </div>
                 </div>
             </div>
 
             <div class="flex items-center gap-3 px-2 mt-6 lg:justify-end">
-                <button type="reset"
+                <button @click="isGuestInfoModal = false"
                     class="cursor-pointer flex w-full justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] sm:w-auto">
-                    <?php esc_html_e('Reset', 'vms'); ?>
+                    <?php esc_html_e('Close', 'vms'); ?>
                 </button>
                 <button type="submit" id="submit-guest-form"
                     class="cursor-pointer flex w-full justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 sm:w-auto">

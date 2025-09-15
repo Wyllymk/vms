@@ -45,7 +45,8 @@ if ( isset( $_POST['login'] ) ) {
 <section class="login-content" x-data="{ page: 'login' }">
     <!-- ===== Page Wrapper Start ===== -->
     <div class="relative p-6 bg-white z-1 dark:bg-gray-900 sm:p-0">
-        <div class="relative flex flex-col justify-center w-full h-screen dark:bg-gray-900 sm:p-0 lg:flex-row">
+        <div
+            class="relative flex flex-col justify-center w-full h-[90vh] md:h-screen dark:bg-gray-900 sm:p-0 lg:flex-row">
             <!-- Form -->
             <div class="flex flex-col flex-1 w-full lg:w-1/2">
                 <div class="w-full max-w-md pt-10 mx-auto">
@@ -200,7 +201,7 @@ if ( isset( $_POST['login'] ) ) {
                 </div>
             </div>
             <!-- Toggler -->
-            <div class="fixed z-50 hidden bottom-6 right-6 sm:block">
+            <div class="fixed z-50 bottom-6 right-6">
                 <button
                     class="inline-flex items-center justify-center text-white transition-colors rounded-full size-14 bg-brand-500 hover:bg-brand-600"
                     @click.prevent="darkMode = !darkMode">

@@ -3598,25 +3598,48 @@ jQuery(document).ready(function ($) {
 			.text()
 			.trim();
 
-		// Show confirmation modal
+		// Show confirmation modal with ID input
 		const confirmModal = `
-		<div id="sign-in-confirm-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
-			<div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
-				<div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
-					<svg class="h-6 w-6 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-					</svg>
-				</div>
-				<h3 class="mb-2 text-lg font-medium text-gray-900 dark:text-white">Sign In Guest</h3>
-				<p class="mb-6 text-sm text-gray-500 dark:text-gray-400">Sign in "${guestName}" to the system?</p>
-				<div class="flex gap-3">
-					<button id="cancel-sign-in-btn" type="button" class="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">Cancel</button>
-					<button id="confirm-sign-in-btn" type="button" class="flex-1 rounded-lg bg-green-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-green-600" data-visit-id="${visitId}">Sign In</button>
-				</div>
+	<div id="sign-in-confirm-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+		<div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+			<div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+				<svg class="h-6 w-6 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+				</svg>
+			</div>
+			<h3 class="mb-2 text-lg font-medium text-gray-900 dark:text-white">Sign In Guest</h3>
+			<p class="mb-4 text-sm text-gray-500 dark:text-gray-400">Enter ID Number for "${guestName}" to continue:</p>
+			
+			<input type="number" id="guest-id-number" placeholder="Enter ID Number" 
+				class="mb-4 dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" 
+				min="10000" />
+
+			<div class="flex gap-3">
+				<button id="cancel-sign-in-btn" type="button" 
+					class="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
+					Cancel
+				</button>
+				<button id="confirm-sign-in-btn" type="button" 
+					class="flex-1 rounded-lg bg-green-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
+					data-visit-id="${visitId}" disabled>
+					Sign In
+				</button>
 			</div>
 		</div>
+	</div>
 	`;
+
 		$('body').append(confirmModal);
+	});
+
+	// Enable Sign In button only when ID is valid (>= 5 digits)
+	$(document).on('input', '#guest-id-number', function () {
+		const idNumber = $(this).val().trim();
+		if (idNumber.length >= 5) {
+			$('#confirm-sign-in-btn').prop('disabled', false);
+		} else {
+			$('#confirm-sign-in-btn').prop('disabled', true);
+		}
 	});
 
 	// Cancel Sign In
@@ -3629,6 +3652,7 @@ jQuery(document).ready(function ($) {
 	// Confirm Sign In
 	$(document).on('click', '#confirm-sign-in-btn', function () {
 		const visitId = $(this).data('visit-id');
+		const idNumber = $('#guest-id-number').val().trim();
 		const button = $(`[id^="sign-in-button-"][data-visit-id="${visitId}"]`);
 
 		// Show loading
@@ -3644,6 +3668,7 @@ jQuery(document).ready(function ($) {
 			data: {
 				action: 'sign_in_guest',
 				visit_id: visitId,
+				id_number: idNumber, // NEW
 				nonce: vms_script_ajax.nonce,
 			},
 			dataType: 'json',

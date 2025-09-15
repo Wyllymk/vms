@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-09-04T09:18:47+00:00\n"
+"POT-Creation-Date: 2025-09-15T15:02:10+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.11.0\n"
 "X-Domain: vms\n"
@@ -53,7 +53,7 @@ msgid "Back to Home Page"
 msgstr ""
 
 #: theme/404.php:72
-#: theme/template-parts/content/content-sidebar.php:24
+#: theme/template-parts/content/content-sidebar.php:38
 msgid "Nyeri Club"
 msgstr ""
 
@@ -86,8 +86,14 @@ msgstr ""
 msgid "Login"
 msgstr ""
 
-#: theme/front-page.php:64
-#: theme/template-parts/content/content-sidebar.php:67
+#: theme/front-page.php:60
+#: theme/page-templates/page-guests.php:87
+#: theme/template-parts/content/content-guest-modal.php:30
+msgid "Register Guest"
+msgstr ""
+
+#: theme/front-page.php:63
+#: theme/template-parts/content/content-sidebar.php:82
 msgid "Dashboard"
 msgstr ""
 
@@ -168,7 +174,7 @@ msgstr ""
 #: theme/template-parts/content/content-clubs-table.php:205
 #: theme/template-parts/content/content-employees-table.php:192
 #: theme/template-parts/content/content-employees-table.php:300
-#: theme/template-parts/content/content-guests-table.php:307
+#: theme/template-parts/content/content-guests-table.php:353
 #: theme/template-parts/content/content-members-table.php:187
 #: theme/template-parts/content/content-members-table.php:290
 #: theme/template-parts/content/content-reciprocating-table.php:273
@@ -228,7 +234,7 @@ msgid "Register Club"
 msgstr ""
 
 #: theme/page-templates/page-clubs.php:103
-#: theme/page-templates/page-guests.php:107
+#: theme/page-templates/page-guests.php:109
 #: theme/page-templates/page-profile.php:84
 #: theme/page-templates/page-reciprocating-members.php:103
 #: theme/page-templates/page-register.php:167
@@ -237,16 +243,18 @@ msgstr ""
 
 #: theme/page-templates/page-clubs.php:109
 #: theme/page-templates/page-clubs.php:137
-#: theme/page-templates/page-guests.php:113
-#: theme/page-templates/page-guests.php:141
+#: theme/page-templates/page-guests.php:115
+#: theme/page-templates/page-guests.php:143
 #: theme/page-templates/page-reciprocating-members.php:109
 #: theme/page-templates/page-reciprocating-members.php:137
+#: theme/template-parts/content/content-courtesy-guest-modal.php:106
+#: theme/template-parts/content/content-guest-modal.php:176
 #: theme/template-parts/content/content-info-modal.php:123
 msgid "Close"
 msgstr ""
 
 #: theme/page-templates/page-clubs.php:131
-#: theme/page-templates/page-guests.php:135
+#: theme/page-templates/page-guests.php:137
 #: theme/page-templates/page-reciprocating-members.php:131
 msgid "Error!"
 msgstr ""
@@ -264,32 +272,28 @@ msgstr ""
 #: theme/page-templates/page-details.php:293
 #: theme/page-templates/page-details.php:417
 #: theme/page-templates/page-employee-details.php:292
-#: theme/page-templates/page-guest-details.php:128
 #: theme/page-templates/page-reciprocating-member-details.php:194
 msgid "Security check failed. Please try again."
 msgstr ""
 
 #: theme/page-templates/page-details.php:432
-#: theme/page-templates/page-guest-details.php:143
 #: theme/page-templates/page-reciprocating-member-details.php:211
 msgid "Visit not found."
 msgstr ""
 
 #: theme/page-templates/page-details.php:457
-#: theme/page-templates/page-guest-details.php:168
 #: theme/page-templates/page-reciprocating-member-details.php:231
 msgid "Failed to cancel visit. Please try again."
 msgstr ""
 
 #: theme/page-templates/page-details.php:460
-#: theme/page-templates/page-guest-details.php:171
 #: theme/page-templates/page-reciprocating-member-details.php:234
 msgid "Invalid visit ID."
 msgstr ""
 
 #: theme/page-templates/page-details.php:505
 #: theme/page-templates/page-employee-details.php:402
-#: theme/page-templates/page-guest-details.php:217
+#: theme/page-templates/page-guest-details.php:277
 #: theme/page-templates/page-profile.php:175
 #: theme/template-parts/content/content-courtesy-guest-modal.php:44
 #: theme/template-parts/content/content-employee-modal.php:42
@@ -328,13 +332,13 @@ msgstr ""
 
 #: theme/page-templates/page-details.php:647
 #: theme/page-templates/page-employee-details.php:544
-#: theme/page-templates/page-guest-details.php:240
+#: theme/page-templates/page-guest-details.php:300
 msgid "First Name:"
 msgstr ""
 
 #: theme/page-templates/page-details.php:660
 #: theme/page-templates/page-employee-details.php:557
-#: theme/page-templates/page-guest-details.php:264
+#: theme/page-templates/page-guest-details.php:324
 msgid "Last Name:"
 msgstr ""
 
@@ -344,7 +348,7 @@ msgstr ""
 
 #: theme/page-templates/page-details.php:686
 #: theme/page-templates/page-employee-details.php:570
-#: theme/page-templates/page-guest-details.php:311
+#: theme/page-templates/page-guest-details.php:371
 msgid "Phone Number:"
 msgstr ""
 
@@ -375,15 +379,13 @@ msgstr ""
 
 #: theme/page-templates/page-details.php:888
 #: theme/page-templates/page-employee-details.php:773
-#: theme/page-templates/page-guest-details.php:486
+#: theme/page-templates/page-guest-details.php:547
 #: theme/template-parts/content/content-club-edit-modal.php:128
 #: theme/template-parts/content/content-club-modal.php:103
-#: theme/template-parts/content/content-courtesy-guest-modal.php:189
 #: theme/template-parts/content/content-employee-modal.php:187
-#: theme/template-parts/content/content-guest-modal.php:223
 #: theme/template-parts/content/content-recip-visit-modal.php:67
 #: theme/template-parts/content/content-reciprocation-modal.php:215
-#: theme/template-parts/content/content-visit-modal.php:100
+#: theme/template-parts/content/content-visit-modal.php:137
 msgid "Reset"
 msgstr ""
 
@@ -397,12 +399,12 @@ msgid "Guest Visits"
 msgstr ""
 
 #: theme/page-templates/page-details.php:917
-#: theme/page-templates/page-guest-details.php:512
+#: theme/page-templates/page-guest-details.php:574
 msgid "Register New Visit"
 msgstr ""
 
 #: theme/page-templates/page-details.php:1114
-#: theme/page-templates/page-guest-details.php:741
+#: theme/page-templates/page-guest-details.php:803
 #: theme/page-templates/page-reciprocating-member-details.php:802
 msgid "Cancel"
 msgstr ""
@@ -416,118 +418,126 @@ msgstr ""
 msgid "Register Employee"
 msgstr ""
 
-#: theme/page-templates/page-guest-details.php:288
+#: theme/page-templates/page-guest-details.php:257
+msgid "Back to Guests"
+msgstr ""
+
+#: theme/page-templates/page-guest-details.php:261
+msgid "Guest Details"
+msgstr ""
+
+#: theme/page-templates/page-guest-details.php:348
 msgid "Email:"
 msgstr ""
 
-#: theme/page-templates/page-guest-details.php:338
+#: theme/page-templates/page-guest-details.php:398
 msgid "ID Number:"
 msgstr ""
 
-#: theme/page-templates/page-guest-details.php:367
+#: theme/page-templates/page-guest-details.php:427
 msgid "Status:"
 msgstr ""
 
-#: theme/page-templates/page-guest-details.php:391
+#: theme/page-templates/page-guest-details.php:451
 msgid "Active"
 msgstr ""
 
-#: theme/page-templates/page-guest-details.php:395
-#: theme/template-parts/content/content-guests-table.php:327
+#: theme/page-templates/page-guest-details.php:455
+#: theme/template-parts/content/content-guests-table.php:373
 #: theme/template-parts/content/content-reciprocating-table.php:293
 msgid "Suspended"
 msgstr ""
 
-#: theme/page-templates/page-guest-details.php:399
-#: theme/template-parts/content/content-guests-table.php:333
+#: theme/page-templates/page-guest-details.php:459
+#: theme/template-parts/content/content-guests-table.php:379
 #: theme/template-parts/content/content-reciprocating-table.php:299
 msgid "Banned"
 msgstr ""
 
-#: theme/page-templates/page-guest-details.php:445
+#: theme/page-templates/page-guest-details.php:505
 msgid "Receive Messages?"
 msgstr ""
 
-#: theme/page-templates/page-guest-details.php:471
+#: theme/page-templates/page-guest-details.php:531
 msgid "Receive Emails?"
 msgstr ""
 
-#: theme/page-templates/page-guest-details.php:482
+#: theme/page-templates/page-guest-details.php:542
 msgid "Update Guest"
 msgstr ""
 
-#: theme/page-templates/page-guest-details.php:491
+#: theme/page-templates/page-guest-details.php:552
 msgid "Delete Guest"
 msgstr ""
 
-#: theme/page-templates/page-guest-details.php:506
+#: theme/page-templates/page-guest-details.php:568
 msgid "Guest Visits -"
 msgstr ""
 
-#: theme/page-templates/page-guest-details.php:576
+#: theme/page-templates/page-guest-details.php:638
 #: theme/template-parts/content/content-clubs-table.php:108
 #: theme/template-parts/content/content-employees-table.php:23
-#: theme/template-parts/content/content-guests-table.php:147
+#: theme/template-parts/content/content-guests-table.php:190
 #: theme/template-parts/content/content-members-table.php:23
 #: theme/template-parts/content/content-reciprocating-table.php:133
 #: theme/template-parts/content/content-table.php:46
 msgid "#"
 msgstr ""
 
-#: theme/page-templates/page-guest-details.php:584
-#: theme/template-parts/content/content-guest-modal.php:112
-#: theme/template-parts/content/content-guests-table.php:182
+#: theme/page-templates/page-guest-details.php:646
+#: theme/template-parts/content/content-guest-modal.php:89
+#: theme/template-parts/content/content-guests-table.php:225
 #: theme/template-parts/content/content-table.php:81
 #: theme/template-parts/content/content-visit-modal.php:50
 msgid "Host Member"
 msgstr ""
 
-#: theme/page-templates/page-guest-details.php:592
-#: theme/template-parts/content/content-courtesy-guest-modal.php:113
-#: theme/template-parts/content/content-guest-modal.php:147
-#: theme/template-parts/content/content-guests-table.php:189
+#: theme/page-templates/page-guest-details.php:654
+#: theme/template-parts/content/content-courtesy-guest-modal.php:90
+#: theme/template-parts/content/content-guest-modal.php:160
+#: theme/template-parts/content/content-guests-table.php:232
 #: theme/template-parts/content/content-recip-visit-modal.php:51
 #: theme/template-parts/content/content-reciprocating-table.php:175
 #: theme/template-parts/content/content-reciprocation-modal.php:142
 #: theme/template-parts/content/content-table.php:88
-#: theme/template-parts/content/content-visit-modal.php:84
+#: theme/template-parts/content/content-visit-modal.php:121
 msgid "Visit Date"
 msgstr ""
 
-#: theme/page-templates/page-guest-details.php:600
+#: theme/page-templates/page-guest-details.php:662
 msgid "Sign In Time"
 msgstr ""
 
-#: theme/page-templates/page-guest-details.php:608
+#: theme/page-templates/page-guest-details.php:670
 msgid "Sign Out Time"
 msgstr ""
 
-#: theme/page-templates/page-guest-details.php:616
+#: theme/page-templates/page-guest-details.php:678
 msgid "Duration"
 msgstr ""
 
-#: theme/page-templates/page-guest-details.php:624
+#: theme/page-templates/page-guest-details.php:686
 #: theme/page-templates/page-profile.php:231
 #: theme/template-parts/content/content-club-edit-modal.php:92
 #: theme/template-parts/content/content-clubs-table.php:122
 #: theme/template-parts/content/content-employees-table.php:65
-#: theme/template-parts/content/content-guests-table.php:168
+#: theme/template-parts/content/content-guests-table.php:211
 #: theme/template-parts/content/content-members-table.php:65
 #: theme/template-parts/content/content-reciprocating-table.php:154
 #: theme/template-parts/content/content-table.php:67
 msgid "Status"
 msgstr ""
 
-#: theme/page-templates/page-guest-details.php:632
+#: theme/page-templates/page-guest-details.php:694
 msgid "Action"
 msgstr ""
 
-#: theme/page-templates/page-guest-details.php:676
-#: theme/template-parts/content/content-guests-table.php:280
+#: theme/page-templates/page-guest-details.php:738
+#: theme/template-parts/content/content-guests-table.php:326
 msgid "Courtesy!"
 msgstr ""
 
-#: theme/page-templates/page-guest-details.php:751
+#: theme/page-templates/page-guest-details.php:813
 msgid "No visits found"
 msgstr ""
 
@@ -535,77 +545,72 @@ msgstr ""
 msgid "Guests List"
 msgstr ""
 
-#: theme/page-templates/page-guests.php:87
-#: theme/template-parts/content/content-guest-modal.php:30
-msgid "Register Guest"
-msgstr ""
-
-#: theme/page-templates/page-guests.php:91
+#: theme/page-templates/page-guests.php:92
 #: theme/template-parts/content/content-courtesy-guest-modal.php:31
 msgid "Register Courtesy Guest"
 msgstr ""
 
-#: theme/page-templates/page-login.php:59
+#: theme/page-templates/page-login.php:60
 #: theme/page-templates/page-lostpassword.php:49
 #: theme/page-templates/page-register.php:144
 msgid "Back to dashboard"
 msgstr ""
 
-#: theme/page-templates/page-login.php:69
+#: theme/page-templates/page-login.php:70
 #: theme/page-templates/page-profile.php:109
 #: theme/page-templates/page-register.php:153
 msgid "Warning!"
 msgstr ""
 
-#: theme/page-templates/page-login.php:82
-#: theme/page-templates/page-login.php:164
+#: theme/page-templates/page-login.php:83
+#: theme/page-templates/page-login.php:165
 #: theme/page-templates/page-lostpassword.php:128
 #: theme/page-templates/page-register.php:331
-#: theme/template-parts/content/content-guests-table.php:349
+#: theme/template-parts/content/content-guests-table.php:396
 #: theme/template-parts/content/content-reciprocating-table.php:315
 #: theme/template-parts/content/content-table.php:274
 msgid "Sign In"
 msgstr ""
 
-#: theme/page-templates/page-login.php:85
+#: theme/page-templates/page-login.php:86
 msgid "Enter your email and password to sign in!"
 msgstr ""
 
-#: theme/page-templates/page-login.php:95
+#: theme/page-templates/page-login.php:96
 #: theme/page-templates/page-lostpassword.php:105
 msgid "Email/ Username"
 msgstr ""
 
-#: theme/page-templates/page-login.php:106
+#: theme/page-templates/page-login.php:107
 #: theme/page-templates/page-register.php:258
 msgid "Password"
 msgstr ""
 
-#: theme/page-templates/page-login.php:152
+#: theme/page-templates/page-login.php:153
 msgid "Keep me logged in"
 msgstr ""
 
-#: theme/page-templates/page-login.php:157
+#: theme/page-templates/page-login.php:158
 msgid "Forgot password?"
 msgstr ""
 
-#: theme/page-templates/page-login.php:172
+#: theme/page-templates/page-login.php:173
 msgid "Don't have an account?"
 msgstr ""
 
-#: theme/page-templates/page-login.php:175
+#: theme/page-templates/page-login.php:176
 #: theme/page-templates/page-register.php:177
 #: theme/page-templates/page-register.php:320
 msgid "Sign Up"
 msgstr ""
 
-#: theme/page-templates/page-login.php:194
+#: theme/page-templates/page-login.php:195
 #: theme/page-templates/page-lostpassword.php:147
 #: theme/page-templates/page-register.php:348
 msgid "Nyeri Club Visitor Management System"
 msgstr ""
 
-#: theme/page-templates/page-login.php:197
+#: theme/page-templates/page-login.php:198
 #: theme/page-templates/page-lostpassword.php:150
 #: theme/page-templates/page-register.php:351
 msgid "Secure access to manage visitors, members, and reciprocating members — anytime, anywhere."
@@ -667,7 +672,7 @@ msgstr ""
 #: theme/template-parts/content/content-employee-modal.php:49
 #: theme/template-parts/content/content-employees-table.php:37
 #: theme/template-parts/content/content-guest-modal.php:50
-#: theme/template-parts/content/content-guests-table.php:154
+#: theme/template-parts/content/content-guests-table.php:197
 #: theme/template-parts/content/content-info-modal.php:57
 #: theme/template-parts/content/content-members-table.php:37
 #: theme/template-parts/content/content-reciprocating-table.php:140
@@ -691,7 +696,7 @@ msgstr ""
 #: theme/template-parts/content/content-employee-modal.php:61
 #: theme/template-parts/content/content-employees-table.php:44
 #: theme/template-parts/content/content-guest-modal.php:62
-#: theme/template-parts/content/content-guests-table.php:161
+#: theme/template-parts/content/content-guests-table.php:204
 #: theme/template-parts/content/content-info-modal.php:66
 #: theme/template-parts/content/content-members-table.php:44
 #: theme/template-parts/content/content-reciprocating-table.php:147
@@ -701,18 +706,16 @@ msgid "Last Name"
 msgstr ""
 
 #: theme/page-templates/page-profile.php:201
-#: theme/template-parts/content/content-courtesy-guest-modal.php:75
 #: theme/template-parts/content/content-employee-modal.php:73
-#: theme/template-parts/content/content-guest-modal.php:74
 #: theme/template-parts/content/content-info-modal.php:75
 #: theme/template-parts/content/content-reciprocation-modal.php:69
 msgid "Email address"
 msgstr ""
 
 #: theme/page-templates/page-profile.php:211
-#: theme/template-parts/content/content-courtesy-guest-modal.php:86
+#: theme/template-parts/content/content-courtesy-guest-modal.php:75
 #: theme/template-parts/content/content-employee-modal.php:84
-#: theme/template-parts/content/content-guest-modal.php:85
+#: theme/template-parts/content/content-guest-modal.php:74
 #: theme/template-parts/content/content-info-modal.php:84
 #: theme/template-parts/content/content-reciprocation-modal.php:79
 msgid "Phone"
@@ -723,18 +726,14 @@ msgid "Username"
 msgstr ""
 
 #: theme/page-templates/page-profile.php:267
-#: theme/template-parts/content/content-courtesy-guest-modal.php:148
 #: theme/template-parts/content/content-employee-modal.php:146
-#: theme/template-parts/content/content-guest-modal.php:182
 #: theme/template-parts/content/content-info-modal.php:104
 #: theme/template-parts/content/content-reciprocation-modal.php:174
 msgid "Receive messages"
 msgstr ""
 
 #: theme/page-templates/page-profile.php:292
-#: theme/template-parts/content/content-courtesy-guest-modal.php:178
 #: theme/template-parts/content/content-employee-modal.php:176
-#: theme/template-parts/content/content-guest-modal.php:212
 #: theme/template-parts/content/content-info-modal.php:114
 #: theme/template-parts/content/content-reciprocation-modal.php:203
 msgid "Receive emails"
@@ -888,7 +887,7 @@ msgstr ""
 msgid "Previous post:"
 msgstr ""
 
-#: theme/template-parts/content/content-breadcrumb.php:22
+#: theme/template-parts/content/content-breadcrumb.php:23
 msgid "Home"
 msgstr ""
 
@@ -989,7 +988,7 @@ msgstr ""
 
 #. translators: %1$d: start entry number, %2$d: end entry number, %3$d: total entries
 #: theme/template-parts/content/content-clubs-table.php:90
-#: theme/template-parts/content/content-guests-table.php:128
+#: theme/template-parts/content/content-guests-table.php:171
 #: theme/template-parts/content/content-reciprocating-table.php:114
 msgid "Showing %1$d to %2$d of %3$d entries"
 msgstr ""
@@ -1003,7 +1002,7 @@ msgid "Update Date"
 msgstr ""
 
 #: theme/template-parts/content/content-clubs-table.php:143
-#: theme/template-parts/content/content-guests-table.php:196
+#: theme/template-parts/content/content-guests-table.php:239
 #: theme/template-parts/content/content-reciprocating-table.php:182
 #: theme/template-parts/content/content-table.php:95
 msgid "Actions"
@@ -1015,8 +1014,8 @@ msgstr ""
 
 #: theme/template-parts/content/content-clubs-table.php:243
 #: theme/template-parts/content/content-clubs-table.php:253
-#: theme/template-parts/content/content-guests-table.php:396
-#: theme/template-parts/content/content-guests-table.php:407
+#: theme/template-parts/content/content-guests-table.php:444
+#: theme/template-parts/content/content-guests-table.php:455
 #: theme/template-parts/content/content-reciprocating-table.php:362
 #: theme/template-parts/content/content-reciprocating-table.php:373
 msgid "Previous"
@@ -1024,15 +1023,15 @@ msgstr ""
 
 #. translators: %1$d: current page number, %2$d: total pages
 #: theme/template-parts/content/content-clubs-table.php:260
-#: theme/template-parts/content/content-guests-table.php:415
+#: theme/template-parts/content/content-guests-table.php:463
 #: theme/template-parts/content/content-reciprocating-table.php:381
 msgid "Page %1$d of %2$d"
 msgstr ""
 
 #: theme/template-parts/content/content-clubs-table.php:302
 #: theme/template-parts/content/content-clubs-table.php:312
-#: theme/template-parts/content/content-guests-table.php:457
-#: theme/template-parts/content/content-guests-table.php:468
+#: theme/template-parts/content/content-guests-table.php:505
+#: theme/template-parts/content/content-guests-table.php:516
 #: theme/template-parts/content/content-reciprocating-table.php:423
 #: theme/template-parts/content/content-reciprocating-table.php:434
 msgid "Next"
@@ -1043,23 +1042,15 @@ msgstr ""
 msgid "Create a Guests Account."
 msgstr ""
 
-#: theme/template-parts/content/content-courtesy-guest-modal.php:94
+#: theme/template-parts/content/content-courtesy-guest-modal.php:83
 #: theme/template-parts/content/content-employee-modal.php:90
-#: theme/template-parts/content/content-guest-modal.php:93
+#: theme/template-parts/content/content-guest-modal.php:82
 #: theme/template-parts/content/content-reciprocation-modal.php:85
 msgid "Format: +254700123456 or 0700123456"
 msgstr ""
 
-#: theme/template-parts/content/content-courtesy-guest-modal.php:101
-#: theme/template-parts/content/content-guest-modal.php:100
-#: theme/template-parts/content/content-guests-table.php:175
-#: theme/template-parts/content/content-reciprocation-modal.php:102
-#: theme/template-parts/content/content-table.php:74
-msgid "ID Number"
-msgstr ""
-
-#: theme/template-parts/content/content-courtesy-guest-modal.php:193
-#: theme/template-parts/content/content-guest-modal.php:227
+#: theme/template-parts/content/content-courtesy-guest-modal.php:110
+#: theme/template-parts/content/content-guest-modal.php:180
 msgid "Create Guest"
 msgstr ""
 
@@ -1085,49 +1076,75 @@ msgstr ""
 msgid "View Details"
 msgstr ""
 
-#: theme/template-parts/content/content-guest-modal.php:117
-#: theme/template-parts/content/content-visit-modal.php:55
+#: theme/template-parts/content/content-footer.php:20
+msgid "Nyeri Club VMS"
+msgstr ""
+
+#: theme/template-parts/content/content-footer.php:22
+msgid "All Rights Reserved."
+msgstr ""
+
+#: theme/template-parts/content/content-footer.php:26
+msgid "Created with"
+msgstr ""
+
+#: theme/template-parts/content/content-footer.php:28
+msgid "by"
+msgstr ""
+
+#: theme/template-parts/content/content-footer.php:30
+msgid "Wilson DevOps"
+msgstr ""
+
+#: theme/template-parts/content/content-guest-modal.php:126
+#: theme/template-parts/content/content-visit-modal.php:87
 msgid "Select Host Member"
 msgstr ""
 
 #. translators: %1$d: start entry number, %2$d: end entry number, %3$d: total filtered entries
-#: theme/template-parts/content/content-guests-table.php:120
+#: theme/template-parts/content/content-guests-table.php:163
 #: theme/template-parts/content/content-reciprocating-table.php:106
 msgid "Showing %1$d to %2$d of %3$d entries (filtered from total)"
 msgstr ""
 
-#: theme/template-parts/content/content-guests-table.php:315
+#: theme/template-parts/content/content-guests-table.php:218
+#: theme/template-parts/content/content-reciprocation-modal.php:102
+#: theme/template-parts/content/content-table.php:74
+msgid "ID Number"
+msgstr ""
+
+#: theme/template-parts/content/content-guests-table.php:361
 #: theme/template-parts/content/content-reciprocating-table.php:281
 msgid "Cancelled"
 msgstr ""
 
-#: theme/template-parts/content/content-guests-table.php:321
+#: theme/template-parts/content/content-guests-table.php:367
 #: theme/template-parts/content/content-reciprocating-table.php:287
 msgid "Unapproved"
 msgstr ""
 
-#: theme/template-parts/content/content-guests-table.php:339
+#: theme/template-parts/content/content-guests-table.php:385
 #: theme/template-parts/content/content-reciprocating-table.php:305
 #: theme/template-parts/content/content-table.php:267
 msgid "Missed"
 msgstr ""
 
-#: theme/template-parts/content/content-guests-table.php:343
+#: theme/template-parts/content/content-guests-table.php:389
 #: theme/template-parts/content/content-reciprocating-table.php:309
 msgid "Scheduled"
 msgstr ""
 
-#: theme/template-parts/content/content-guests-table.php:356
+#: theme/template-parts/content/content-guests-table.php:404
 #: theme/template-parts/content/content-reciprocating-table.php:322
 #: theme/template-parts/content/content-table.php:281
 msgid "Sign Out"
 msgstr ""
 
-#: theme/template-parts/content/content-header.php:170
+#: theme/template-parts/content/content-header.php:179
 msgid "Edit profile"
 msgstr ""
 
-#: theme/template-parts/content/content-header.php:182
+#: theme/template-parts/content/content-header.php:191
 msgid "Sign out"
 msgstr ""
 
@@ -1159,12 +1176,12 @@ msgid "Vs last month"
 msgstr ""
 
 #: theme/template-parts/content/content-metric.php:143
-#: theme/template-parts/content/content-sidebar.php:170
+#: theme/template-parts/content/content-sidebar.php:188
 msgid "Reciprocating Members"
 msgstr ""
 
 #: theme/template-parts/content/content-metric.php:232
-#: theme/template-parts/content/content-sidebar.php:105
+#: theme/template-parts/content/content-sidebar.php:123
 msgid "Members"
 msgstr ""
 
@@ -1192,7 +1209,7 @@ msgid "Create a New Visit."
 msgstr ""
 
 #: theme/template-parts/content/content-recip-visit-modal.php:71
-#: theme/template-parts/content/content-visit-modal.php:104
+#: theme/template-parts/content/content-visit-modal.php:141
 msgid "Create Visit"
 msgstr ""
 
@@ -1220,32 +1237,36 @@ msgstr ""
 msgid "Create Reciprocating Member"
 msgstr ""
 
-#: theme/template-parts/content/content-sidebar.php:40
+#: theme/template-parts/content/content-sidebar.php:54
 msgid "MENU"
 msgstr ""
 
-#: theme/template-parts/content/content-sidebar.php:87
+#: theme/template-parts/content/content-sidebar.php:104
 msgid "User Profile"
 msgstr ""
 
-#: theme/template-parts/content/content-sidebar.php:128
+#: theme/template-parts/content/content-sidebar.php:146
 msgid "Employees"
 msgstr ""
 
-#: theme/template-parts/content/content-sidebar.php:151
+#: theme/template-parts/content/content-sidebar.php:169
 msgid "Guests"
 msgstr ""
 
-#: theme/template-parts/content/content-sidebar.php:188
+#: theme/template-parts/content/content-sidebar.php:206
 msgid "Clubs"
 msgstr ""
 
-#: theme/template-parts/content/content-sidebar.php:201
+#: theme/template-parts/content/content-sidebar.php:219
 msgid "Support"
 msgstr ""
 
-#: theme/template-parts/content/content-sidebar.php:228
+#: theme/template-parts/content/content-sidebar.php:246
 msgid "Settings"
+msgstr ""
+
+#: theme/template-parts/content/content-sidebar.php:270
+msgid "Version 1.0.0"
 msgstr ""
 
 #. translators: %s: Name of current post. Only visible to screen readers.

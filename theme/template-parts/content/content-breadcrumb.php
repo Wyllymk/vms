@@ -12,9 +12,10 @@ defined( 'ABSPATH' ) || exit;
 ?>
 
 <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+
     <h2 class="text-xl font-semibold text-gray-800 dark:text-white/90" x-text="pageName"></h2>
 
-    <nav>
+    <!-- <nav>
         <ol class="flex items-center gap-1.5">
             <li>
                 <a class="flex items-center gap-1 text-sm text-gray-500 hover:text-brand-500 dark:text-gray-400 dark:hover:text-brand-400"
@@ -29,5 +30,5 @@ defined( 'ABSPATH' ) || exit;
             </li>
             <li class="text-sm text-gray-800 dark:text-white/90" x-text="pageName"></li>
         </ol>
-    </nav>
+    </nav> -->
 </div>

@@ -22,10 +22,10 @@ defined( 'ABSPATH' ) || exit;
         content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
     <link rel="profile" href="https://gmpg.org/xfn/11">
     <link rel="icon" type="image/svg+xml"
-        href="<?php echo get_template_directory_uri(); ?>/assets/favicon/favicon.svg" />
-    <link rel="shortcut icon" href="<?php echo get_template_directory_uri(); ?>/assets/favicon/favicon.ico" />
+        href="<?php echo get_template_directory_uri(); ?>/assets/favicon/favicon.png" />
+    <link rel="shortcut icon" href="<?php echo get_template_directory_uri(); ?>/assets/favicon/favicon.png" />
     <link rel="apple-touch-icon" sizes="180x180"
-        href="<?php echo get_template_directory_uri(); ?>/assets/favicon/apple-touch-icon.png" />
+        href="<?php echo get_template_directory_uri(); ?>/assets/favicon/favicon.png" />
     <meta name="apple-mobile-web-app-title" content="Nyeri Club" />
     <meta name="application-name" content="Nyeri Club" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />

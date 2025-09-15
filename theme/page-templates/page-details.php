@@ -485,7 +485,7 @@ get_header();
 
                 <!-- ===== Main Content Start ===== -->
                 <main>
-                    <div class="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
+                    <div class="p-4 mx-auto max-w-(--breakpoint-2xl) min-h-screen md:p-6">
                         <!-- Breadcrumb Start -->
                         <div x-data="{ pageName: '<?php echo esc_js( $page_name ); ?>' }">
                             <?php get_template_part( 'template-parts/content/content', 'breadcrumb' ); ?>
@@ -1244,15 +1244,16 @@ get_header();
                             </div>
                         </div>
                     </div>
-
-                    <!-- BEGIN MODAL -->
-                    <?php get_template_part( 'template-parts/content/content', 'guest-modal' ); ?>
-                    <!-- END MODAL -->
-
-                    <!-- Footer -->
-                    <?php get_template_part('template-parts/content/content-footer', 'content'); ?>
                 </main>
                 <!-- ===== Main Content End ===== -->
+
+                <!-- BEGIN MODAL -->
+                <?php get_template_part( 'template-parts/content/content', 'guest-modal' ); ?>
+                <!-- END MODAL -->
+
+                <!-- ===== Footer Start ===== -->
+                <?php get_template_part( 'template-parts/content/content', 'footer' ); ?>
+                <!-- ===== Footer End ===== -->
             </div>
             <!-- ===== Content Area End ===== -->
         </div>
