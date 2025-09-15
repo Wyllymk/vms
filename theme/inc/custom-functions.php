@@ -20,7 +20,7 @@ add_filter('redirect_canonical', function($redirect_url, $requested_url) {
  * Update Checker
  * https://github.com/YahnisElsts/plugin-update-checker
  */
-require get_template_directory() . '/vendor/autoload.php';
+require get_template_directory() . '/inc/update/plugin-update-checker.php';
 
 use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 
@@ -32,4 +32,6 @@ $myThemeUpdateChecker = PucFactory::buildUpdateChecker(
 
 // Same thing: point to branch if needed
 $myThemeUpdateChecker->setBranch('main');
-$myThemeUpdateChecker->setAuthentication('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');
+$myThemeUpdateChecker->setAuthentication('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');
+// Tell PUC to use the release asset (vms.zip) instead of auto-generated zips
+$myThemeUpdateChecker->getVcsApi()->enableReleaseAssets();

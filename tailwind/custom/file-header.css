@@ -2,7 +2,7 @@
 Theme Name: Visitor Management System
 Theme URI: https://github.com/Wyllymk/vms
 Description: A custom Visitor Management System theme based on _tw, built with Tailwind CSS and optimized for WordPress.
-Version: 1.0.1
+Version: 1.0.0
 Author: Wilson Mbuthia
 Author URI: https://wilsondevops.com/
 Text Domain: vms
@@ -10,6 +10,7 @@ Requires at least: 6.8
 Requires PHP: 7.4
 License: GNU General Public License v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
+Tags: featured-images, threaded-comments, translation-ready
 
 This theme, like WordPress, is licensed under the GPL.
 You are free to use, modify, and redistribute it under the same license.

@@ -1,0 +1,31 @@
+name: Build & Upload Theme ZIP
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Check out the repo
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. Prepare WordPress theme zip
+      - name: Build theme ZIP
+        run: |
+          mkdir build
+          cp -R . build/vms
+          cd build
+          zip -r vms.zip vms
+
+      # 3. Upload the zip as a GitHub Release Asset
+      - name: Upload Release Asset
+        uses: softprops/action-gh-release@v1
+        with:
+          files: build/vms.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+
