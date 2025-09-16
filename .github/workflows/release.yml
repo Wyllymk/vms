@@ -1,26 +1,26 @@
-name: Release Pre-Built Theme
+name: Release Existing Theme ZIP
 
 on:
   push:
     tags:
-      - "v*" # Run on version tags like v1.0.5
+      - "v*" # Runs only when you push a version tag like v1.0.0
 
 permissions:
-  contents: write # Required for creating releases
+  contents: write # Required for creating releases with GITHUB_TOKEN
 
 jobs:
   release:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout repo
+      # 1. Checkout the repository
       - name: Checkout repository
-        uses: actions/checkout@v3      
+        uses: actions/checkout@v3
 
-      # 3. Upload the pre-built ZIP as a GitHub Release
+      # 2. Upload existing vms.zip as GitHub Release Asset
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          files: vms.zip # <-- point directly to your pre-built ZIP
+          files: vms.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
