@@ -15,14 +15,7 @@ jobs:
     steps:
       # 1. Checkout repo
       - name: Checkout repository
-        uses: actions/checkout@v3
-
-      # 2. Install Node dependencies and run your build scripts (optional)
-      #    Only if you want to regenerate vms.zip via npm scripts
-      - name: Build theme assets
-        run: |
-          npm ci
-          npm run bundle # This should produce vms.zip at the repo root
+        uses: actions/checkout@v3      
 
       # 3. Upload the pre-built ZIP as a GitHub Release
       - name: Publish GitHub Release
