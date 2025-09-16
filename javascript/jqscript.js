@@ -3668,7 +3668,7 @@ jQuery(document).ready(function ($) {
 			data: {
 				action: 'sign_in_guest',
 				visit_id: visitId,
-				id_number: idNumber, // NEW
+				id_number: idNumber,
 				nonce: vms_script_ajax.nonce,
 			},
 			dataType: 'json',
@@ -3676,12 +3676,9 @@ jQuery(document).ready(function ($) {
 				if (response.success && response.data.guestData) {
 					const guest = response.data.guestData;
 
-					// Update status badge in the same row
+					// ✅ Update ID number cell dynamically
 					const row = button.closest('tr');
-					const statusCell = row.find('td:nth-child(4) span');
-
-					// keep the "Approved" badge intact
-					statusCell.text('Approved');
+					row.find('.id_number').text(guest.id_number || 'N/A');
 
 					// Build Sign Out button
 					const newVisitId = guest.visit_id || visitId;
@@ -3712,7 +3709,7 @@ jQuery(document).ready(function ($) {
 						response.data?.messages?.join('<br>') ||
 						'Error signing in guest';
 					showErrorModal(errorMessage);
-					// Close modal on error
+
 					$('#sign-in-confirm-modal-overlay').fadeOut(
 						300,
 						function () {
@@ -3727,7 +3724,7 @@ jQuery(document).ready(function ($) {
 					xhr.responseJSON?.data?.messages?.join('<br>') ||
 					'An error occurred: ' + error;
 				showErrorModal(errorMessage);
-				// Close modal on error
+
 				$('#sign-in-confirm-modal-overlay').fadeOut(300, function () {
 					$(this).remove();
 				});

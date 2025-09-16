@@ -313,8 +313,8 @@ $status_classes = [
                     </td>
                     <td class="px-3 py-4 sm:px-6">
                         <div class="flex items-center">
-                            <p class="text-gray-500 text-theme-sm dark:text-gray-400">
-                                <?php echo esc_html($guest->id_number); ?>
+                            <p class="id_number text-gray-500 text-theme-sm dark:text-gray-400">
+                                <?php echo !empty($guest->id_number) ? esc_html($guest->id_number) : 'N/A'; ?>
                             </p>
                         </div>
                     </td>
