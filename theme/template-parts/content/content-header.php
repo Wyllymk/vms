@@ -35,7 +35,7 @@ if ( empty( $full_name ) ) {
             <?php 
             $current_user = wp_get_current_user();
             $user_roles   = (array) $current_user->roles;
-            $is_disabled  = in_array('member', $user_roles, true) || in_array('chairman', $user_roles, true);
+            $is_disabled  = in_array('member', $user_roles, true);
             ?>
 
             <a <?php echo $is_disabled ? 'disabled' : ''; ?>

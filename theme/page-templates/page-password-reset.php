@@ -27,12 +27,13 @@ if ( ! empty( $key ) && ! empty( $login ) ) {
 		$confirm_password = isset( $_POST['confirm_password'] ) ? $_POST['confirm_password'] : '';
 
 		// Validate and reset the password
-		if ( $password === $confirm_password ) {
-			reset_password( $user, sanitize_text_field( $password ) );
-			$success = 'Your password has been reset successfully. You can now <a href="' . esc_url( site_url( '/login/' ) ) . '">log in</a>.';
-		} else {
-			$errors[] = 'Passwords do not match.';
-		}
+        if ( $password === $confirm_password ) {
+            reset_password( $user, $password );
+            $success = 'Your password has been reset successfully. You can now <a href="' . esc_url( site_url( '/login/' ) ) . '">log in</a>.';
+        } else {
+            $errors[] = 'Passwords do not match.';
+        }
+
 	}
 } else {
 	$errors[] = 'Invalid or expired password reset link.';
