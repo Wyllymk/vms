@@ -14,29 +14,31 @@ $errors  = array();
 $success = '';
 
 // Capture and sanitize query parameters
-$key   = isset( $_GET['key'] ) ? sanitize_text_field( $_GET['key'] ) : '';
-$login = isset( $_GET['login'] ) ? sanitize_user( $_GET['login'] ) : '';
+$key   = isset( $_GET['key'] ) ? html_entity_decode( $_GET['key'] ) : '';
+$login = isset( $_GET['login'] ) ? html_entity_decode( $_GET['login'] ) : '';
+
+error_log('Reset Debug: key=' . print_r($key, true));
+error_log('Reset Debug: login=' . print_r($login, true));
+
 
 if ( ! empty( $key ) && ! empty( $login ) ) {
-	$user = check_password_reset_key( $key, $login );
-	if ( is_wp_error( $user ) ) {
-		$errors[] = $user->get_error_message();
-	} elseif ( isset( $_POST['reset_password_nonce'] ) && wp_verify_nonce( $_POST['reset_password_nonce'], 'reset_password_action' ) ) {
-		// Capture and sanitize password fields
-		$password         = isset( $_POST['password'] ) ? $_POST['password'] : '';
-		$confirm_password = isset( $_POST['confirm_password'] ) ? $_POST['confirm_password'] : '';
+    $user = check_password_reset_key( $key, $login );
+    if ( is_wp_error( $user ) ) {
+        error_log('Reset Debug: error=' . $user->get_error_message());
+        $errors[] = $user->get_error_message();
+    } elseif ( isset( $_POST['reset_password_nonce'] ) && wp_verify_nonce( $_POST['reset_password_nonce'], 'reset_password_action' ) ) {
+        $password         = $_POST['password'] ?? '';
+        $confirm_password = $_POST['confirm_password'] ?? '';
 
-		// Validate and reset the password
         if ( $password === $confirm_password ) {
             reset_password( $user, $password );
             $success = 'Your password has been reset successfully. You can now <a href="' . esc_url( site_url( '/login/' ) ) . '">log in</a>.';
         } else {
             $errors[] = 'Passwords do not match.';
         }
-
-	}
+    }
 } else {
-	$errors[] = 'Invalid or expired password reset link.';
+    $errors[] = 'Invalid or expired password reset link.';
 }
 ?>
 

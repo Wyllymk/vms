@@ -10,5 +10,8 @@ style.css
 style-editor.css
 style-editor-extra.css
 
+# Ignore the generated zip file:
+vms.zip
+
 # Ignore .DS_Store files from macOS:
 .DS_Store
