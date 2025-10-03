@@ -54,15 +54,15 @@ get_header();
                                 <?php get_template_part( 'template-parts/content/content', 'metric' ); ?>
                                 <!-- Metric Group One -->
                             </div>
-                            <div class="col-span-12 xl:col-span-7">
-                                <!-- ====== Chart One Start -->
+                            <div class="col-span-12 xl:col-span-6">
+                                <!-- ====== Impression & Visitor Traffic Start -->
                                 <?php get_template_part( 'template-parts/content/content', 'chart' ); ?>
-                                <!-- ====== Chart One End -->
+                                <!-- ====== Impression & Visitor Traffic End -->
                             </div>
-                            <div class="col-span-12 xl:col-span-5">
-                                <!-- ====== Chart Two Start -->
+                            <div class="col-span-12 xl:col-span-6">
+                                <!-- ====== Monthly Visits Target Start -->
                                 <?php get_template_part( 'template-parts/content/content', 'chart-02' ); ?>
-                                <!-- ====== Chart Two End -->
+                                <!-- ====== Monthly Visits Target End -->
                             </div>
 
                             <div class="col-span-12 ">

@@ -487,8 +487,20 @@ get_header();
                 <main>
                     <div class="p-4 mx-auto max-w-(--breakpoint-2xl) min-h-screen md:p-6">
                         <!-- Breadcrumb Start -->
-                        <div x-data="{ pageName: '<?php echo esc_js( $page_name ); ?>' }">
-                            <?php get_template_part( 'template-parts/content/content', 'breadcrumb' ); ?>
+                        <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+                            <a href="<?php echo esc_url( home_url( '/members' ) ); ?>"
+                                class="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+                                <svg class="stroke-current" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                    viewBox="0 0 20 20" fill="none">
+                                    <path d="M12.7083 5L7.5 10.2083L12.7083 15.4167" stroke="" stroke-width="1.5"
+                                        stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                <?php esc_html_e( 'Back to Members', 'vms' ); ?>
+                            </a>
+
+                            <h2 class="text-xl font-semibold text-gray-800 dark:text-white/90">
+                                <?php esc_html_e( 'Member Details', 'vms' ); ?>
+                            </h2>
                         </div>
                         <!-- Breadcrumb End -->
                         <div class="py-8 mx-auto">

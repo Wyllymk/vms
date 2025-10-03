@@ -17,15 +17,15 @@ import persist from '@alpinejs/persist';
 
 // Import chart modules
 import chart02 from './charts/chart-02';
+import chart07 from './charts/chart-07';
 import './image-resize';
 
 // Initialize Alpine.js with persist plugin
-Alpine.plugin(persist);
-
-window.Alpine = Alpine;
-
 // ✅ Start Alpine once
 document.addEventListener('DOMContentLoaded', () => {
+	// Initialize Alpine
+	window.Alpine = Alpine;
+	Alpine.plugin(persist);
 	Alpine.start();
 });
 
@@ -33,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
 	// Initialize charts
 	chart02();
+	chart07();
 
 	// Update copyright year
 	const year = document.getElementById('year');

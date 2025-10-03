@@ -125,7 +125,6 @@ function clubvms_scripts() {
 	wp_enqueue_style( 'vms-style', get_stylesheet_uri(), array(), CLUBVMS_VERSION );
 	wp_enqueue_script( 'vms-script', get_template_directory_uri() . '/js/script.min.js', array(), CLUBVMS_VERSION, true );
 	wp_enqueue_script( 'vms-script-ajax', get_template_directory_uri() . '/js/jqscript.min.js', array('jquery'), CLUBVMS_VERSION, true );
-
 	
 	// Localize script to make AJAX URL available
     wp_localize_script(
