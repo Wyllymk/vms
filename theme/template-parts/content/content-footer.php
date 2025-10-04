@@ -11,14 +11,14 @@ defined( 'ABSPATH' ) || exit;
 ?>
 
 <footer
-    class="sticky bottom-0 flex w-full bg-white border-t border-gray-200 shadow-[0_-2px_6px_rgba(0,0,0,0.05)] dark:bg-gray-900 dark:border-gray-800 dark:shadow-[0_-2px_6px_rgba(0,0,0,0.6)]">
-    <div class="flex flex-col items-center justify-center w-full py-4 px-6 lg:flex-row lg:justify-between">
+    class="z-30 sticky bottom-0 flex w-full bg-white border-t border-gray-200 shadow-[0_-2px_6px_rgba(0,0,0,0.05)] dark:bg-gray-900 dark:border-gray-800 dark:shadow-[0_-2px_6px_rgba(0,0,0,0.6)]">
+    <div class="flex flex-col items-center justify-center w-full py-2 md:py-4 px-6 lg:flex-row lg:justify-between">
 
         <p class="text-sm font-medium text-gray-700 dark:text-white/80">
             © <?php echo date('Y'); ?>
             <strong>
-                <?php esc_html_e( 'Nyeri Club VMS', 'vms' ); ?>
-            </strong>.
+                <?php esc_html_e( 'Nyeri Club VMS.', 'vms' ); ?>
+            </strong>
             <?php esc_html_e( 'All Rights Reserved.', 'vms' ); ?>
         </p>
 
