@@ -35,7 +35,7 @@ if ( isset( $_POST['lostpassword'] ) ) {
 <section class="login-content" x-data="{ page: 'lost-password'}">
     <!-- ===== Page Wrapper Start ===== -->
     <div class="relative p-6 bg-white z-1 dark:bg-gray-900 sm:p-0">
-        <div class="relative flex flex-col justify-center w-full h-screen dark:bg-gray-900 sm:p-0 lg:flex-row">
+        <div class="relative flex flex-col justify-center w-full h-svh dark:bg-gray-900 sm:p-0 lg:flex-row">
             <!-- Form -->
             <div class="flex flex-col flex-1 w-full lg:w-1/2">
                 <div class="w-full max-w-md pt-10 mx-auto">

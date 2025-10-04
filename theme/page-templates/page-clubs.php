@@ -23,7 +23,7 @@ get_header();
     @close-club-modal.window="isClubModal = false"
     @open-club-edit-modal.window="console.log('caught event'); isClubEditModal = true">
     <!-- ===== Page Wrapper Start ===== -->
-    <div class=" flex h-screen overflow-hidden">
+    <div class=" flex h-svh overflow-hidden">
         <!-- ===== Sidebar Start ===== -->
         <?php get_template_part( 'template-parts/content/content', 'sidebar' ); ?>
         <!-- ===== Sidebar End ===== -->

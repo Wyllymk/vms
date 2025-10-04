@@ -226,7 +226,7 @@ get_header();
     @close-guest-modal.window="isVisitInfoModal = false">
     <main id="main">
         <!-- ===== Page Wrapper Start ===== -->
-        <div class="flex h-screen overflow-hidden">
+        <div class="flex h-svh overflow-hidden">
             <!-- ===== Sidebar Start ===== -->
             <?php get_template_part('template-parts/content/content', 'sidebar'); ?>
             <!-- ===== Sidebar End ===== -->

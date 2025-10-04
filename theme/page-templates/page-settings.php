@@ -30,7 +30,7 @@ $last_checked_time = get_option( 'vms_sms_last_check', 'Never' );
 
 <section x-data="{ page: 'settings'}">
     <!-- ===== Page Wrapper Start ===== -->
-    <div class="flex h-screen overflow-hidden">
+    <div class="flex h-svh overflow-hidden">
         <!-- ===== Sidebar Start ===== -->
         <?php get_template_part( 'template-parts/content/content', 'sidebar' ); ?>
         <!-- ===== Sidebar End ===== -->

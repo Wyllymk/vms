@@ -44,7 +44,7 @@ $user_role        = !empty($current_user->roles) ? $current_user->roles[0] : 'gu
 <section x-data="{ page: 'profile', 'isProfileInfoModal': false, 'isPasswordModal': false }"
     @close-info-modal.window="isProfileInfoModal = false">
     <!-- ===== Page Wrapper Start ===== -->
-    <div class="flex h-screen overflow-hidden">
+    <div class="flex h-svh overflow-hidden">
         <!-- ===== Sidebar Start ===== -->
         <?php get_template_part( 'template-parts/content/content', 'sidebar' ); ?>
         <!-- ===== Sidebar End ===== -->

@@ -22,7 +22,7 @@ get_header();
     @close-courtesy-guest-modal.window="isCourtesyGuestInfoModal = false"
     @close-guest-modal.window="isGuestInfoModal = false">
     <!-- ===== Page Wrapper Start ===== -->
-    <div class="flex h-screen overflow-hidden">
+    <div class="flex h-svh overflow-hidden">
         <!-- ===== Sidebar Start ===== -->
         <?php get_template_part( 'template-parts/content/content', 'sidebar' ); ?>
         <!-- ===== Sidebar End ===== -->

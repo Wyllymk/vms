@@ -22,7 +22,7 @@ get_header();
 <section x-data="{ page: 'employees', 'isEmployeeInfoModal': false}"
     @close-employee-modal.window="isEmployeeInfoModal = false">
     <!-- ===== Page Wrapper Start ===== -->
-    <div class="flex h-screen overflow-hidden">
+    <div class="flex h-svh overflow-hidden">
         <!-- ===== Sidebar Start ===== -->
         <?php get_template_part( 'template-parts/content/content', 'sidebar' ); ?>
         <!-- ===== Sidebar End ===== -->
