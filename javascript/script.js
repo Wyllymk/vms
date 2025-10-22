@@ -135,3 +135,44 @@ document.addEventListener('alpine:init', () => {
 		},
 	});
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+	const pickBtn = document.getElementById('pick_contact');
+	const phoneInput = document.getElementById('phone_number');
+
+	// Exit silently if elements are missing
+	if (!pickBtn || !phoneInput) return;
+
+	// Check if Contact Picker API is available
+	const isSupported = 'contacts' in navigator && 'ContactsManager' in window;
+
+	if (!isSupported) {
+		// Hide the button if not supported
+		pickBtn.style.display = 'none';
+		return;
+	}
+
+	pickBtn.addEventListener('click', async () => {
+		try {
+			const props = ['tel', 'name'];
+			const opts = { multiple: false };
+
+			const contacts = await navigator.contacts.select(props, opts);
+
+			if (
+				Array.isArray(contacts) &&
+				contacts.length > 0 &&
+				contacts[0].tel &&
+				Array.isArray(contacts[0].tel) &&
+				contacts[0].tel.length > 0
+			) {
+				phoneInput.value = contacts[0].tel[0];
+			} else {
+				console.warn('No valid phone number found.');
+			}
+		} catch (err) {
+			// Log error silently without breaking the page
+			console.warn('Contact selection skipped or denied:', err);
+		}
+	});
+});

@@ -63,16 +63,6 @@ defined( 'ABSPATH' ) || exit;
                                 class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" />
                         </div>
 
-                        <!-- Email -->
-                        <div class="col-span-2 lg:col-span-1">
-                            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                <?php esc_html_e('Email address', 'vms'); ?>
-                                <span class="text-error-500">*</span>
-                            </label>
-                            <input type="email" name="email" required
-                                class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" />
-                        </div>
-
                         <!-- Phone -->
                         <div class="col-span-2 lg:col-span-1">
                             <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
@@ -86,63 +76,13 @@ defined( 'ABSPATH' ) || exit;
                             </p>
                         </div>
 
-                        <!-- Member Number -->
-                        <div class="col-span-2 lg:col-span-1">
-                            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                <?php esc_html_e('Member Number', 'vms'); ?>
-                                <span class="text-error-500">*</span>
-                            </label>
-                            <input type="text" name="member_number" required
-                                class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" />
-                        </div>
-
                         <!-- ID Number -->
                         <div class="col-span-2 lg:col-span-1">
                             <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                                 <?php esc_html_e('ID Number', 'vms'); ?>
-                            </label>
-                            <input type="text" name="id_number"
-                                class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" />
-                        </div>
-
-                        <!-- Reciprocating Club Dropdown -->
-                        <div class="col-span-2 lg:col-span-1">
-                            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                <?php esc_html_e('Reciprocating Club', 'vms'); ?>
                                 <span class="text-error-500">*</span>
                             </label>
-                            <select name="host_member_id" required
-                                class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800">
-                                <option value=""><?php esc_html_e('Select Reciprocating Club', 'vms'); ?></option>
-                                <?php
-                                // Get reciprocating clubs table
-                                global $wpdb;
-                                $clubs_table = \WyllyMk\VMS\VMS_Config::get_table_name( \WyllyMk\VMS\VMS_Config::RECIP_CLUBS_TABLE );
-
-                                
-                                $clubs = $wpdb->get_results("
-                                    SELECT id, club_name, club_email 
-                                    FROM $clubs_table 
-                                    WHERE status = 'active' 
-                                    ORDER BY club_name ASC
-                                ");
-
-                                foreach ($clubs as $club) {
-                                    $selected = isset($_POST['host_member_id']) && $_POST['host_member_id'] == $club->id ? 'selected' : '';
-                                    echo '<option value="' . esc_attr($club->id) . '" ' . $selected . '>'
-                                        . esc_html($club->club_name) . '</option>';
-                                }
-                                ?>
-                            </select>
-                        </div>
-
-                        <!-- Visit Date -->
-                        <div class="col-span-2 lg:col-span-1">
-                            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                <?php esc_html_e('Visit Date', 'vms'); ?>
-                                <span class="text-error-500">*</span>
-                            </label>
-                            <input type="date" name="visit_date" required min="<?php echo date('Y-m-d'); ?>"
+                            <input type="text" name="id_number" required
                                 class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" />
                         </div>
 

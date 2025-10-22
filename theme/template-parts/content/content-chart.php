@@ -11,6 +11,7 @@ defined('ABSPATH') || exit;
 // Track current visitor's device
 function vms_track_visitor_device() {
     if (is_admin() || wp_doing_ajax() || wp_doing_cron()) {
+        error_log('[VMS_DEVICE] Skipping device tracking (admin, AJAX, or CRON context).');
         return;
     }
     
@@ -19,70 +20,91 @@ function vms_track_visitor_device() {
     $cookie_name = 'vms_device_tracked_' . $month_key;
     
     if (isset($_COOKIE[$cookie_name])) {
+        error_log("[VMS_DEVICE] Device already tracked for this month ({$month_key}). Skipping.");
         return;
     }
-    
+
     // Detect device type
     $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
     $device_type = 'desktop';
-    
+
     if (preg_match('/(tablet|ipad|playbook)|(android(?!.*(mobi|opera mini)))/i', $user_agent)) {
         $device_type = 'tablet';
     } elseif (preg_match('/(up.browser|up.link|mmp|symbian|smartphone|midp|wap|phone|android|iemobile)/i', $user_agent)) {
         $device_type = 'mobile';
     }
-    
-    // Get current month/year key
-    $month_key = date('Y-m');
-    
-    // Get existing data
-    $device_data = get_option('vms_device_sessions', array());
-    
-    // Initialize if needed
-    if (!isset($device_data[$month_key])) {
-        $device_data[$month_key] = array(
-            'desktop' => 0,
-            'mobile' => 0,
-            'tablet' => 0
-        );
+
+    error_log("[VMS_DEVICE] Detected device type: {$device_type}");
+    error_log("[VMS_DEVICE] User Agent: {$user_agent}");
+
+    try {
+        // Get existing data
+        $device_data = get_option('vms_device_sessions', array());
+        error_log('[VMS_DEVICE] Retrieved existing device data: ' . print_r($device_data, true));
+
+        // Initialize if needed
+        if (!isset($device_data[$month_key])) {
+            $device_data[$month_key] = array(
+                'desktop' => 0,
+                'mobile'  => 0,
+                'tablet'  => 0
+            );
+            error_log("[VMS_DEVICE] Initialized new month data for {$month_key}.");
+        }
+
+        // Increment device count
+        $device_data[$month_key][$device_type]++;
+        error_log("[VMS_DEVICE] Incremented {$device_type} count for {$month_key}. Current data: " . print_r($device_data[$month_key], true));
+
+        // Save data
+        $update_result = update_option('vms_device_sessions', $device_data);
+        error_log("[VMS_DEVICE] Updated option result: " . var_export($update_result, true));
+
+        // Set cookie for entire month (expires at end of month)
+        $expire_time = strtotime('last day of this month 23:59:59');
+        setcookie($cookie_name, '1', $expire_time, '/');
+        error_log("[VMS_DEVICE] Cookie '{$cookie_name}' set to expire on " . date('Y-m-d H:i:s', $expire_time));
+
+    } catch (Throwable $e) {
+        error_log('[VMS_DEVICE] Exception during device tracking: ' . $e->getMessage());
+        error_log('[VMS_DEVICE] Stack trace: ' . $e->getTraceAsString());
     }
-    
-    // Increment device count
-    $device_data[$month_key][$device_type]++;
-    
-    // Save data
-    update_option('vms_device_sessions', $device_data);
-    
-    // Set cookie for entire month (expires at end of month)
-    $cookie_name = 'vms_device_tracked_' . $month_key;
-    $expire_time = strtotime('last day of this month 23:59:59');
-    setcookie($cookie_name, '1', $expire_time, '/');
+
+    error_log('[VMS_DEVICE] Device tracking completed.');
 }
 
 // Hook to track visitors
-add_action('wp', 'vms_track_visitor_device');
+add_action('wp_login', 'vms_track_visitor_device');
 
-// Get current month's device data
+
+// ================== DEVICE REPORT ===================
+
 $month_key = date('Y-m');
 $device_data = get_option('vms_device_sessions', array());
+error_log('[VMS_DEVICE_REPORT] Loaded device data: ' . print_r($device_data, true));
 
 // Get current month data or use defaults
 if (isset($device_data[$month_key])) {
     $desktop_visits = (int) $device_data[$month_key]['desktop'];
-    $mobile_visits = (int) $device_data[$month_key]['mobile'];
-    $tablet_visits = (int) $device_data[$month_key]['tablet'];
+    $mobile_visits  = (int) $device_data[$month_key]['mobile'];
+    $tablet_visits  = (int) $device_data[$month_key]['tablet'];
+    error_log("[VMS_DEVICE_REPORT] Found data for {$month_key}: Desktop={$desktop_visits}, Mobile={$mobile_visits}, Tablet={$tablet_visits}");
 } else {
     $desktop_visits = 45;
-    $mobile_visits = 65;
-    $tablet_visits = 25;
+    $mobile_visits  = 65;
+    $tablet_visits  = 25;
+    error_log("[VMS_DEVICE_REPORT] No data for {$month_key}. Using default values.");
 }
 
 $total_visits = $desktop_visits + $mobile_visits + $tablet_visits;
+error_log("[VMS_DEVICE_REPORT] Total visits this month: {$total_visits}");
 
-// Calculate percentages
 $desktop_percent = $total_visits > 0 ? round(($desktop_visits / $total_visits) * 100) : 33;
-$mobile_percent = $total_visits > 0 ? round(($mobile_visits / $total_visits) * 100) : 48;
-$tablet_percent = $total_visits > 0 ? round(($tablet_visits / $total_visits) * 100) : 19;
+$mobile_percent  = $total_visits > 0 ? round(($mobile_visits / $total_visits) * 100) : 48;
+$tablet_percent  = $total_visits > 0 ? round(($tablet_visits / $total_visits) * 100) : 19;
+
+error_log("[VMS_DEVICE_REPORT] Percentages — Desktop: {$desktop_percent}%, Mobile: {$mobile_percent}%, Tablet: {$tablet_percent}%");
+
 ?>
 
 <div class="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 dark:border-gray-800 dark:bg-white/[0.03]">

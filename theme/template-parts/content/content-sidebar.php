@@ -172,6 +172,51 @@ if ( empty( $full_name ) ) {
                     </li>
                     <?php endif; ?>
                     <!-- Menu Item Guests -->
+
+                    <!-- Menu Item Suppliers -->
+                    <?php if ( ( current_user_can( 'administrator' ) || current_user_can( 'general_manager' ) || current_user_can( 'chairman' ) || current_user_can( 'reception' ) || current_user_can( 'gate' ) ) ) : ?>
+                    <li>
+                        <a href="<?php echo esc_url( home_url( '/suppliers' ) ); ?>"
+                            @click="selected = (selected === 'Suppliers' ? '':'Suppliers')"
+                            class="<?php echo ( is_page( array( 'suppliers', 'supplier-details' ) ) ) ? 'menu-item group menu-item-active' : 'menu-item group menu-item-inactive'; ?>">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <rect x="1" y="3" width="15" height="13"></rect>
+                                <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                                <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                                <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                            </svg>
+                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                                <?php esc_html_e( 'Suppliers', 'vms' ); ?>
+                            </span>
+                        </a>
+                    </li>
+                    <?php endif; ?>
+                    <!-- Menu Item Suppliers -->
+
+                    <!-- Menu Item Accommodation -->
+                    <?php if ( ( current_user_can( 'administrator' ) || current_user_can( 'general_manager' ) || current_user_can( 'chairman' ) || current_user_can( 'reception' ) || current_user_can( 'gate' ) ) ) : ?>
+                    <li>
+                        <a href="<?php echo esc_url( home_url( '/accommodation' ) ); ?>"
+                            @click="selected = (selected === 'Accommodation' ? '':'Accommodation')"
+                            class="<?php echo ( is_page( array( 'accommodation', 'accommodation-details' ) ) ) ? 'menu-item group menu-item-active' : 'menu-item group menu-item-inactive'; ?>">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M2 4v16"></path>
+                                <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
+                                <path d="M2 17h20"></path>
+                                <path d="M6 8V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4"></path>
+                            </svg>
+                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                                <?php esc_html_e( 'Accommodation', 'vms' ); ?>
+                            </span>
+                        </a>
+                    </li>
+                    <?php endif; ?>
+                    <!-- Menu Item Accommodation -->
+
                     <!-- Menu Item Reciprocating Members -->
                     <?php if ( ( current_user_can( 'administrator' ) || current_user_can( 'general_manager' ) || current_user_can( 'chairman' ) || current_user_can( 'reception' ) || current_user_can( 'gate' ) ) ) : ?>
                     <li>

@@ -4,7 +4,9 @@
  *
   * @package Visitor_Management_System
  */
-use WyllyMk\VMS\VMS_CoreManager;
+use WyllyMk\VMS\VMS_Member;
+use WyllyMk\VMS\VMS_Guest;
+use WyllyMk\VMS\VMS_SMS;
 
 // Exit if accessed directly
 defined('ABSPATH') || exit;
@@ -158,7 +160,7 @@ if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
 
                 // Send SMS if number + message available
                 if (!empty($user_number) && !empty($sms_message)) {
-                    \WyllyMk\VMS\VMS_NotificationManager::send_sms($user_number, $sms_message, $user_id, $role = 'member');
+                    VMS_SMS::send_sms($user_number, $sms_message, $user_id, $role = 'member');
                 }
             }
         }
@@ -359,9 +361,9 @@ $paged = isset($_GET['paged']) ? max(1, intval($_GET['paged'])) : 1;
 $offset = ($paged - 1) * $per_page;
 
 // Get total visits count and paginated visits
-$total_visits = VMS_CoreManager::count_guest_visits($user_id);
+$total_visits = VMS_Guest::count_guest_visits($user_id);
 $total_pages = ceil($total_visits / $per_page);
-$guests = VMS_CoreManager::get_paginated_guest_visits($user_id, $per_page, $offset);
+$guests = VMS_Guest::get_paginated_guest_visits($user_id, $per_page, $offset);
 
 // Calculate row numbers for display
 $current_start = $total_visits > 0 ? ($paged - 1) * $per_page + 1 : 0;
@@ -443,11 +445,11 @@ if ( isset($_POST['cancel_visit']) && isset($_POST['visit_id']) ) {
        
         if ( $updated !== false ) {
             // Trigger automatic status recalculation for the guest
-            VMS_CoreManager::recalculate_guest_visit_statuses($visit->guest_id);
+            VMS_Guest::recalculate_guest_visit_statuses($visit->guest_id);
             
             // Also recalculate host's daily limits for that date
             if ($visit->host_member_id) {
-                VMS_CoreManager::recalculate_host_daily_limits($visit->host_member_id, $visit->visit_date);
+                VMS_Guest::recalculate_host_daily_limits($visit->host_member_id, $visit->visit_date);
             }
             
             // Success message or redirect
@@ -1073,7 +1075,7 @@ get_header();
                                                                         class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
                                                                         <p
                                                                             class="text-theme-sm text-gray-700 dark:text-gray-400">
-                                                                            <?php echo esc_html(VMS_CoreManager::format_date($guest->visit_date)); ?>
+                                                                            <?php echo esc_html(VMS_Core::format_date($guest->visit_date)); ?>
                                                                         </p>
                                                                     </div>
 
@@ -1082,7 +1084,7 @@ get_header();
                                                                         class="col-span-1 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
                                                                         <p
                                                                             class="text-theme-sm text-gray-700 dark:text-gray-400">
-                                                                            <?php echo esc_html(VMS_CoreManager::format_time($guest->sign_in_time)); ?>
+                                                                            <?php echo esc_html(VMS_Core::format_time($guest->sign_in_time)); ?>
                                                                         </p>
                                                                     </div>
 
@@ -1091,7 +1093,7 @@ get_header();
                                                                         class="col-span-1 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
                                                                         <p
                                                                             class="text-theme-sm text-gray-700 dark:text-gray-400">
-                                                                            <?php echo esc_html(VMS_CoreManager::format_time($guest->sign_out_time)); ?>
+                                                                            <?php echo esc_html(VMS_Core::format_time($guest->sign_out_time)); ?>
                                                                         </p>
                                                                     </div>
 
@@ -1100,7 +1102,7 @@ get_header();
                                                                         class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
                                                                         <p
                                                                             class="text-theme-sm text-gray-700 dark:text-gray-400">
-                                                                            <?php echo esc_html(VMS_CoreManager::calculate_duration($guest->sign_in_time, $guest->sign_out_time)); ?>
+                                                                            <?php echo esc_html(VMS_Core::calculate_duration($guest->sign_in_time, $guest->sign_out_time)); ?>
                                                                         </p>
                                                                     </div>
 

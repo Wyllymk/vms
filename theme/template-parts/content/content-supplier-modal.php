@@ -1,6 +1,6 @@
 <?php
 /**
- * Template part for displaying info modal
+ * Template part for displaying supplier info modal
  *
  * @link https://developer.wordpress.org/themes/basics/template-hierarchy/
  *
@@ -11,13 +11,13 @@ defined( 'ABSPATH' ) || exit;
 
 ?>
 
-<div x-show="isEmployeeInfoModal" class="fixed inset-0 flex items-center justify-center p-5 overflow-y-auto z-99999">
+<div x-show="isSupplierInfoModal" class="fixed inset-0 flex items-center justify-center p-5 overflow-y-auto z-99999">
     <div class="modal-close-btn fixed inset-0 h-full w-full bg-gray-400/50 backdrop-blur-[32px]"></div>
-    <div @click.outside="isEmployeeInfoModal = false"
+    <div @click.outside="isSupplierInfoModal = false"
         class="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
         <!-- close btn -->
-        <a @click="isEmployeeInfoModal = false"
-            class="cursor-pointer transition-color absolute right-5 top-5 z-999 flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-white/[0.07] dark:hover:text-gray-300">
+        <a @click="isSupplierInfoModal = false"
+            class="cursor-pointer transition-color absolute right-5 top-5 z-999 flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600 dark:bg-gray-700 dark:bg-white/[0.05] dark:text-gray-400 dark:hover:bg-white/[0.07] dark:hover:text-gray-300">
             <svg class="fill-current" width="24" height="24" viewBox="0 0 24 24" fill="none"
                 xmlns="http://www.w3.org/2000/svg">
                 <path fill-rule="evenodd" clip-rule="evenodd"
@@ -27,14 +27,15 @@ defined( 'ABSPATH' ) || exit;
         </a>
         <div class="px-2 pr-14">
             <h4 class="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
-                <?php esc_html_e( 'Register Employee', 'vms' ); ?>
+                <?php esc_html_e( 'Register Supplier', 'vms' ); ?>
             </h4>
             <p class="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
-                <?php esc_html_e( 'Create an Employees Account.', 'vms' ); ?>
+                <?php esc_html_e( 'Create a Suppliers Account.', 'vms' ); ?>
             </p>
         </div>
-        <form id="employee-form" class="flex flex-col" method="post" enctype="multipart/form-data">
-            <input type="hidden" name="register_employee" value="1">
+        <form id="supplier-form" class="flex flex-col" method="post" enctype="multipart/form-data">
+            <?php wp_nonce_field('create_user_data', '_wpnonce_create_user_data'); ?>
+            <input type="hidden" name="register_guest" value="1">
 
             <div class="custom-scrollbar h-lg overflow-y-auto px-2">
                 <div class="">
@@ -67,18 +68,7 @@ defined( 'ABSPATH' ) || exit;
                                 required />
                         </div>
 
-                        <!-- Email -->
-                        <div class="col-span-2 lg:col-span-1">
-                            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                <?php esc_html_e('Email address', 'vms'); ?>
-                                <span class="text-error-500">*</span>
-                            </label>
-                            <input type="email" name="email" value="<?php echo esc_attr($_POST['email'] ?? ''); ?>"
-                                class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-                                required />
-                        </div>
-
-                        <!-- Phone -->                        
+                        <!-- Phone -->
                         <div class="col-span-2 lg:col-span-1 relative">
                             <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                                 <?php esc_html_e('Phone', 'vms'); ?>
@@ -102,31 +92,16 @@ defined( 'ABSPATH' ) || exit;
                             </p>
                         </div>
 
-                        <!-- Role Dropdown -->
-                        <div class="col-span-2">
+                        <!-- Visit Date -->
+                        <div class="col-span-2 lg:col-span-1">
                             <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                <?php esc_html_e('Select Role', 'vms'); ?>
+                                <?php esc_html_e('Visit Date', 'vms'); ?>
                                 <span class="text-error-500">*</span>
                             </label>
-                            <select name="user_role" required
-                                class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800">
-                                <option value=""><?php esc_html_e('Select Role', 'vms'); ?></option>
-                                <?php
-                                // List of roles you want to display
-                                $allowed_roles = array('general_manager', 'gate', 'reception');
-
-                                global $wp_roles;
-                                foreach ($allowed_roles as $role_key) {
-                                    if (isset($wp_roles->roles[$role_key])) {
-                                        $role_name = $wp_roles->roles[$role_key]['name'];
-                                        $selected = (isset($_POST['user_role']) && $_POST['user_role'] === $role_key) ? 'selected' : '';
-                                        echo '<option value="' . esc_attr($role_key) . '" ' . $selected . '>'
-                                            . esc_html($role_name)
-                                            . '</option>';
-                                    }
-                                }
-                                ?>
-                            </select>
+                            <input type="date" name="visit_date"
+                                value="<?php echo esc_attr($_POST['visit_date'] ?? ''); ?>"
+                                class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+                                required />
                         </div>
 
                     </div>
@@ -134,13 +109,13 @@ defined( 'ABSPATH' ) || exit;
             </div>
 
             <div class="flex items-center gap-3 px-2 mt-6 lg:justify-end">
-                <button @click="isEmployeeInfoModal = false" type="button"
+                <button @click="isSupplierInfoModal = false"
                     class="cursor-pointer flex w-full justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] sm:w-auto">
                     <?php esc_html_e('Close', 'vms'); ?>
                 </button>
-                <button type="submit" id="submit-employee-form"
+                <button type="submit" id="submit-courtesy-guest-form"
                     class="cursor-pointer flex w-full justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 sm:w-auto">
-                    <?php esc_html_e('Create Employee', 'vms'); ?>
+                    <?php esc_html_e('Create Supplier', 'vms'); ?>
                 </button>
             </div>
         </form>

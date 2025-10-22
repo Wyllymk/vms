@@ -1,11 +1,12 @@
 <?php
 /**
- * The template for displaying the guest details page
+ * The template for displaying the supplier details page
  *
  * @package Visitor_Management_System
  */
-use WyllyMk\VMS\VMS_Guest;
 use WyllyMk\VMS\VMS_Core;
+use WyllyMk\VMS\VMS_Config;
+
 
 // Exit if accessed directly
 defined('ABSPATH') || exit;
@@ -29,8 +30,8 @@ if ( ! ( current_user_can( 'administrator' ) || current_user_can( 'general_manag
 global $wpdb;
 
 // WordPress table prefix
-$guests_table       = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::GUESTS_TABLE);
-$guest_visits_table = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::GUEST_VISITS_TABLE);
+$guests_table       = VMS_Config::get_table_name(VMS_Config::A_GUESTS_TABLE);
+$guest_visits_table = VMS_Config::get_table_name(VMS_Config::A_GUEST_VISITS_TABLE);
 $wp_users_table     = $wpdb->users;
 
 // Get guest_id from URL
@@ -142,7 +143,7 @@ $status_classes = [
 
 
 // Handle canceling a guest visit
-if ( isset($_POST['cancel_visit']) && isset($_POST['visit_id']) ) {
+if ( isset($_POST['cancel_accommodation_visit']) && isset($_POST['visit_id']) ) {
 
     // Verify nonce for security
     if ( ! isset($_POST['cancel_visit_nonce']) ||
@@ -155,11 +156,11 @@ if ( isset($_POST['cancel_visit']) && isset($_POST['visit_id']) ) {
 
     if ( $visit_id > 0 ) {
         global $wpdb;
-        $guest_visits_table = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::GUEST_VISITS_TABLE);
+        $guest_visits_table = VMS_Config::get_table_name(VMS_Config::A_GUEST_VISITS_TABLE);
 
         // Get the visit details before cancelling
         $visit = $wpdb->get_row($wpdb->prepare(
-            "SELECT guest_id, host_member_id, visit_date, sign_in_time, status 
+            "SELECT guest_id, visit_date, sign_in_time, status 
              FROM $guest_visits_table 
              WHERE id = %d",
             $visit_id
@@ -198,14 +199,7 @@ if ( isset($_POST['cancel_visit']) && isset($_POST['visit_id']) ) {
             array( '%d' )
         );
 
-        if ( $updated !== false ) {
-            // Trigger automatic status recalculation for the guest
-            VMS_Guest::recalculate_guest_visit_statuses($visit->guest_id);
-
-            // Also recalc host's daily limits for that date
-            if ($visit->host_member_id) {
-                VMS_Guest::recalculate_host_daily_limits($visit->host_member_id, $visit->visit_date);
-            }
+        if ( $updated !== false ) {           
 
             // Success redirect
             wp_safe_redirect( add_query_arg('visit_cancelled', '1', wp_get_referer()) );
@@ -223,8 +217,8 @@ if ( isset($_POST['cancel_visit']) && isset($_POST['visit_id']) ) {
 get_header();
 ?>
 
-<section id="primary" x-data="{ page: 'guest-details', 'isVisitInfoModal': false}"
-    @close-guest-modal.window="isVisitInfoModal = false">
+<section id="primary" x-data="{ page: 'supplier-details', 'isAVisitInfoModal': false}"
+    @close-guest-modal.window="isAVisitInfoModal = false">
     <main id="main">
         <!-- ===== Page Wrapper Start ===== -->
         <div class="flex h-svh overflow-hidden">
@@ -248,18 +242,18 @@ get_header();
                     <div class="p-4 mx-auto max-w-(--breakpoint-2xl) min-h-screen md:p-6">
                         <!-- Breadcrumb Start -->
                         <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
-                            <a href="<?php echo esc_url( home_url( '/guests' ) ); ?>"
+                            <a href="<?php echo esc_url( home_url( '/suppliers' ) ); ?>"
                                 class="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
                                 <svg class="stroke-current" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
                                     viewBox="0 0 20 20" fill="none">
                                     <path d="M12.7083 5L7.5 10.2083L12.7083 15.4167" stroke="" stroke-width="1.5"
                                         stroke-linecap="round" stroke-linejoin="round" />
                                 </svg>
-                                <?php esc_html_e( 'Back to Guests', 'vms' ); ?>
+                                <?php esc_html_e( 'Back to Accommodation Guests', 'vms' ); ?>
                             </a>
 
                             <h2 class="text-xl font-semibold text-gray-800 dark:text-white/90">
-                                <?php esc_html_e( 'Guest Details', 'vms' ); ?>
+                                <?php esc_html_e( 'Accommodation Guest Details', 'vms' ); ?>
                             </h2>
                         </div>
                         <!-- Breadcrumb End -->
@@ -290,7 +284,7 @@ get_header();
                                         <!-- In the Personal Information section -->
                                         <div x-show="open" x-transition
                                             class="p-6 border-t border-gray-200 dark:border-gray-700">
-                                            <form id="guest-update-form" action="" method="post"
+                                            <form id="accommodation-guest-update-form" action="" method="post"
                                                 enctype="multipart/form-data">
                                                 <div class="-mx-2.5 flex flex-wrap gap-y-4">
 
@@ -547,7 +541,8 @@ get_header();
                                                         class="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs ring-1 ring-inset ring-gray-300 transition hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-white/[0.03] cursor-pointer">
                                                         <?php esc_html_e( 'Reset', 'vms' ); ?>
                                                     </button>
-                                                    <button type="submit" name="delete_guest" id="delete-guest-btn"
+                                                    <button type="submit" name="delete_guest"
+                                                        id="delete-accommodation-guest-btn"
                                                         data-guest-name="<?php echo $guest->first_name; ?>"
                                                         class="px-4 py-2 text-white bg-error-500 rounded-lg hover:bg-error-600 inline-flex items-center justify-center gap-2 shadow-theme-xs transition cursor-pointer">
                                                         <?php esc_html_e( 'Delete Guest', 'vms' ); ?>
@@ -570,7 +565,7 @@ get_header();
                                                     <?php echo esc_html($guest->first_name . ' ' . $guest->last_name); ?>
                                                 </h3>
                                                 <div class="flex items-center justify-end w-full md:w-1/2">
-                                                    <a @click="isVisitInfoModal = true"
+                                                    <a @click="isAVisitInfoModal = true"
                                                         class="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg cursor-pointer bg-brand-500 shadow-theme-xs hover:bg-brand-600">
                                                         <?php esc_html_e('Register New Visit', 'vms'); ?>
                                                     </a>
@@ -639,14 +634,6 @@ get_header();
                                                                         <?php esc_html_e( '#', 'vms' ); ?>
                                                                     </p>
                                                                 </div>
-                                                                <!-- Host Member -->
-                                                                <div
-                                                                    class="col-span-2 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
-                                                                    <p
-                                                                        class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
-                                                                        <?php esc_html_e( 'Host Member', 'vms' ); ?>
-                                                                    </p>
-                                                                </div>
                                                                 <!-- Visit Date -->
                                                                 <div
                                                                     class="col-span-2 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
@@ -657,7 +644,7 @@ get_header();
                                                                 </div>
                                                                 <!-- Sign In Time -->
                                                                 <div
-                                                                    class="col-span-1 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
+                                                                    class="col-span-2 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
                                                                     <p
                                                                         class="whitespace-nowrap text-theme-xs font-medium text-gray-700 dark:text-gray-400">
                                                                         <?php esc_html_e( 'Sign In Time', 'vms' ); ?>
@@ -665,7 +652,7 @@ get_header();
                                                                 </div>
                                                                 <!-- Sign Out Time -->
                                                                 <div
-                                                                    class="col-span-1 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
+                                                                    class="col-span-2 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
                                                                     <p
                                                                         class="whitespace-nowrap text-theme-xs font-medium text-gray-700 dark:text-gray-400">
                                                                         <?php esc_html_e( 'Sign Out Time', 'vms' ); ?>
@@ -712,41 +699,6 @@ get_header();
                                                                         </p>
                                                                     </div>
 
-                                                                    <!-- Host -->
-                                                                    <div
-                                                                        class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
-                                                                        <?php
-                                                                            $host_display = 'N/A';
-                                                                            if (!empty($visit->host_member_id)) {
-                                                                                $host_user = get_userdata($visit->host_member_id);
-                                                                                if ($host_user) {
-                                                                                    $first_name = get_user_meta($visit->host_member_id, 'first_name', true);
-                                                                                    $last_name = get_user_meta($visit->host_member_id, 'last_name', true);
-                                                                                    $host_display = (!empty($first_name) || !empty($last_name))
-                                                                                        ? trim($first_name . ' ' . $last_name)
-                                                                                        : $host_user->user_login;
-                                                                                }
-                                                                            } elseif( !empty($visit->courtesy)) {
-                                                                                $host_display = $visit->courtesy;                                                                                
-                                                                            }
-                                                                            $is_courtesy = empty($host_member_id) && !empty($visit->courtesy);
-                                                                           
-                                                                        ?>
-                                                                        <div class="flex items-center">
-                                                                            <?php if ($is_courtesy): ?>
-                                                                            <span
-                                                                                class="inline-flex items-center justify-center gap-1 rounded-full px-2.5 py-0.5 text-sm font-medium capitalize bg-blue-light-50 text-blue-light-500 dark:bg-blue-light-500/15 dark:text-blue-light-500">
-                                                                                <?php esc_html_e('Courtesy!', 'vms'); ?>
-                                                                            </span>
-                                                                            <?php else: ?>
-                                                                            <p
-                                                                                class="text-gray-500 text-theme-sm dark:text-gray-400">
-                                                                                <?php echo esc_html($host_display); ?>
-                                                                            </p>
-                                                                            <?php endif; ?>
-                                                                        </div>
-                                                                    </div>
-
                                                                     <!-- Visit Date -->
                                                                     <div
                                                                         class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
@@ -758,7 +710,7 @@ get_header();
 
                                                                     <!-- Sign In -->
                                                                     <div
-                                                                        class="col-span-1 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
+                                                                        class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
                                                                         <p
                                                                             class="text-theme-sm text-gray-700 dark:text-gray-400">
                                                                             <?php echo esc_html(VMS_Core::format_time($visit->sign_in_time)); ?>
@@ -767,7 +719,7 @@ get_header();
 
                                                                     <!-- Sign Out -->
                                                                     <div
-                                                                        class="col-span-1 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
+                                                                        class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
                                                                         <p
                                                                             class="text-theme-sm text-gray-700 dark:text-gray-400">
                                                                             <?php echo esc_html(VMS_Core::format_time($visit->sign_out_time)); ?>
@@ -799,7 +751,8 @@ get_header();
                                                                             <input type="hidden" name="visit_id"
                                                                                 value="<?php echo esc_attr( $visit->visit_id ); ?>">
                                                                             <?php wp_nonce_field( 'cancel_visit_action', 'cancel_visit_nonce' ); ?>
-                                                                            <button type="submit" name="cancel_visit"
+                                                                            <button type="submit"
+                                                                                name="cancel_accommodation_visit"
                                                                                 class="px-3 py-1 text-xs font-medium text-white bg-red-500 rounded-lg hover:bg-red-600">
                                                                                 <?php esc_html_e( 'Cancel', 'vms' ); ?>
                                                                             </button>
@@ -943,7 +896,7 @@ get_header();
                 <!-- ===== Main Content End ===== -->
 
                 <!-- BEGIN MODAL -->
-                <?php get_template_part( 'template-parts/content/content', 'visit-modal' ); ?>
+                <?php get_template_part( 'template-parts/content/content', 'a-visit-modal' ); ?>
                 <!-- END MODAL -->
 
                 <!-- ===== Footer Start ===== -->

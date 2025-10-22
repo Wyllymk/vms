@@ -5,7 +5,7 @@
 	"scripts": {
 		"development:tailwind:frontend": "npx postcss ./tailwind.css -o ./theme/style.css --verbose",
 		"development:tailwind:editor": "cross-env _TW_TARGET=editor npx postcss ./tailwind.css -o ./theme/style-editor.css",
-		"development:esbuild": "npx esbuild ./javascript/script.js ./javascript/jqscript.js ./javascript/block-editor.js --target=esnext --bundle --outdir=./theme/js --out-extension:.js=.min.js",
+		"development:esbuild": "npx esbuild ./javascript/script.js ./javascript/main.js ./javascript/block-editor.js --target=esnext --bundle --outdir=./theme/js --out-extension:.js=.min.js",
 		"development": "run-p \"development:**\"",
 		"dev": "npm run development",
 		"watch:tailwind:frontend": "npm run development:tailwind:frontend -- --watch",

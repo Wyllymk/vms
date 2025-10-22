@@ -1,11 +1,10 @@
 <?php
 /**
- * The template for displaying the guest details page
+ * The template for displaying the supplier details page
  *
  * @package Visitor_Management_System
  */
-use WyllyMk\VMS\VMS_Guest;
-use WyllyMk\VMS\VMS_Core;
+use WyllyMk\VMS\VMS_CoreManager;
 
 // Exit if accessed directly
 defined('ABSPATH') || exit;
@@ -200,11 +199,11 @@ if ( isset($_POST['cancel_visit']) && isset($_POST['visit_id']) ) {
 
         if ( $updated !== false ) {
             // Trigger automatic status recalculation for the guest
-            VMS_Guest::recalculate_guest_visit_statuses($visit->guest_id);
+            VMS_CoreManager::recalculate_guest_visit_statuses($visit->guest_id);
 
             // Also recalc host's daily limits for that date
             if ($visit->host_member_id) {
-                VMS_Guest::recalculate_host_daily_limits($visit->host_member_id, $visit->visit_date);
+                VMS_CoreManager::recalculate_host_daily_limits($visit->host_member_id, $visit->visit_date);
             }
 
             // Success redirect
@@ -223,7 +222,7 @@ if ( isset($_POST['cancel_visit']) && isset($_POST['visit_id']) ) {
 get_header();
 ?>
 
-<section id="primary" x-data="{ page: 'guest-details', 'isVisitInfoModal': false}"
+<section id="primary" x-data="{ page: 'supplier-details', 'isVisitInfoModal': false}"
     @close-guest-modal.window="isVisitInfoModal = false">
     <main id="main">
         <!-- ===== Page Wrapper Start ===== -->
@@ -248,18 +247,18 @@ get_header();
                     <div class="p-4 mx-auto max-w-(--breakpoint-2xl) min-h-screen md:p-6">
                         <!-- Breadcrumb Start -->
                         <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
-                            <a href="<?php echo esc_url( home_url( '/guests' ) ); ?>"
+                            <a href="<?php echo esc_url( home_url( '/suppliers' ) ); ?>"
                                 class="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
                                 <svg class="stroke-current" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
                                     viewBox="0 0 20 20" fill="none">
                                     <path d="M12.7083 5L7.5 10.2083L12.7083 15.4167" stroke="" stroke-width="1.5"
                                         stroke-linecap="round" stroke-linejoin="round" />
                                 </svg>
-                                <?php esc_html_e( 'Back to Guests', 'vms' ); ?>
+                                <?php esc_html_e( 'Back to Suppliers', 'vms' ); ?>
                             </a>
 
                             <h2 class="text-xl font-semibold text-gray-800 dark:text-white/90">
-                                <?php esc_html_e( 'Guest Details', 'vms' ); ?>
+                                <?php esc_html_e( 'Supplier Details', 'vms' ); ?>
                             </h2>
                         </div>
                         <!-- Breadcrumb End -->
@@ -589,7 +588,7 @@ get_header();
                                                             <div class="relative z-20 bg-transparent">
                                                                 <select
                                                                     class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-9 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none py-2 pr-8 pl-3 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
-                                                                    onchange="window.location.href = '<?php echo esc_js(VMS_Core::build_per_page_url()); ?>' + this.value">
+                                                                    onchange="window.location.href = '<?php echo esc_js(VMS_CoreManager::build_per_page_url()); ?>' + this.value">
                                                                     <option value="10"
                                                                         <?php selected($per_page, 10); ?>>10</option>
                                                                     <option value="25"
@@ -752,7 +751,7 @@ get_header();
                                                                         class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
                                                                         <p
                                                                             class="text-theme-sm text-gray-700 dark:text-gray-400">
-                                                                            <?php echo esc_html(VMS_Core::format_date($visit->visit_date)); ?>
+                                                                            <?php echo esc_html(VMS_CoreManager::format_date($visit->visit_date)); ?>
                                                                         </p>
                                                                     </div>
 
@@ -761,7 +760,7 @@ get_header();
                                                                         class="col-span-1 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
                                                                         <p
                                                                             class="text-theme-sm text-gray-700 dark:text-gray-400">
-                                                                            <?php echo esc_html(VMS_Core::format_time($visit->sign_in_time)); ?>
+                                                                            <?php echo esc_html(VMS_CoreManager::format_time($visit->sign_in_time)); ?>
                                                                         </p>
                                                                     </div>
 
@@ -770,7 +769,7 @@ get_header();
                                                                         class="col-span-1 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
                                                                         <p
                                                                             class="text-theme-sm text-gray-700 dark:text-gray-400">
-                                                                            <?php echo esc_html(VMS_Core::format_time($visit->sign_out_time)); ?>
+                                                                            <?php echo esc_html(VMS_CoreManager::format_time($visit->sign_out_time)); ?>
                                                                         </p>
                                                                     </div>
 
@@ -779,7 +778,7 @@ get_header();
                                                                         class="col-span-1 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
                                                                         <p
                                                                             class="text-theme-sm text-gray-700 dark:text-gray-400">
-                                                                            <?php echo esc_html(VMS_Core::calculate_duration($visit->sign_in_time, $visit->sign_out_time)); ?>
+                                                                            <?php echo esc_html(VMS_CoreManager::calculate_duration($visit->sign_in_time, $visit->sign_out_time)); ?>
                                                                         </p>
                                                                     </div>
 
@@ -825,7 +824,7 @@ get_header();
                                                         class="flex items-center justify-between gap-8 px-6 py-4 sm:justify-normal">
                                                         <!-- Previous Button -->
                                                         <?php if ($paged > 1): ?>
-                                                        <a href="<?php echo esc_url(VMS_Core::build_pagination_url($paged - 1)); ?>"
+                                                        <a href="<?php echo esc_url(VMS_CoreManager::build_pagination_url($paged - 1)); ?>"
                                                             class="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 sm:px-3.5 sm:py-2.5">
                                                             <svg class="fill-current" width="20" height="20"
                                                                 viewBox="0 0 20 20" fill="none"
@@ -881,7 +880,7 @@ get_header();
                                                                     <?php echo esc_html($page_num); ?>
                                                                 </span>
                                                                 <?php else: ?>
-                                                                <a href="<?php echo esc_url(VMS_Core::build_pagination_url($page_num)); ?>"
+                                                                <a href="<?php echo esc_url(VMS_CoreManager::build_pagination_url($page_num)); ?>"
                                                                     class="flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium text-gray-700 hover:bg-brand-500 hover:text-white dark:text-gray-400 dark:hover:text-white">
                                                                     <?php echo esc_html($page_num); ?>
                                                                 </a>
@@ -892,7 +891,7 @@ get_header();
 
                                                         <!-- Next Button -->
                                                         <?php if ($paged < $total_pages): ?>
-                                                        <a href="<?php echo esc_url(VMS_Core::build_pagination_url($paged + 1)); ?>"
+                                                        <a href="<?php echo esc_url(VMS_CoreManager::build_pagination_url($paged + 1)); ?>"
                                                             class="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 sm:px-3.5 sm:py-2.5">
                                                             <span class="hidden sm:inline">Next</span>
                                                             <svg class="fill-current" width="20" height="20"

@@ -4,7 +4,8 @@
  *
   * @package Visitor_Management_System
  */
-use WyllyMk\VMS\VMS_CoreManager;
+use WyllyMk\VMS\VMS_Employee;
+use WyllyMk\VMS\VMS_SMS;
 
 // Exit if accessed directly
 defined('ABSPATH') || exit;
@@ -155,7 +156,7 @@ if (isset($_GET['user_id']) && intval($_GET['user_id'])) {
 
                 // Send SMS if number + message available
                 if (!empty($user_number) && !empty($sms_message)) {
-                    \WyllyMk\VMS\VMS_NotificationManager::send_sms($user_number, $sms_message, $user_id, $role = 'member');
+                    VMS_SMS::send_sms($user_number, $sms_message, $user_id, $role = 'member');
                 }
             }
         }

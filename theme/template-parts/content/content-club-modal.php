@@ -66,13 +66,20 @@ defined( 'ABSPATH' ) || exit;
                         </div>
 
                         <!-- Club Phone -->
-                        <div class="col-span-2 lg:col-span-1">
+                        <div class="col-span-2 lg:col-span-1 relative">
                             <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                                 <?php esc_html_e('Club Phone', 'vms'); ?>
                             </label>
-                            <input type="text" name="club_phone"
-                                value="<?php echo esc_attr($_POST['club_phone'] ?? ''); ?>"
-                                class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+
+                            <div class="flex items-center gap-2">
+                                <input type="tel" id="club_phone" name="club_phone"
+                                    value="<?php echo esc_attr($_POST['club_phone'] ?? ''); ?>"
+                                    class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" />
+                            </div>
+
+                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                <?php esc_html_e('Format: +254700123456 or 0700123456', 'vms'); ?>
+                            </p>
                         </div>
 
                         <!-- Club Website -->

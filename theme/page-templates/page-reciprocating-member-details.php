@@ -4,7 +4,10 @@
  *
  * @package Visitor_Management_System
  */
-use WyllyMk\VMS\VMS_CoreManager;
+use WyllyMk\VMS\VMS_Core;
+use WyllyMk\VMS\VMS_Reciprocation;
+use WyllyMk\VMS\VMS_Config;
+
 
 // Exit if accessed directly
 defined('ABSPATH') || exit;
@@ -28,9 +31,9 @@ if ( ! ( current_user_can( 'administrator' ) || current_user_can( 'general_manag
 global $wpdb;
 
 // WordPress table prefix
-$recip_members_table = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::RECIP_MEMBERS_TABLE);
-$recip_visits_table = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::RECIP_MEMBERS_VISITS_TABLE);
-$recip_clubs_table = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::RECIP_CLUBS_TABLE);
+$recip_members_table = VMS_Config::get_table_name(VMS_Config::RECIP_MEMBERS_TABLE);
+$recip_visits_table = VMS_Config::get_table_name(VMS_Config::RECIP_MEMBERS_VISITS_TABLE);
+$recip_clubs_table = VMS_Config::get_table_name(VMS_Config::RECIP_CLUBS_TABLE);
 
 // Get member_id from URL
 $member_id = isset($_GET['member_id']) ? absint($_GET['member_id']) : 0;
@@ -199,16 +202,38 @@ if ( isset($_POST['cancel_recip_visit']) && isset($_POST['visit_id']) ) {
     if ( $visit_id > 0 ) {
         global $wpdb;
         
-        $recip_visits_table = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::RECIP_MEMBERS_VISITS_TABLE);
-       
+        $recip_visits_table = VMS_Config::get_table_name(VMS_Config::RECIP_MEMBERS_VISITS_TABLE);     
+
         // Get the visit details before cancelling
         $visit = $wpdb->get_row($wpdb->prepare(
-            "SELECT member_id, visit_date FROM $recip_visits_table WHERE id = %d",
+            "SELECT member_id, visit_date, sign_in_time, status 
+             FROM $recip_visits_table 
+             WHERE id = %d",
             $visit_id
         ));
        
-        if (!$visit) {
-            wp_die(__('Visit not found.', 'vms'));
+        if ( ! $visit ) {
+            echo "<script>alert('Visit not found.'); window.history.back();</script>";
+            exit;
+        }
+
+        // ❌ Prevent cancel if guest already signed in
+        if ( ! empty($visit->sign_in_time) ) {
+            echo "<script>alert('This visit cannot be cancelled because the guest has already signed in.'); window.history.back();</script>";
+            exit;
+        }
+
+        // ❌ Prevent cancel if date is in the past
+        $today = current_time('Y-m-d');
+        if ( $visit->visit_date < $today ) {
+            echo "<script>alert('This visit cannot be cancelled because the visit date has already passed.'); window.history.back();</script>";
+            exit;
+        }
+
+        // ❌ Prevent cancel if already cancelled
+        if ( $visit->status === 'cancelled' ) {
+            echo "<script>alert('This visit is already cancelled.'); window.history.back();</script>";
+            exit;
         }
        
         // Update visit status to cancelled
@@ -222,17 +247,17 @@ if ( isset($_POST['cancel_recip_visit']) && isset($_POST['visit_id']) ) {
        
         if ( $updated !== false ) {
             // Trigger automatic status recalculation for the member
-            VMS_CoreManager::recalculate_member_visit_statuses($visit->member_id);            
+            VMS_Reciprocation::recalculate_member_visit_statuses($visit->member_id);            
            
             // Success message or redirect
             wp_safe_redirect( add_query_arg('visit_cancelled', '1', wp_get_referer()) );
             exit;
         } else {
-            wp_die(__('Failed to cancel visit. Please try again.', 'vms'));
-        }
+            echo "<script>alert('Failed to cancel visit. Please try again.'); window.history.back();</script>";
+            exit;        }
     } else {
-        wp_die(__('Invalid visit ID.', 'vms'));
-    }
+        echo "<script>alert('Invalid visit ID.'); window.history.back();</script>";
+        exit;    }
 }
 
 get_header();
@@ -647,7 +672,7 @@ get_header();
                                                             <div class="relative z-20 bg-transparent">
                                                                 <select
                                                                     class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-9 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none py-2 pr-8 pl-3 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
-                                                                    onchange="window.location.href = '<?php echo esc_js(VMS_CoreManager::build_per_page_url()); ?>' + this.value">
+                                                                    onchange="window.location.href = '<?php echo esc_js(VMS_Core::build_per_page_url()); ?>' + this.value">
                                                                     <option value="10"
                                                                         <?php selected($per_page, 10); ?>>10</option>
                                                                     <option value="25"
@@ -760,7 +785,7 @@ get_header();
                                                                         class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
                                                                         <p
                                                                             class="text-theme-sm text-gray-700 dark:text-gray-400">
-                                                                            <?php echo esc_html(VMS_CoreManager::format_date($visit->visit_date)); ?>
+                                                                            <?php echo esc_html(VMS_Core::format_date($visit->visit_date)); ?>
                                                                         </p>
                                                                     </div>
 
@@ -769,7 +794,7 @@ get_header();
                                                                         class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
                                                                         <p
                                                                             class="text-theme-sm text-gray-700 dark:text-gray-400">
-                                                                            <?php echo esc_html(VMS_CoreManager::format_time($visit->sign_in_time)); ?>
+                                                                            <?php echo esc_html(VMS_Core::format_time($visit->sign_in_time)); ?>
                                                                         </p>
                                                                     </div>
 
@@ -778,7 +803,7 @@ get_header();
                                                                         class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
                                                                         <p
                                                                             class="text-theme-sm text-gray-700 dark:text-gray-400">
-                                                                            <?php echo esc_html(VMS_CoreManager::format_time($visit->sign_out_time)); ?>
+                                                                            <?php echo esc_html(VMS_Core::format_time($visit->sign_out_time)); ?>
                                                                         </p>
                                                                     </div>
 
@@ -787,7 +812,7 @@ get_header();
                                                                         class="col-span-1 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
                                                                         <p
                                                                             class="text-theme-sm text-gray-700 dark:text-gray-400">
-                                                                            <?php echo esc_html(VMS_CoreManager::calculate_duration($visit->sign_in_time, $visit->sign_out_time)); ?>
+                                                                            <?php echo esc_html(VMS_Core::calculate_duration($visit->sign_in_time, $visit->sign_out_time)); ?>
                                                                         </p>
                                                                     </div>
 
@@ -834,7 +859,7 @@ get_header();
                                                         class="flex items-center justify-between gap-8 px-6 py-4 sm:justify-normal">
                                                         <!-- Previous Button -->
                                                         <?php if ($paged > 1): ?>
-                                                        <a href="<?php echo esc_url(VMS_CoreManager::build_pagination_url($paged - 1)); ?>"
+                                                        <a href="<?php echo esc_url(VMS_Core::build_pagination_url($paged - 1)); ?>"
                                                             class="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 sm:px-3.5 sm:py-2.5">
                                                             <svg class="fill-current" width="20" height="20"
                                                                 viewBox="0 0 20 20" fill="none"
@@ -889,7 +914,7 @@ get_header();
                                                                     <?php echo esc_html($page_num); ?>
                                                                 </span>
                                                                 <?php else: ?>
-                                                                <a href="<?php echo esc_url(VMS_CoreManager::build_pagination_url($page_num)); ?>"
+                                                                <a href="<?php echo esc_url(VMS_Core::build_pagination_url($page_num)); ?>"
                                                                     class="flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium text-gray-700 hover:bg-brand-500 hover:text-white dark:text-gray-400 dark:hover:text-white">
                                                                     <?php echo esc_html($page_num); ?>
                                                                 </a>
@@ -900,7 +925,7 @@ get_header();
 
                                                         <!-- Next Button -->
                                                         <?php if ($paged < $total_pages): ?>
-                                                        <a href="<?php echo esc_url(VMS_CoreManager::build_pagination_url($paged + 1)); ?>"
+                                                        <a href="<?php echo esc_url(VMS_Core::build_pagination_url($paged + 1)); ?>"
                                                             class="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 sm:px-3.5 sm:py-2.5">
                                                             <span class="hidden sm:inline">Next</span>
                                                             <svg class="fill-current" width="20" height="20"
