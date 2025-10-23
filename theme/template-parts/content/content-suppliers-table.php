@@ -11,8 +11,8 @@ use WyllyMk\VMS\VMS_Config;
 defined( 'ABSPATH' ) || exit;
 
 global $wpdb;
-$guests_table       = VMS_Config::get_table_name(VMS_Config::A_GUESTS_TABLE);
-$guest_visits_table = VMS_Config::get_table_name(VMS_Config::A_GUEST_VISITS_TABLE);
+$guests_table       = VMS_Config::get_table_name(VMS_Config::SUPPLIERS_TABLE);
+$guest_visits_table = VMS_Config::get_table_name(VMS_Config::SUPPLIER_VISITS_TABLE);
 
 // Get current user and their role
 $current_user = wp_get_current_user();
@@ -304,7 +304,7 @@ $status_classes = [
                     </td>
                     <td class="px-3 py-4 sm:px-6">
                         <div class="flex items-center gap-2">
-                            <button id="edit-accommodation-guest-button-<?php echo $guest->id; ?>"
+                            <button id="edit-supplier-button-<?php echo $guest->id; ?>"
                                 class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 transition bg-white border border-gray-300 rounded-lg cursor-pointer whitespace-nowrap dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
                                 data-guest-id="<?php echo $guest->id; ?>"
                                 data-visit-id="<?php echo $guest->visit_id; ?>">
@@ -352,7 +352,7 @@ $status_classes = [
                                 class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-light-500 bg-blue-light-50 rounded-lg dark:bg-blue-light-500/15 dark:text-blue-light-500"><?php esc_html_e('Scheduled', 'vms'); ?></span>
 
                             <?php elseif ($visit_status === 'signin') : ?>
-                            <button id="sign-in-accommodation-button-<?php echo esc_attr($guest->id); ?>"
+                            <button id="sign-in-supplier-button-<?php echo esc_attr($guest->id); ?>"
                                 class="whitespace-nowrap inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-brand-500 rounded-lg cursor-pointer hover:bg-brand-600 <?php echo $is_member_or_chairman ? 'opacity-50 !cursor-not-allowed' : ''; ?>"
                                 data-visit-id="<?php echo esc_attr($guest->visit_id); ?>"
                                 <?php echo $is_member_or_chairman ? 'disabled' : ''; ?>>
@@ -360,7 +360,7 @@ $status_classes = [
                             </button>
 
                             <?php elseif ($visit_status === 'signout') : ?>
-                            <button id="sign-out-accommodation-button-<?php echo esc_attr($guest->id); ?>"
+                            <button id="sign-out-supplier-button-<?php echo esc_attr($guest->id); ?>"
                                 class="whitespace-nowrap inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-purple-500 rounded-lg cursor-pointer hover:bg-purple-600 <?php echo $is_member_or_chairman ? 'opacity-50 !cursor-not-allowed' : ''; ?>"
                                 data-visit-id="<?php echo esc_attr($guest->visit_id); ?>"
                                 <?php echo $is_member_or_chairman ? 'disabled' : ''; ?>>
@@ -383,7 +383,7 @@ $status_classes = [
                 <?php
                     endforeach;
                 else:
-                    echo '<tr id="no-guests-row"><td colspan="8" class="px-4 py-4 text-center text-gray-600 dark:text-white">No guests found.</td></tr>';
+                    echo '<tr id="no-suppliers-row"><td colspan="8" class="px-4 py-4 text-center text-gray-600 dark:text-white">No suppliers found.</td></tr>';
                 endif;
                 ?>
             </tbody>

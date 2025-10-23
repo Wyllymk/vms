@@ -149,7 +149,7 @@ get_header();
                             </div>
                             <div class="p-1 border-t border-gray-100 dark:border-gray-800 sm:p-6">
                                 <!-- ====== Table Six Start -->
-                                <?php get_template_part( 'template-parts/content/content', 'guests-table' ); ?>
+                                <?php get_template_part( 'template-parts/content/content', 'suppliers-table' ); ?>
                                 <!-- ====== Table Six End -->
                             </div>
                         </div>

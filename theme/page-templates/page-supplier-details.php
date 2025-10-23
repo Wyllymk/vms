@@ -4,7 +4,8 @@
  *
  * @package Visitor_Management_System
  */
-use WyllyMk\VMS\VMS_CoreManager;
+use WyllyMk\VMS\VMS_Core;
+use WyllyMk\VMS\VMS_Config;
 
 // Exit if accessed directly
 defined('ABSPATH') || exit;
@@ -28,8 +29,8 @@ if ( ! ( current_user_can( 'administrator' ) || current_user_can( 'general_manag
 global $wpdb;
 
 // WordPress table prefix
-$guests_table       = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::GUESTS_TABLE);
-$guest_visits_table = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::GUEST_VISITS_TABLE);
+$guests_table       = VMS_Config::get_table_name(VMS_Config::SUPPLIERS_TABLE);
+$guest_visits_table = VMS_Config::get_table_name(VMS_Config::SUPPLIER_VISITS_TABLE);
 $wp_users_table     = $wpdb->users;
 
 // Get guest_id from URL
@@ -44,7 +45,7 @@ $guest = $wpdb->get_row(
 );
 
 if (!$guest) {
-    wp_die('Guest not found.');
+    wp_die('Supplier not found.');
 }
 
 // Get current user and their role for filtering
@@ -140,8 +141,8 @@ $status_classes = [
 ];
 
 
-// Handle canceling a guest visit
-if ( isset($_POST['cancel_visit']) && isset($_POST['visit_id']) ) {
+// Handle canceling a supplier visit
+if ( isset($_POST['cancel_supplier_visit']) && isset($_POST['visit_id']) ) {
 
     // Verify nonce for security
     if ( ! isset($_POST['cancel_visit_nonce']) ||
@@ -154,11 +155,11 @@ if ( isset($_POST['cancel_visit']) && isset($_POST['visit_id']) ) {
 
     if ( $visit_id > 0 ) {
         global $wpdb;
-        $guest_visits_table = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::GUEST_VISITS_TABLE);
+        $guest_visits_table = VMS_Config::get_table_name(VMS_Config::SUPPLIER_VISITS_TABLE);
 
         // Get the visit details before cancelling
         $visit = $wpdb->get_row($wpdb->prepare(
-            "SELECT guest_id, host_member_id, visit_date, sign_in_time, status 
+            "SELECT guest_id, visit_date, sign_in_time, status 
              FROM $guest_visits_table 
              WHERE id = %d",
             $visit_id
@@ -171,7 +172,7 @@ if ( isset($_POST['cancel_visit']) && isset($_POST['visit_id']) ) {
 
         // ❌ Prevent cancel if guest already signed in
         if ( ! empty($visit->sign_in_time) ) {
-            echo "<script>alert('This visit cannot be cancelled because the guest has already signed in.'); window.history.back();</script>";
+            echo "<script>alert('This visit cannot be cancelled because the supplier has already signed in.'); window.history.back();</script>";
             exit;
         }
 
@@ -197,14 +198,7 @@ if ( isset($_POST['cancel_visit']) && isset($_POST['visit_id']) ) {
             array( '%d' )
         );
 
-        if ( $updated !== false ) {
-            // Trigger automatic status recalculation for the guest
-            VMS_CoreManager::recalculate_guest_visit_statuses($visit->guest_id);
-
-            // Also recalc host's daily limits for that date
-            if ($visit->host_member_id) {
-                VMS_CoreManager::recalculate_host_daily_limits($visit->host_member_id, $visit->visit_date);
-            }
+        if ( $updated !== false ) {           
 
             // Success redirect
             wp_safe_redirect( add_query_arg('visit_cancelled', '1', wp_get_referer()) );
@@ -222,8 +216,8 @@ if ( isset($_POST['cancel_visit']) && isset($_POST['visit_id']) ) {
 get_header();
 ?>
 
-<section id="primary" x-data="{ page: 'supplier-details', 'isVisitInfoModal': false}"
-    @close-guest-modal.window="isVisitInfoModal = false">
+<section id="primary" x-data="{ page: 'supplier-details', 'isSupplierVisitInfoModal': false}"
+    @close-supplier-modal.window="isSupplierVisitInfoModal = false">
     <main id="main">
         <!-- ===== Page Wrapper Start ===== -->
         <div class="flex h-svh overflow-hidden">
@@ -289,7 +283,7 @@ get_header();
                                         <!-- In the Personal Information section -->
                                         <div x-show="open" x-transition
                                             class="p-6 border-t border-gray-200 dark:border-gray-700">
-                                            <form id="guest-update-form" action="" method="post"
+                                            <form id="supplier-update-form" action="" method="post"
                                                 enctype="multipart/form-data">
                                                 <div class="-mx-2.5 flex flex-wrap gap-y-4">
 
@@ -537,19 +531,19 @@ get_header();
                                                 <div class="flex flex-col md:flex-row justify-center mt-4 gap-2">
                                                     <input type="hidden" name="guest_id"
                                                         value="<?php echo esc_attr($guest_id); ?>">
-                                                    <button type="submit" name="update_guest" id="update-guest-btn"
+                                                    <button type="submit" name="update_guest" id="update-supplier-btn"
                                                         class="inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600 cursor-pointer">
-                                                        <?php esc_html_e( 'Update Guest', 'vms' ); ?>
+                                                        <?php esc_html_e( 'Update Supplier', 'vms' ); ?>
                                                     </button>
                                                     <?php if ( ( current_user_can( 'administrator' ) || current_user_can( 'chairman' ) || current_user_can( 'general_manager' ) ) ) : ?>
                                                     <button type="reset"
                                                         class="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs ring-1 ring-inset ring-gray-300 transition hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-white/[0.03] cursor-pointer">
                                                         <?php esc_html_e( 'Reset', 'vms' ); ?>
                                                     </button>
-                                                    <button type="submit" name="delete_guest" id="delete-guest-btn"
+                                                    <button type="submit" name="delete_guest" id="delete-supplier-btn"
                                                         data-guest-name="<?php echo $guest->first_name; ?>"
                                                         class="px-4 py-2 text-white bg-error-500 rounded-lg hover:bg-error-600 inline-flex items-center justify-center gap-2 shadow-theme-xs transition cursor-pointer">
-                                                        <?php esc_html_e( 'Delete Guest', 'vms' ); ?>
+                                                        <?php esc_html_e( 'Delete Supplier', 'vms' ); ?>
                                                     </button>
                                                     <?php endif; ?>
                                                 </div>
@@ -565,11 +559,11 @@ get_header();
                                             class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
                                             <div class="flex items-center justify-between px-5 py-4 sm:px-6 sm:py-5">
                                                 <h3 class="text-base font-medium text-gray-800 dark:text-white/90">
-                                                    <?php esc_html_e('Guest Visits -', 'vms'); ?>
+                                                    <?php esc_html_e('Supplier Visits -', 'vms'); ?>
                                                     <?php echo esc_html($guest->first_name . ' ' . $guest->last_name); ?>
                                                 </h3>
                                                 <div class="flex items-center justify-end w-full md:w-1/2">
-                                                    <a @click="isVisitInfoModal = true"
+                                                    <a @click="isSupplierVisitInfoModal = true"
                                                         class="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg cursor-pointer bg-brand-500 shadow-theme-xs hover:bg-brand-600">
                                                         <?php esc_html_e('Register New Visit', 'vms'); ?>
                                                     </a>
@@ -588,7 +582,7 @@ get_header();
                                                             <div class="relative z-20 bg-transparent">
                                                                 <select
                                                                     class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-9 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none py-2 pr-8 pl-3 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
-                                                                    onchange="window.location.href = '<?php echo esc_js(VMS_CoreManager::build_per_page_url()); ?>' + this.value">
+                                                                    onchange="window.location.href = '<?php echo esc_js(VMS_Core::build_per_page_url()); ?>' + this.value">
                                                                     <option value="10"
                                                                         <?php selected($per_page, 10); ?>>10</option>
                                                                     <option value="25"
@@ -751,7 +745,7 @@ get_header();
                                                                         class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
                                                                         <p
                                                                             class="text-theme-sm text-gray-700 dark:text-gray-400">
-                                                                            <?php echo esc_html(VMS_CoreManager::format_date($visit->visit_date)); ?>
+                                                                            <?php echo esc_html(VMS_Core::format_date($visit->visit_date)); ?>
                                                                         </p>
                                                                     </div>
 
@@ -760,7 +754,7 @@ get_header();
                                                                         class="col-span-1 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
                                                                         <p
                                                                             class="text-theme-sm text-gray-700 dark:text-gray-400">
-                                                                            <?php echo esc_html(VMS_CoreManager::format_time($visit->sign_in_time)); ?>
+                                                                            <?php echo esc_html(VMS_Core::format_time($visit->sign_in_time)); ?>
                                                                         </p>
                                                                     </div>
 
@@ -769,7 +763,7 @@ get_header();
                                                                         class="col-span-1 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
                                                                         <p
                                                                             class="text-theme-sm text-gray-700 dark:text-gray-400">
-                                                                            <?php echo esc_html(VMS_CoreManager::format_time($visit->sign_out_time)); ?>
+                                                                            <?php echo esc_html(VMS_Core::format_time($visit->sign_out_time)); ?>
                                                                         </p>
                                                                     </div>
 
@@ -778,7 +772,7 @@ get_header();
                                                                         class="col-span-1 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
                                                                         <p
                                                                             class="text-theme-sm text-gray-700 dark:text-gray-400">
-                                                                            <?php echo esc_html(VMS_CoreManager::calculate_duration($visit->sign_in_time, $visit->sign_out_time)); ?>
+                                                                            <?php echo esc_html(VMS_Core::calculate_duration($visit->sign_in_time, $visit->sign_out_time)); ?>
                                                                         </p>
                                                                     </div>
 
@@ -798,7 +792,8 @@ get_header();
                                                                             <input type="hidden" name="visit_id"
                                                                                 value="<?php echo esc_attr( $visit->visit_id ); ?>">
                                                                             <?php wp_nonce_field( 'cancel_visit_action', 'cancel_visit_nonce' ); ?>
-                                                                            <button type="submit" name="cancel_visit"
+                                                                            <button type="submit"
+                                                                                name="cancel_supplier_visit"
                                                                                 class="px-3 py-1 text-xs font-medium text-white bg-red-500 rounded-lg hover:bg-red-600">
                                                                                 <?php esc_html_e( 'Cancel', 'vms' ); ?>
                                                                             </button>
@@ -824,7 +819,7 @@ get_header();
                                                         class="flex items-center justify-between gap-8 px-6 py-4 sm:justify-normal">
                                                         <!-- Previous Button -->
                                                         <?php if ($paged > 1): ?>
-                                                        <a href="<?php echo esc_url(VMS_CoreManager::build_pagination_url($paged - 1)); ?>"
+                                                        <a href="<?php echo esc_url(VMS_Core::build_pagination_url($paged - 1)); ?>"
                                                             class="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 sm:px-3.5 sm:py-2.5">
                                                             <svg class="fill-current" width="20" height="20"
                                                                 viewBox="0 0 20 20" fill="none"
@@ -880,7 +875,7 @@ get_header();
                                                                     <?php echo esc_html($page_num); ?>
                                                                 </span>
                                                                 <?php else: ?>
-                                                                <a href="<?php echo esc_url(VMS_CoreManager::build_pagination_url($page_num)); ?>"
+                                                                <a href="<?php echo esc_url(VMS_Core::build_pagination_url($page_num)); ?>"
                                                                     class="flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium text-gray-700 hover:bg-brand-500 hover:text-white dark:text-gray-400 dark:hover:text-white">
                                                                     <?php echo esc_html($page_num); ?>
                                                                 </a>
@@ -891,7 +886,7 @@ get_header();
 
                                                         <!-- Next Button -->
                                                         <?php if ($paged < $total_pages): ?>
-                                                        <a href="<?php echo esc_url(VMS_CoreManager::build_pagination_url($paged + 1)); ?>"
+                                                        <a href="<?php echo esc_url(VMS_Core::build_pagination_url($paged + 1)); ?>"
                                                             class="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 sm:px-3.5 sm:py-2.5">
                                                             <span class="hidden sm:inline">Next</span>
                                                             <svg class="fill-current" width="20" height="20"
@@ -942,7 +937,7 @@ get_header();
                 <!-- ===== Main Content End ===== -->
 
                 <!-- BEGIN MODAL -->
-                <?php get_template_part( 'template-parts/content/content', 'visit-modal' ); ?>
+                <?php get_template_part( 'template-parts/content/content', 'supplier-visit-modal' ); ?>
                 <!-- END MODAL -->
 
                 <!-- ===== Footer Start ===== -->
