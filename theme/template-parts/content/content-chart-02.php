@@ -12,16 +12,20 @@ defined( 'ABSPATH' ) || exit;
 global $wpdb;
 
 // Table names
-$guest_visits_table  = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::GUEST_VISITS_TABLE);
-$recip_visits_table  = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::RECIP_MEMBERS_VISITS_TABLE);
+$guest_visits_table   = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::GUEST_VISITS_TABLE);
+$a_guest_visits_table = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::A_GUEST_VISITS_TABLE);
+$recip_visits_table   = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::RECIP_MEMBERS_VISITS_TABLE);
 
 // Target
 $visit_target = 300;
 
-// Current month visits (guests + recip)
+// Current month visits (guests + a_guests + recip)
 $current_month_visits = (int) $wpdb->get_var("
     SELECT COUNT(*) FROM (
         SELECT id, visit_date FROM $guest_visits_table 
+        WHERE MONTH(visit_date) = MONTH(CURDATE()) AND YEAR(visit_date) = YEAR(CURDATE())
+        UNION ALL
+        SELECT id, visit_date FROM $a_guest_visits_table 
         WHERE MONTH(visit_date) = MONTH(CURDATE()) AND YEAR(visit_date) = YEAR(CURDATE())
         UNION ALL
         SELECT id, visit_date FROM $recip_visits_table 
@@ -29,15 +33,19 @@ $current_month_visits = (int) $wpdb->get_var("
     ) AS combined_month_visits
 ");
 
-// Previous month visits
+// Previous month visits (guests + a_guests + recip)
 $previous_month_visits = (int) $wpdb->get_var("
     SELECT COUNT(*) FROM (
         SELECT id, visit_date FROM $guest_visits_table 
-        WHERE MONTH(visit_date) = MONTH(CURDATE() - INTERVAL 1 MONTH) 
+        WHERE MONTH(visit_date) = MONTH(CURDATE() - INTERVAL 1 MONTH)
+          AND YEAR(visit_date) = YEAR(CURDATE() - INTERVAL 1 MONTH)
+        UNION ALL
+        SELECT id, visit_date FROM $a_guest_visits_table 
+        WHERE MONTH(visit_date) = MONTH(CURDATE() - INTERVAL 1 MONTH)
           AND YEAR(visit_date) = YEAR(CURDATE() - INTERVAL 1 MONTH)
         UNION ALL
         SELECT id, visit_date FROM $recip_visits_table 
-        WHERE MONTH(visit_date) = MONTH(CURDATE() - INTERVAL 1 MONTH) 
+        WHERE MONTH(visit_date) = MONTH(CURDATE() - INTERVAL 1 MONTH)
           AND YEAR(visit_date) = YEAR(CURDATE() - INTERVAL 1 MONTH)
     ) AS combined_prev_month_visits
 ");
@@ -50,9 +58,15 @@ $growth = $previous_month_visits > 0
 // New visitors (distinct guests this month)
 $new_visitors = (int) $wpdb->get_var("
     SELECT COUNT(DISTINCT guest_id) 
-    FROM $guest_visits_table 
-    WHERE MONTH(visit_date) = MONTH(CURDATE()) AND YEAR(visit_date) = YEAR(CURDATE())
+    FROM (
+        SELECT guest_id, visit_date FROM $guest_visits_table
+        WHERE MONTH(visit_date) = MONTH(CURDATE()) AND YEAR(visit_date) = YEAR(CURDATE())
+        UNION ALL
+        SELECT guest_id, visit_date FROM $a_guest_visits_table
+        WHERE MONTH(visit_date) = MONTH(CURDATE()) AND YEAR(visit_date) = YEAR(CURDATE())
+    ) AS combined_guests
 ");
+
 ?>
 
 <div class="rounded-2xl border border-gray-200 bg-gray-100 dark:border-gray-800 dark:bg-white/[0.03]">

@@ -44,7 +44,7 @@ if ( empty( $full_name ) ) {
     </div>
     <!-- SIDEBAR HEADER -->
     <!-- SIDEBAR BODY -->
-    <div class="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar mt-10 lg:mt-0">
+    <div class="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar mt-5 lg:mt-0">
         <!-- Sidebar Menu -->
         <nav x-data="{selected: $persist('Dashboard')}">
             <!-- Menu Group -->
