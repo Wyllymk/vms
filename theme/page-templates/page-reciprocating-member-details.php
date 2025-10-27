@@ -341,7 +341,7 @@ get_header();
                                         <!-- Collapsible content section -->
                                         <div x-show="open" x-transition
                                             class="p-6 border-t border-gray-200 dark:border-gray-700">
-                                            <form id="member-update-form">
+                                            <form id="recip-update-form">
                                                 <div class="-mx-2.5 flex flex-wrap gap-y-4">
 
                                                     <!-- First Name -->
@@ -624,7 +624,7 @@ get_header();
                                                 <div class="flex flex-col md:flex-row justify-center mt-4 gap-2">
                                                     <input type="hidden" name="member_id"
                                                         value="<?php echo esc_attr($member_id); ?>">
-                                                    <button type="submit" id="update-member-btn"
+                                                    <button type="submit" id="update-recip-btn"
                                                         class="inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600 cursor-pointer">
                                                         Update Member
                                                     </button>
@@ -632,7 +632,7 @@ get_header();
                                                         class="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs ring-1 ring-inset ring-gray-300 transition hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-white/[0.03] cursor-pointer">
                                                         Reset
                                                     </button>
-                                                    <button type="button" id="delete-member-btn"
+                                                    <button type="button" id="delete-recip-btn"
                                                         data-member-name="<?php echo esc_attr($member->first_name); ?>"
                                                         class="px-4 py-2 text-white bg-error-500 rounded-lg hover:bg-error-600 inline-flex items-center justify-center gap-2 shadow-theme-xs transition cursor-pointer">
                                                         Delete Member

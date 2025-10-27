@@ -258,7 +258,7 @@ export function initReciprocation() {
 	});
 
 	// Member Update FORM
-	$('#member-update-form').on('submit', function (e) {
+	$('#recip-update-form').on('submit', function (e) {
 		e.preventDefault();
 
 		// Show loading indicator
@@ -274,7 +274,7 @@ export function initReciprocation() {
 
 		// Collect form data
 		var formData = new FormData(this);
-		formData.append('action', 'update_member');
+		formData.append('action', 'update_recip_member');
 		formData.append('nonce', vms_script_ajax.nonce);
 
 		// AJAX request
@@ -431,7 +431,7 @@ export function initReciprocation() {
 	});
 
 	// Delete Member Button
-	$('#delete-member-btn').on('click', function (e) {
+	$('#delete-recip-btn').on('click', function (e) {
 		e.preventDefault();
 
 		const memberName = $(this).data('member-name') || 'this member';
@@ -482,7 +482,7 @@ export function initReciprocation() {
 				url: vms_script_ajax.ajaxurl,
 				type: 'POST',
 				data: {
-					action: 'delete_member',
+					action: 'delete_recip_member',
 					member_id: memberId,
 					nonce: vms_script_ajax.nonce,
 				},

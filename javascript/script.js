@@ -136,18 +136,20 @@ document.addEventListener('alpine:init', () => {
 	});
 });
 
-document.addEventListener('DOMContentLoaded', () => {
-	const pickBtn = document.getElementById('pick_contact');
-	const phoneInput = document.getElementById('phone_number');
+/**
+ * Initialize contact picker for phone input fields
+ * @param {string} inputSelector - CSS selector for phone input
+ * @param {string} buttonSelector - CSS selector for picker button
+ */
+function initContactPicker(inputSelector, buttonSelector) {
+	const phoneInput = document.querySelector(inputSelector);
+	const pickBtn = document.querySelector(buttonSelector);
 
-	// Exit silently if elements are missing
 	if (!pickBtn || !phoneInput) return;
 
-	// Check if Contact Picker API is available
 	const isSupported = 'contacts' in navigator && 'ContactsManager' in window;
 
 	if (!isSupported) {
-		// Hide the button if not supported
 		pickBtn.style.display = 'none';
 		return;
 	}
@@ -156,7 +158,6 @@ document.addEventListener('DOMContentLoaded', () => {
 		try {
 			const props = ['tel', 'name'];
 			const opts = { multiple: false };
-
 			const contacts = await navigator.contacts.select(props, opts);
 
 			if (
@@ -171,8 +172,22 @@ document.addEventListener('DOMContentLoaded', () => {
 				console.warn('No valid phone number found.');
 			}
 		} catch (err) {
-			// Log error silently without breaking the page
 			console.warn('Contact selection skipped or denied:', err);
+		}
+	});
+}
+
+// Auto-initialize on DOMContentLoaded
+document.addEventListener('DOMContentLoaded', () => {
+	// Find all phone inputs with contact picker buttons
+	const phoneInputs = document.querySelectorAll('[data-contact-picker]');
+
+	phoneInputs.forEach((input) => {
+		const inputId = input.id;
+		const buttonId = input.dataset.contactPicker;
+
+		if (inputId && buttonId) {
+			initContactPicker(`#${inputId}`, `#${buttonId}`);
 		}
 	});
 });
