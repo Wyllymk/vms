@@ -632,14 +632,6 @@ get_header();
                                                                         <?php esc_html_e( '#', 'vms' ); ?>
                                                                     </p>
                                                                 </div>
-                                                                <!-- Host Member -->
-                                                                <div
-                                                                    class="col-span-2 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
-                                                                    <p
-                                                                        class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
-                                                                        <?php esc_html_e( 'Host Member', 'vms' ); ?>
-                                                                    </p>
-                                                                </div>
                                                                 <!-- Visit Date -->
                                                                 <div
                                                                     class="col-span-2 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
@@ -650,7 +642,7 @@ get_header();
                                                                 </div>
                                                                 <!-- Sign In Time -->
                                                                 <div
-                                                                    class="col-span-1 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
+                                                                    class="col-span-2 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
                                                                     <p
                                                                         class="whitespace-nowrap text-theme-xs font-medium text-gray-700 dark:text-gray-400">
                                                                         <?php esc_html_e( 'Sign In Time', 'vms' ); ?>
@@ -658,7 +650,7 @@ get_header();
                                                                 </div>
                                                                 <!-- Sign Out Time -->
                                                                 <div
-                                                                    class="col-span-1 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
+                                                                    class="col-span-2 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
                                                                     <p
                                                                         class="whitespace-nowrap text-theme-xs font-medium text-gray-700 dark:text-gray-400">
                                                                         <?php esc_html_e( 'Sign Out Time', 'vms' ); ?>
@@ -705,41 +697,6 @@ get_header();
                                                                         </p>
                                                                     </div>
 
-                                                                    <!-- Host -->
-                                                                    <div
-                                                                        class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
-                                                                        <?php
-                                                                            $host_display = 'N/A';
-                                                                            if (!empty($visit->host_member_id)) {
-                                                                                $host_user = get_userdata($visit->host_member_id);
-                                                                                if ($host_user) {
-                                                                                    $first_name = get_user_meta($visit->host_member_id, 'first_name', true);
-                                                                                    $last_name = get_user_meta($visit->host_member_id, 'last_name', true);
-                                                                                    $host_display = (!empty($first_name) || !empty($last_name))
-                                                                                        ? trim($first_name . ' ' . $last_name)
-                                                                                        : $host_user->user_login;
-                                                                                }
-                                                                            } elseif( !empty($visit->courtesy)) {
-                                                                                $host_display = $visit->courtesy;                                                                                
-                                                                            }
-                                                                            $is_courtesy = empty($host_member_id) && !empty($visit->courtesy);
-                                                                           
-                                                                        ?>
-                                                                        <div class="flex items-center">
-                                                                            <?php if ($is_courtesy): ?>
-                                                                            <span
-                                                                                class="inline-flex items-center justify-center gap-1 rounded-full px-2.5 py-0.5 text-sm font-medium capitalize bg-blue-light-50 text-blue-light-500 dark:bg-blue-light-500/15 dark:text-blue-light-500">
-                                                                                <?php esc_html_e('Courtesy!', 'vms'); ?>
-                                                                            </span>
-                                                                            <?php else: ?>
-                                                                            <p
-                                                                                class="text-gray-500 text-theme-sm dark:text-gray-400">
-                                                                                <?php echo esc_html($host_display); ?>
-                                                                            </p>
-                                                                            <?php endif; ?>
-                                                                        </div>
-                                                                    </div>
-
                                                                     <!-- Visit Date -->
                                                                     <div
                                                                         class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
@@ -751,7 +708,7 @@ get_header();
 
                                                                     <!-- Sign In -->
                                                                     <div
-                                                                        class="col-span-1 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
+                                                                        class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
                                                                         <p
                                                                             class="text-theme-sm text-gray-700 dark:text-gray-400">
                                                                             <?php echo esc_html(VMS_Core::format_time($visit->sign_in_time)); ?>
@@ -760,7 +717,7 @@ get_header();
 
                                                                     <!-- Sign Out -->
                                                                     <div
-                                                                        class="col-span-1 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
+                                                                        class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
                                                                         <p
                                                                             class="text-theme-sm text-gray-700 dark:text-gray-400">
                                                                             <?php echo esc_html(VMS_Core::format_time($visit->sign_out_time)); ?>
