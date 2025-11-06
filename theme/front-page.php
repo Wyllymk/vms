@@ -38,7 +38,7 @@ get_header();
                                 </span>
                             </h1>
                             <p class="mb-8 text-lg text-gray-700 md:text-xl dark:text-gray-300">
-                                <?php esc_html_e( 'A secure and streamlined platform for managing club visitors, members, and reciprocating members — all in one place.', 'vms' ); ?>
+                                <?php esc_html_e( 'A secure and streamlined platform for managing club visitors, members, suppliers, and reciprocating members — all in one place.', 'vms' ); ?>
                             </p>
                             <div class="flex gap-4">
                                 <?php if ( ! is_user_logged_in() ) : ?>

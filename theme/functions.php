@@ -145,6 +145,10 @@ function clubvms_scripts() {
         'current_user_id' => get_current_user_id()
     ]);
 
+	wp_localize_script('vms-script-ajax', 'vmsAjax', [
+		'ajaxurl' => admin_url('admin-ajax.php'),
+		'nonce' => wp_create_nonce('vms_nonce'),
+	]);
 
 	if ( is_singular() && comments_open() && get_option( 'thread_comments' ) ) {
 		wp_enqueue_script( 'comment-reply' );

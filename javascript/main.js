@@ -6,6 +6,7 @@ import { initMember } from './parts/vms-member.js';
 import { initPassword } from './parts/vms-password.js';
 import { initProfile } from './parts/vms-profile.js';
 import { initReciprocation } from './parts/vms-reciprocation.js';
+import { initReports } from './parts/vms-reports.js';
 import { initSettings } from './parts/vms-settings.js';
 import { initSupplier } from './parts/vms-suppliers.js';
 
@@ -18,6 +19,7 @@ jQuery(document).ready(function () {
 	initPassword();
 	initProfile();
 	initReciprocation();
+	initReports();
 	initSettings();
 	initSupplier();
 });

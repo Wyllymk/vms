@@ -10,6 +10,7 @@
  *
  * @package Visitor_Management_System
  */
+use WyllyMk\VMS\VMS_SMS;
 
 // Exit if accessed directly
 defined( 'ABSPATH' ) || exit;
@@ -116,7 +117,7 @@ if ( isset( $_POST['signup'] ) ) {
             // 3. SMS User
             $sms_message = "Hello {$first_name}, your registration is pending approval. "
                          . "You’ll be notified once approved. - Nyeri Club VMS";
-            \WyllyMk\VMS\VMS_NotificationManager::send_sms( $user_number, $sms_message, $user_id, 'member' );
+            VMS_SMS::send_sms( $user_number, $sms_message, $user_id, 'member' );
 
         } else {
             $error_code    = array_key_first( $user_id->errors );
@@ -348,7 +349,7 @@ if ( isset( $_POST['signup'] ) ) {
                             <?php esc_html_e( 'Nyeri Club Visitor Management System', 'vms' ); ?>
                         </h2>
                         <p class="text-center text-gray-500 dark:text-white/60">
-                            <?php esc_html_e( 'Secure access to manage visitors, members, and reciprocating members — anytime, anywhere.', 'vms' ); ?>
+                            <?php esc_html_e( 'Secure access to manage visitors, members, suppliers, and reciprocating members — anytime, anywhere.', 'vms' ); ?>
                         </p>
                     </div>
                 </div>

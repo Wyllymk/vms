@@ -257,7 +257,7 @@ if ( empty( $full_name ) ) {
                 </ul>
             </div>
             <!-- Support Group -->
-            <?php if ( ( current_user_can( 'administrator' ) || current_user_can( 'chairman' ) || current_user_can( 'reception' ) ) ) : ?>
+            <?php if ( ( current_user_can( 'administrator' ) || current_user_can( 'chairman' ) || current_user_can( 'general_manager' ) || current_user_can( 'reception' ) ) ) : ?>
             <div>
                 <h3 class="mb-4 text-xs uppercase leading-[20px] text-gray-400">
                     <span class="menu-group-title" :class="sidebarToggle ? 'lg:hidden' : ''">
@@ -274,6 +274,25 @@ if ( empty( $full_name ) ) {
                 </h3>
 
                 <ul class="flex flex-col gap-4 mb-6">
+
+                    <!-- Menu Item Reports -->
+                    <li>
+                        <a href="<?php echo esc_url( home_url( '/reports' ) ); ?>"
+                            @click="selected = (selected === 'Reports' ? '':'Reports')"
+                            class="<?php echo ( is_page( 'reports' ) ) ? 'menu-item group menu-item-active' : 'menu-item group menu-item-inactive'; ?>">
+                            <svg class="<?php echo ( is_page( 'reports' ) ) ? 'menu-item-icon-active' : 'menu-item-icon-inactive'; ?>"
+                                width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd"
+                                    d="M3 3C3 2.44772 3.44772 2 4 2H9C9.55228 2 10 2.44772 10 3V12C10 12.5523 9.55228 13 9 13H4C3.44772 13 3 12.5523 3 12V3ZM5 4V11H8V4H5ZM14 10C14 9.44772 14.4477 9 15 9H20C20.5523 9 21 9.44772 21 10V21C21 21.5523 20.5523 22 20 22H15C14.4477 22 14 21.5523 14 21V10ZM16 11V20H19V11H16ZM3 16C3 15.4477 3.44772 15 4 15H9C9.55228 15 10 15.4477 10 16V21C10 21.5523 9.55228 22 9 22H4C3.44772 22 3 21.5523 3 21V16ZM5 17V20H8V17H5ZM15 2C14.4477 2 14 2.44772 14 3V6C14 6.55228 14.4477 7 15 7H20C20.5523 7 21 6.55228 21 6V3C21 2.44772 20.5523 2 20 2H15ZM16 4V5H19V4H16Z"
+                                    fill="" />
+                            </svg>
+                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                                <?php esc_html_e( 'Reports', 'vms' ); ?>
+                            </span>
+                        </a>
+                    </li>
+                    <!-- Menu Item Reports -->
 
                     <!-- Menu Item Settings -->
                     <li>

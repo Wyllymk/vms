@@ -50,6 +50,39 @@ $status_classes = [
     'cancelled'  => 'bg-gray-100 text-gray-700 dark:bg-white/5 dark:text-white/80'
 ];
 
+// Handle employee export
+if (isset($_POST['export_employee']) && isset($_POST['user_id'])) {
+   
+    // Verify nonce
+    if (!isset($_POST['export_employee_nonce']) ||
+        !wp_verify_nonce($_POST['export_employee_nonce'], 'export_employee_action')) {
+        wp_die('Security check failed');
+    }
+   
+    $export_type = sanitize_text_field($_POST['export_employee']);
+    $export_user_id = absint($_POST['user_id']);
+   
+    if ($export_user_id !== $user_id) {
+        wp_die('Invalid user ID');
+    }
+   
+    // Check user permissions
+    if (!current_user_can('administrator') &&
+        !current_user_can('general_manager') &&
+        !current_user_can('chairman') &&
+        !current_user_can('reception') )
+        {
+        wp_die('You do not have permission to export employee details');
+    }
+      
+    // Process export based on type
+    if ($export_type === 'pdf') {
+        VMS_Export_Handler::export_employee_pdf($export_user_id);
+    }
+   
+    exit;
+}
+
 get_header();
 ?>
 
@@ -91,6 +124,8 @@ get_header();
                             </h2>
                         </div>
                         <!-- Breadcrumb End -->
+
+                        <!-- Personal Information Section Start -->
                         <div class="py-8 mx-auto">
                             <div class="flex justify-center">
                                 <div class="w-full lg:w-5/6 xl:4/5 2xl:3/4">

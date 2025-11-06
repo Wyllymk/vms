@@ -195,7 +195,7 @@ if ( isset( $_POST['login'] ) ) {
                             <?php esc_html_e( 'Nyeri Club Visitor Management System', 'vms' ); ?>
                         </h2>
                         <p class="text-center text-gray-500 dark:text-white/60">
-                            <?php esc_html_e( 'Secure access to manage visitors, members, and reciprocating members — anytime, anywhere.', 'vms' ); ?>
+                            <?php esc_html_e( 'Secure access to manage visitors, members, suppliers, and reciprocating members — anytime, anywhere.', 'vms' ); ?>
                         </p>
                     </div>
                 </div>

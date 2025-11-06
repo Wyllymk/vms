@@ -8,6 +8,7 @@ use WyllyMk\VMS\VMS_Member;
 use WyllyMk\VMS\VMS_Guest;
 use WyllyMk\VMS\VMS_SMS;
 use WyllyMk\VMS\VMS_Core;
+use WyllyMk\VMS\VMS_Export_Handler;
 
 // Exit if accessed directly
 defined('ABSPATH') || exit;
@@ -142,6 +143,38 @@ if ( isset($_POST['cancel_visit']) && isset($_POST['visit_id']) ) {
     }
 }
 
+// Handle member export
+if (isset($_POST['export_member']) && isset($_POST['user_id'])) {
+   
+    // Verify nonce
+    if (!isset($_POST['export_member_nonce']) ||
+        !wp_verify_nonce($_POST['export_member_nonce'], 'export_member_action')) {
+        wp_die('Security check failed');
+    }
+   
+    $export_type = sanitize_text_field($_POST['export_member']);
+    $export_user_id = absint($_POST['user_id']);
+   
+    if ($export_user_id !== $user_id) {
+        wp_die('Invalid user ID');
+    }
+   
+    // Check user permissions
+    if (!current_user_can('administrator') &&
+        !current_user_can('general_manager') &&
+        !current_user_can('chairman') &&
+        !current_user_can('reception') ) 
+        {
+        wp_die('You do not have permission to export member details');
+    }
+      
+    // Process export based on type
+    if ($export_type === 'pdf') {
+        VMS_Export_Handler::export_member_pdf($export_user_id);
+    }
+   
+    exit;
+}
 get_header();
 ?>
 
@@ -184,6 +217,41 @@ get_header();
                             </h2>
                         </div>
                         <!-- Breadcrumb End -->
+
+                        <!-- Export Actions Section -->
+                        <div
+                            class="w-full lg:w-5/6 xl:4/5 2xl:3/4 mx-auto flex flex-wrap items-center justify-between gap-3 mb-6 p-4 rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+                            <div class="flex items-center gap-2">
+                                <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" xmlns="http://www.w3.org/2000/svg"
+                                    fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                                </svg>
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-400">
+                                    Export Member Details
+                                </span>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <!-- PDF Export Button -->
+                                <form method="post" action="" class="inline-block">
+                                    <input type="hidden" name="export_member" value="pdf">
+                                    <input type="hidden" name="user_id" value="<?php echo esc_attr($user_id); ?>">
+                                    <?php wp_nonce_field('export_member_action', 'export_member_nonce'); ?>
+                                    <button type="submit"
+                                        class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-error-500 border border-error-500 rounded-lg shadow-theme-xs hover:bg-error-600 transition">
+                                        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                                        </svg>
+                                        Export PDF
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        <!-- Export Actions Section End -->
+
+                        <!-- Personal Information Section -->
                         <div class="py-8 mx-auto">
                             <div class="flex justify-center">
                                 <div class="w-full lg:w-5/6 xl:4/5 2xl:3/4">
