@@ -20,19 +20,39 @@ $user_roles = $current_user->roles;
 // Determine role-based filtering
 $role_filter = '';
 $role_filter_count = '';
-$is_member_or_chairman = in_array('member', $user_roles) || in_array('chairman', $user_roles);
+$is_member_or_chairman = in_array('member', $user_roles) || in_array('chairman', $user_roles) || in_array('general_manager', $user_roles);
+$is_chairman_or_manager = in_array('chairman', $user_roles) || in_array('general_manager', $user_roles);
 $is_gate = in_array('gate', $user_roles);
 
 if ($is_member_or_chairman) {
-    // Show only visits where current user is the host
-    $role_filter = $wpdb->prepare(" AND v.host_member_id = %d", $current_user_id);
-    $role_filter_count = $wpdb->prepare(" AND v.host_member_id = %d", $current_user_id);
+
+    if ($is_chairman_or_manager) {
+        // Chairman or General Manager:
+        // Show visits where current user is the host OR guests with courtesy
+        $role_filter = $wpdb->prepare(
+            " AND (v.host_member_id = %d OR v.courtesy IS NOT NULL)",
+            $current_user_id
+        );
+
+        $role_filter_count = $wpdb->prepare(
+            " AND (v.host_member_id = %d OR v.courtesy IS NOT NULL)",
+            $current_user_id
+        );
+
+    } else {
+        // Regular member:
+        // Show only visits where current user is the host
+        $role_filter = $wpdb->prepare(" AND v.host_member_id = %d", $current_user_id);
+        $role_filter_count = $wpdb->prepare(" AND v.host_member_id = %d", $current_user_id);
+    }
+
 } elseif ($is_gate) {
-    // Show only today's visits
+    // Gate role: show only today's visits
     $today = current_time('Y-m-d');
     $role_filter = $wpdb->prepare(" AND DATE(v.visit_date) = %s", $today);
     $role_filter_count = $wpdb->prepare(" AND DATE(v.visit_date) = %s", $today);
 }
+
 // For other roles (admin, etc.), no additional filter is applied (show all)
 
 // Pagination
