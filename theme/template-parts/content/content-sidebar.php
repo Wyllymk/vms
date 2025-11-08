@@ -63,7 +63,7 @@ if ( empty( $full_name ) ) {
                     </svg>
                 </h3>
 
-                <ul class="flex flex-col gap-4 mb-6">
+                <ul class="flex flex-col gap-2 md:gap-4 mb-6">
                     <!-- Menu Item Dashboard -->
                     <?php if ( ( current_user_can( 'administrator' ) || current_user_can( 'chairman' ) || current_user_can( 'general_manager' ) || current_user_can( 'reception' ) ) ) : ?>
                     <li>
@@ -273,7 +273,7 @@ if ( empty( $full_name ) ) {
                     </svg>
                 </h3>
 
-                <ul class="flex flex-col gap-4 mb-6">
+                <ul class="flex flex-col gap-2 md:gap-4 mb-6">
 
                     <!-- Menu Item Reports -->
                     <li>
@@ -336,6 +336,7 @@ if ( empty( $full_name ) ) {
         </div>
     </div>
     <!-- SIDEBAR FOOTER -->
+
 </aside>
 
 <?php endif; ?>

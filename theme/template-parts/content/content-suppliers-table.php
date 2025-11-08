@@ -25,17 +25,7 @@ $role_filter_count = '';
 $is_member_or_chairman = in_array('member', $user_roles) || in_array('chairman', $user_roles) || in_array('general_manager', $user_roles);
 $is_gate = in_array('gate', $user_roles);
 
-if ($is_member_or_chairman) {
-    // Show visits where current user is the host OR where no host is assigned
-    $role_filter = $wpdb->prepare(
-        " AND (v.host_member_id = %d OR v.host_member_id IS NULL OR v.host_member_id = 0)",
-        $current_user_id
-    );
-    $role_filter_count = $wpdb->prepare(
-        " AND (v.host_member_id = %d OR v.host_member_id IS NULL OR v.host_member_id = 0)",
-        $current_user_id
-    );
-}  elseif ($is_gate) {
+if ($is_gate) {
     // Show only today's visits
     $today = current_time('Y-m-d');
     $role_filter = $wpdb->prepare(" AND DATE(v.visit_date) = %s", $today);
