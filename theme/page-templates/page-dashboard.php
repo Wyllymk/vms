@@ -18,7 +18,17 @@ if ( ! ( current_user_can( 'administrator' ) || current_user_can( 'general_manag
 
 // Get the current user info
 $current_user = wp_get_current_user();
-$user_name = $current_user->display_name;
+
+$first_name = $current_user->first_name;
+$last_name  = $current_user->last_name;
+$user_login = $current_user->user_login;
+
+if ( !empty($first_name) || !empty($last_name) ) {
+    $user_name = trim($first_name . ' ' . $last_name);
+} else {
+    $user_name = $user_login;
+}
+
 
 // Get time-based greeting
 $hour = (int) date('H');
