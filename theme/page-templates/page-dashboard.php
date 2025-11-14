@@ -29,6 +29,9 @@ if ( !empty($first_name) || !empty($last_name) ) {
     $user_name = $user_login;
 }
 
+// Set Nairobi timezone
+date_default_timezone_set('Africa/Nairobi');
+
 // Get time-based greeting
 $hour = (int) date('H');
 if ($hour < 12) {
@@ -59,7 +62,7 @@ $today_visits = (int) $wpdb->get_var($wpdb->prepare(
     "SELECT COUNT(*) FROM (
         SELECT id FROM {$guest_visits_table} WHERE visit_date = %s
         UNION ALL
-        SELECT id FROM {$a_guest_visits_table} WHERE visit_date = %s
+        SELECT id FROM {$a_guest_vis_table} WHERE visit_date = %s
         UNION ALL
         SELECT id FROM {$supplier_visits_table} WHERE visit_date = %s
         UNION ALL
@@ -118,18 +121,55 @@ $month_visits = (int) $wpdb->get_var($wpdb->prepare(
     $month_start, $month_end, $month_start, $month_end, $month_start, $month_end, $month_start, $month_end
 ));
 
-// Get recent check-ins
-$recent_checkins = $wpdb->get_results($wpdb->prepare(
-    "SELECT 
-        g.first_name, g.last_name, gv.sign_in_time, 'Guest' as type
-    FROM {$guest_visits_table} gv
-    INNER JOIN {$guests_table} g ON gv.guest_id = g.id
-    WHERE gv.visit_date = %s AND gv.sign_in_time IS NOT NULL
-    ORDER BY gv.sign_in_time DESC
-    LIMIT 5",
-    $today
+// Get comparison data for trends
+$yesterday = date('Y-m-d', strtotime('-1 day'));
+$yesterday_visits = (int) $wpdb->get_var($wpdb->prepare(
+    "SELECT COUNT(*) FROM (
+        SELECT id FROM {$guest_visits_table} WHERE visit_date = %s
+        UNION ALL
+        SELECT id FROM {$a_guest_visits_table} WHERE visit_date = %s
+        UNION ALL
+        SELECT id FROM {$supplier_visits_table} WHERE visit_date = %s
+        UNION ALL
+        SELECT id FROM {$recip_visits_table} WHERE visit_date = %s
+    ) AS combined",
+    $yesterday, $yesterday, $yesterday, $yesterday
 ));
 
+$last_week_start = date('Y-m-d', strtotime('monday last week'));
+$last_week_end = date('Y-m-d', strtotime('sunday last week'));
+$last_week_visits = (int) $wpdb->get_var($wpdb->prepare(
+    "SELECT COUNT(*) FROM (
+        SELECT id FROM {$guest_visits_table} WHERE visit_date BETWEEN %s AND %s
+        UNION ALL
+        SELECT id FROM {$a_guest_visits_table} WHERE visit_date BETWEEN %s AND %s
+        UNION ALL
+        SELECT id FROM {$supplier_visits_table} WHERE visit_date BETWEEN %s AND %s
+        UNION ALL
+        SELECT id FROM {$recip_visits_table} WHERE visit_date BETWEEN %s AND %s
+    ) AS combined",
+    $last_week_start, $last_week_end, $last_week_start, $last_week_end, $last_week_start, $last_week_end, $last_week_start, $last_week_end
+));
+
+$last_month_start = date('Y-m-01', strtotime('-1 month'));
+$last_month_end = date('Y-m-t', strtotime('-1 month'));
+$last_month_visits = (int) $wpdb->get_var($wpdb->prepare(
+    "SELECT COUNT(*) FROM (
+        SELECT id FROM {$guest_visits_table} WHERE visit_date BETWEEN %s AND %s
+        UNION ALL
+        SELECT id FROM {$a_guest_visits_table} WHERE visit_date BETWEEN %s AND %s
+        UNION ALL
+        SELECT id FROM {$supplier_visits_table} WHERE visit_date BETWEEN %s AND %s
+        UNION ALL
+        SELECT id FROM {$recip_visits_table} WHERE visit_date BETWEEN %s AND %s
+    ) AS combined",
+    $last_month_start, $last_month_end, $last_month_start, $last_month_end, $last_month_start, $last_month_end, $last_month_start, $last_month_end
+));
+
+// Calculate percentage changes
+$today_change = $yesterday_visits > 0 ? (($today_visits - $yesterday_visits) / $yesterday_visits) * 100 : ($today_visits > 0 ? 100 : 0);
+$week_change = $last_week_visits > 0 ? (($week_visits - $last_week_visits) / $last_week_visits) * 100 : ($week_visits > 0 ? 100 : 0);
+$month_change = $last_month_visits > 0 ? (($month_visits - $last_month_visits) / $last_month_visits) * 100 : ($month_visits > 0 ? 100 : 0);
 
 // Get hourly data for heatmap
 $hourly_data = $wpdb->get_results($wpdb->prepare(
@@ -156,7 +196,7 @@ $hourly_data = $wpdb->get_results($wpdb->prepare(
 ));
 
 // Prepare hourly data in 4-hour blocks
-$hour_blocks = array_fill(0, 6, 0); // 6 blocks: 0-3, 4-7, 8-11, 12-15, 16-19, 20-23
+$hour_blocks = array_fill(0, 6, 0);
 $block_labels = [
     'Early Morning<br>00:00-03:59',
     'Morning<br>04:00-07:59', 
@@ -166,16 +206,14 @@ $block_labels = [
     'Night<br>20:00-23:59'
 ];
 
-// Group visits into 4-hour blocks
 foreach ($hourly_data as $data) {
     $block = floor($data->hour / 4);
     $hour_blocks[$block] += (int)$data->count;
 }
 
-// Set minimum max_visits to 1 to ensure colors show even with 0 visits
 $max_visits = max($hour_blocks);
 if ($max_visits == 0) {
-    $max_visits = 1; // Prevent division by zero and ensure colors show
+    $max_visits = 1;
 }
 
 // Get visitor type breakdown
@@ -250,87 +288,150 @@ $total_today = array_sum($type_breakdown);
                         </div>
                     </div>
 
-                    <!-- Quick Stats Grid -->
-                    <div class="grid grid-cols-1 gap-4 mb-6 sm:grid-cols-2 lg:grid-cols-4 md:gap-6">
+                    <!-- Stats Grid -->
+                    <div class="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4">
                         <!-- Today's Visits -->
-                        <div
-                            class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03] hover:shadow-lg transition-shadow">
-                            <div class="flex items-center justify-between mb-4">
-                                <div
-                                    class="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-xl dark:bg-blue-900/20">
-                                    <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
-                                        </path>
-                                    </svg>
+                        <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+                            <p class="text-gray-500 text-theme-sm dark:text-gray-400">
+                                <?php esc_html_e( "Today's Visits", 'vms' ); ?>
+                            </p>
+
+                            <div class="flex items-end justify-between mt-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-xl dark:bg-blue-900/20">
+                                        <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                            </path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-2xl font-bold text-gray-800 dark:text-white/90">
+                                            <?php echo esc_html( $today_visits ); ?>
+                                        </h4>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-1">
+                                    <?php if ( $today_change >= 0 ) : ?>
+                                    <span class="flex items-center gap-1 rounded-full bg-success-50 px-2 py-0.5 text-theme-xs font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">
+                                        +<?php echo number_format( $today_change, 1 ); ?>%
+                                    </span>
+                                    <?php else : ?>
+                                    <span class="flex items-center gap-1 rounded-full bg-error-50 px-2 py-0.5 text-theme-xs font-medium text-error-600 dark:bg-error-500/15 dark:text-error-500">
+                                        <?php echo number_format( $today_change, 1 ); ?>%
+                                    </span>
+                                    <?php endif; ?>
+
+                                    <span class="text-gray-500 text-theme-xs dark:text-gray-400">
+                                        <?php esc_html_e( 'Vs yesterday', 'vms' ); ?>
+                                    </span>
                                 </div>
                             </div>
-                            <h3 class="mb-1 text-3xl font-bold text-gray-900 dark:text-white">
-                                <?php echo esc_html( $today_visits ); ?></h3>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">
-                                <?php esc_html_e( "Today's Visits", 'vms' ); ?></p>
                         </div>
 
                         <!-- Currently Signed In -->
-                        <div
-                            class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03] hover:shadow-lg transition-shadow">
-                            <div class="flex items-center justify-between mb-4">
-                                <div
-                                    class="flex items-center justify-center w-12 h-12 bg-green-100 rounded-xl dark:bg-green-900/20">
-                                    <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
-                                        </path>
-                                    </svg>
+                        <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+                            <p class="text-gray-500 text-theme-sm dark:text-gray-400">
+                                <?php esc_html_e( 'Currently On Site', 'vms' ); ?>
+                            </p>
+
+                            <div class="flex items-end justify-between mt-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="flex items-center justify-center w-10 h-10 bg-green-100 rounded-xl dark:bg-green-900/20">
+                                        <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+                                            </path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-2xl font-bold text-gray-800 dark:text-white/90">
+                                            <?php echo esc_html( $currently_signed_in ); ?>
+                                        </h4>
+                                    </div>
                                 </div>
                             </div>
-                            <h3 class="mb-1 text-3xl font-bold text-gray-900 dark:text-white">
-                                <?php echo esc_html( $currently_signed_in ); ?></h3>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">
-                                <?php esc_html_e( 'Currently On Site', 'vms' ); ?></p>
                         </div>
 
                         <!-- This Week -->
-                        <div
-                            class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03] hover:shadow-lg transition-shadow">
-                            <div class="flex items-center justify-between mb-4">
-                                <div
-                                    class="flex items-center justify-center w-12 h-12 bg-purple-100 rounded-xl dark:bg-purple-900/20">
-                                    <svg class="w-6 h-6 text-purple-500" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
-                                        </path>
-                                    </svg>
-                                </div>
-                            </div>
-                            <h3 class="mb-1 text-3xl font-bold text-gray-900 dark:text-white">
-                                <?php echo esc_html( $week_visits ); ?></h3>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                        <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+                            <p class="text-gray-500 text-theme-sm dark:text-gray-400">
                                 <?php esc_html_e( 'This Week', 'vms' ); ?>
                             </p>
+
+                            <div class="flex items-end justify-between mt-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="flex items-center justify-center w-10 h-10 bg-purple-100 rounded-xl dark:bg-purple-900/20">
+                                        <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+                                            </path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-2xl font-bold text-gray-800 dark:text-white/90">
+                                            <?php echo esc_html( $week_visits ); ?>
+                                        </h4>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-1">
+                                    <?php if ( $week_change >= 0 ) : ?>
+                                    <span class="flex items-center gap-1 rounded-full bg-success-50 px-2 py-0.5 text-theme-xs font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">
+                                        +<?php echo number_format( $week_change, 1 ); ?>%
+                                    </span>
+                                    <?php else : ?>
+                                    <span class="flex items-center gap-1 rounded-full bg-error-50 px-2 py-0.5 text-theme-xs font-medium text-error-600 dark:bg-error-500/15 dark:text-error-500">
+                                        <?php echo number_format( $week_change, 1 ); ?>%
+                                    </span>
+                                    <?php endif; ?>
+
+                                    <span class="text-gray-500 text-theme-xs dark:text-gray-400">
+                                        <?php esc_html_e( 'Vs last week', 'vms' ); ?>
+                                    </span>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- This Month -->
-                        <div
-                            class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03] hover:shadow-lg transition-shadow">
-                            <div class="flex items-center justify-between mb-4">
-                                <div
-                                    class="flex items-center justify-center w-12 h-12 bg-orange-100 rounded-xl dark:bg-orange-900/20">
-                                    <svg class="w-6 h-6 text-orange-500" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
-                                        </path>
-                                    </svg>
+                        <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+                            <p class="text-gray-500 text-theme-sm dark:text-gray-400">
+                                <?php esc_html_e( 'This Month', 'vms' ); ?>
+                            </p>
+
+                            <div class="flex items-end justify-between mt-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="flex items-center justify-center w-10 h-10 bg-orange-100 rounded-xl dark:bg-orange-900/20">
+                                        <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                            </path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-2xl font-bold text-gray-800 dark:text-white/90">
+                                            <?php echo esc_html( $month_visits ); ?>
+                                        </h4>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-1">
+                                    <?php if ( $month_change >= 0 ) : ?>
+                                    <span class="flex items-center gap-1 rounded-full bg-success-50 px-2 py-0.5 text-theme-xs font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">
+                                        +<?php echo number_format( $month_change, 1 ); ?>%
+                                    </span>
+                                    <?php else : ?>
+                                    <span class="flex items-center gap-1 rounded-full bg-error-50 px-2 py-0.5 text-theme-xs font-medium text-error-600 dark:bg-error-500/15 dark:text-error-500">
+                                        <?php echo number_format( $month_change, 1 ); ?>%
+                                    </span>
+                                    <?php endif; ?>
+
+                                    <span class="text-gray-500 text-theme-xs dark:text-gray-400">
+                                        <?php esc_html_e( 'Vs last month', 'vms' ); ?>
+                                    </span>
                                 </div>
                             </div>
-                            <h3 class="mb-1 text-3xl font-bold text-gray-900 dark:text-white">
-                                <?php echo esc_html( $month_visits ); ?></h3>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">
-                                <?php esc_html_e( 'This Month', 'vms' ); ?></p>
                         </div>
                     </div>
 
@@ -362,12 +463,12 @@ $total_today = array_sum($type_breakdown);
                                     </svg>
                                 </div>
 
-                                <!-- Heatmap Grid -->
+                                <!-- Heatmap Grid - Responsive 2 Rows -->
                                 <div class="mb-6">
-                                    <div class="grid grid-cols-6 gap-2">
+                                    <div class="grid grid-cols-3 gap-2 md:grid-cols-6 md:gap-3">
                                         <?php for ($block = 0; $block < 6; $block++): ?>
                                             <div class="text-center">
-                                                <div class="mb-2 text-xs text-gray-500 dark:text-gray-400">
+                                                <div class="mb-1 text-xs text-gray-500 md:mb-2 dark:text-gray-400">
                                                     <?php echo $block_labels[$block]; ?>
                                                 </div>
                                                 <?php 
@@ -375,7 +476,6 @@ $total_today = array_sum($type_breakdown);
                                                 $intensity = ($block_visits / $max_visits) * 100;
                                                 $color_class = 'bg-gray-100 dark:bg-gray-800';
                                                 
-                                                // Apply colors based on intensity percentage
                                                 if ($intensity > 75) {
                                                     $color_class = 'bg-red-500';
                                                 } elseif ($intensity > 50) {
@@ -387,8 +487,7 @@ $total_today = array_sum($type_breakdown);
                                                 }
                                                 ?>
                                                 <div class="relative group">
-                                                    <div class="h-20 rounded-lg <?php echo $color_class; ?> transition-all duration-200 hover:scale-105 hover:shadow-lg cursor-pointer flex items-center justify-center">
-                                                        <!-- ALWAYS show the number, even for 0 visits -->
+                                                    <div class="h-16 md:h-20 rounded-lg <?php echo $color_class; ?> transition-all duration-200 hover:scale-105 hover:shadow-lg cursor-pointer flex items-center justify-center">
                                                         <span class="text-sm font-semibold <?php echo $intensity > 0 ? 'text-white drop-shadow-md' : 'text-gray-500 dark:text-gray-400'; ?>">
                                                             <?php echo $block_visits; ?>
                                                         </span>
@@ -407,7 +506,7 @@ $total_today = array_sum($type_breakdown);
                                     </div>
                                     
                                     <!-- Legend -->
-                                    <div class="flex items-center justify-center gap-3 mt-4 text-xs text-gray-600 dark:text-gray-400">
+                                    <div class="flex flex-wrap items-center justify-center gap-2 mt-4 text-xs text-gray-600 md:gap-3 dark:text-gray-400">
                                         <div class="flex items-center gap-1">
                                             <div class="w-3 h-3 bg-gray-100 rounded dark:bg-gray-800"></div>
                                             <span>None (0%)</span>
