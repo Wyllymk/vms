@@ -9,11 +9,11 @@
 defined( 'ABSPATH' ) || exit;
 
 // Check if the current user has appropriate permissions
-if ( ! ( current_user_can( 'administrator' ) || current_user_can( 'general_manager' ) ||
-		current_user_can( 'chairman' ) || current_user_can( 'reception' ) ||
-		current_user_can( 'gate' ) ) ) {
-	wp_redirect( home_url() );
-	exit;
+if ( ! ( current_user_can( 'administrator' ) || current_user_can( 'general_manager' ) || 
+         current_user_can( 'chairman' ) || current_user_can( 'reception' ) || 
+         current_user_can( 'gate' ) ) ) {
+    wp_redirect( home_url() );
+    exit;
 }
 
 // Get the current user info
@@ -23,24 +23,23 @@ $first_name = $current_user->first_name;
 $last_name  = $current_user->last_name;
 $user_login = $current_user->user_login;
 
-if ( ! empty( $first_name ) || ! empty( $last_name ) ) {
-	$user_name = trim( $first_name . ' ' . $last_name );
+if ( !empty($first_name) || !empty($last_name) ) {
+    $user_name = trim($first_name . ' ' . $last_name);
 } else {
-	$user_name = $user_login;
+    $user_name = $user_login;
 }
 
-
 // Get time-based greeting
-$hour = (int) date( 'H' );
-if ( $hour < 12 ) {
-	$greeting = __( 'Good Morning', 'vms' );
-	$emoji    = '🌅';
-} elseif ( $hour < 18 ) {
-	$greeting = __( 'Good Afternoon', 'vms' );
-	$emoji    = '☀️';
+$hour = (int) date('H');
+if ($hour < 12) {
+    $greeting = __('Good Morning', 'vms');
+    $emoji = '🌅';
+} elseif ($hour < 18) {
+    $greeting = __('Good Afternoon', 'vms');
+    $emoji = '☀️';
 } else {
-	$greeting = __( 'Good Evening', 'vms' );
-	$emoji    = '🌙';
+    $greeting = __('Good Evening', 'vms');
+    $emoji = '🌙';
 }
 
 get_header();
@@ -48,17 +47,16 @@ get_header();
 global $wpdb;
 
 // Get today's statistics
-$today                 = current_time( 'Y-m-d' );
-$guests_table          = \WyllyMk\VMS\VMS_Config::get_table_name( \WyllyMk\VMS\VMS_Config::GUESTS_TABLE );
-$guest_visits_table    = \WyllyMk\VMS\VMS_Config::get_table_name( \WyllyMk\VMS\VMS_Config::GUEST_VISITS_TABLE );
-$a_guest_visits_table  = \WyllyMk\VMS\VMS_Config::get_table_name( \WyllyMk\VMS\VMS_Config::A_GUEST_VISITS_TABLE );
-$supplier_visits_table = \WyllyMk\VMS\VMS_Config::get_table_name( \WyllyMk\VMS\VMS_Config::SUPPLIER_VISITS_TABLE );
-$recip_visits_table    = \WyllyMk\VMS\VMS_Config::get_table_name( \WyllyMk\VMS\VMS_Config::RECIP_MEMBERS_VISITS_TABLE );
+$today = current_time('Y-m-d');
+$guests_table = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::GUESTS_TABLE);
+$guest_visits_table = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::GUEST_VISITS_TABLE);
+$a_guest_visits_table = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::A_GUEST_VISITS_TABLE);
+$supplier_visits_table = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::SUPPLIER_VISITS_TABLE);
+$recip_visits_table = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::RECIP_MEMBERS_VISITS_TABLE);
 
 // Today's visits count
-$today_visits = (int) $wpdb->get_var(
-	$wpdb->prepare(
-		"SELECT COUNT(*) FROM (
+$today_visits = (int) $wpdb->get_var($wpdb->prepare(
+    "SELECT COUNT(*) FROM (
         SELECT id FROM {$guest_visits_table} WHERE visit_date = %s
         UNION ALL
         SELECT id FROM {$a_guest_visits_table} WHERE visit_date = %s
@@ -67,17 +65,12 @@ $today_visits = (int) $wpdb->get_var(
         UNION ALL
         SELECT id FROM {$recip_visits_table} WHERE visit_date = %s
     ) AS combined",
-		$today,
-		$today,
-		$today,
-		$today
-	)
-);
+    $today, $today, $today, $today
+));
 
-// Currently signed in (sign_in_time IS NOT NULL AND sign_out_time IS NULL)
-$currently_signed_in = (int) $wpdb->get_var(
-	$wpdb->prepare(
-		"SELECT COUNT(*) FROM (
+// Currently signed in
+$currently_signed_in = (int) $wpdb->get_var($wpdb->prepare(
+    "SELECT COUNT(*) FROM (
         SELECT id FROM {$guest_visits_table} 
         WHERE visit_date = %s AND sign_in_time IS NOT NULL AND sign_out_time IS NULL
         UNION ALL
@@ -90,19 +83,14 @@ $currently_signed_in = (int) $wpdb->get_var(
         SELECT id FROM {$recip_visits_table} 
         WHERE visit_date = %s AND sign_in_time IS NOT NULL AND sign_out_time IS NULL
     ) AS signed_in",
-		$today,
-		$today,
-		$today,
-		$today
-	)
-);
+    $today, $today, $today, $today
+));
 
 // This week's visits
-$week_start  = date( 'Y-m-d', strtotime( 'monday this week' ) );
-$week_end    = date( 'Y-m-d', strtotime( 'sunday this week' ) );
-$week_visits = (int) $wpdb->get_var(
-	$wpdb->prepare(
-		"SELECT COUNT(*) FROM (
+$week_start = date('Y-m-d', strtotime('monday this week'));
+$week_end = date('Y-m-d', strtotime('sunday this week'));
+$week_visits = (int) $wpdb->get_var($wpdb->prepare(
+    "SELECT COUNT(*) FROM (
         SELECT id FROM {$guest_visits_table} WHERE visit_date BETWEEN %s AND %s
         UNION ALL
         SELECT id FROM {$a_guest_visits_table} WHERE visit_date BETWEEN %s AND %s
@@ -111,23 +99,14 @@ $week_visits = (int) $wpdb->get_var(
         UNION ALL
         SELECT id FROM {$recip_visits_table} WHERE visit_date BETWEEN %s AND %s
     ) AS combined",
-		$week_start,
-		$week_end,
-		$week_start,
-		$week_end,
-		$week_start,
-		$week_end,
-		$week_start,
-		$week_end
-	)
-);
+    $week_start, $week_end, $week_start, $week_end, $week_start, $week_end, $week_start, $week_end
+));
 
 // This month's visits
-$month_start  = date( 'Y-m-01' );
-$month_end    = date( 'Y-m-t' );
-$month_visits = (int) $wpdb->get_var(
-	$wpdb->prepare(
-		"SELECT COUNT(*) FROM (
+$month_start = date('Y-m-01');
+$month_end = date('Y-m-t');
+$month_visits = (int) $wpdb->get_var($wpdb->prepare(
+    "SELECT COUNT(*) FROM (
         SELECT id FROM {$guest_visits_table} WHERE visit_date BETWEEN %s AND %s
         UNION ALL
         SELECT id FROM {$a_guest_visits_table} WHERE visit_date BETWEEN %s AND %s
@@ -136,30 +115,89 @@ $month_visits = (int) $wpdb->get_var(
         UNION ALL
         SELECT id FROM {$recip_visits_table} WHERE visit_date BETWEEN %s AND %s
     ) AS combined",
-		$month_start,
-		$month_end,
-		$month_start,
-		$month_end,
-		$month_start,
-		$month_end,
-		$month_start,
-		$month_end
-	)
-);
+    $month_start, $month_end, $month_start, $month_end, $month_start, $month_end, $month_start, $month_end
+));
 
-// Get recent check-ins (last 5)
-$recent_checkins = $wpdb->get_results(
-	$wpdb->prepare(
-		"SELECT 
+// Get recent check-ins
+$recent_checkins = $wpdb->get_results($wpdb->prepare(
+    "SELECT 
         g.first_name, g.last_name, gv.sign_in_time, 'Guest' as type
     FROM {$guest_visits_table} gv
     INNER JOIN {$guests_table} g ON gv.guest_id = g.id
     WHERE gv.visit_date = %s AND gv.sign_in_time IS NOT NULL
     ORDER BY gv.sign_in_time DESC
     LIMIT 5",
-		$today
-	)
+    $today
+));
+
+
+// Get hourly data for heatmap
+$hourly_data = $wpdb->get_results($wpdb->prepare(
+    "SELECT 
+        HOUR(sign_in_time) as hour,
+        COUNT(*) as count
+    FROM (
+        SELECT sign_in_time FROM {$guest_visits_table} 
+        WHERE visit_date BETWEEN %s AND %s AND sign_in_time IS NOT NULL
+        UNION ALL
+        SELECT sign_in_time FROM {$a_guest_visits_table} 
+        WHERE visit_date BETWEEN %s AND %s AND sign_in_time IS NOT NULL
+        UNION ALL
+        SELECT sign_in_time FROM {$supplier_visits_table} 
+        WHERE visit_date BETWEEN %s AND %s AND sign_in_time IS NOT NULL
+        UNION ALL
+        SELECT sign_in_time FROM {$recip_visits_table} 
+        WHERE visit_date BETWEEN %s AND %s AND sign_in_time IS NOT NULL
+    ) AS all_visits
+    GROUP BY HOUR(sign_in_time)
+    ORDER BY hour",
+    $week_start, $week_end, $week_start, $week_end, 
+    $week_start, $week_end, $week_start, $week_end
+));
+
+// Prepare hourly data in 4-hour blocks
+$hour_blocks = array_fill(0, 6, 0); // 6 blocks: 0-3, 4-7, 8-11, 12-15, 16-19, 20-23
+$block_labels = [
+    'Early Morning<br>00:00-03:59',
+    'Morning<br>04:00-07:59', 
+    'Late Morning<br>08:00-11:59',
+    'Afternoon<br>12:00-15:59',
+    'Evening<br>16:00-19:59',
+    'Night<br>20:00-23:59'
+];
+
+// Group visits into 4-hour blocks
+foreach ($hourly_data as $data) {
+    $block = floor($data->hour / 4);
+    $hour_blocks[$block] += (int)$data->count;
+}
+
+// Set minimum max_visits to 1 to ensure colors show even with 0 visits
+$max_visits = max($hour_blocks);
+if ($max_visits == 0) {
+    $max_visits = 1; // Prevent division by zero and ensure colors show
+}
+
+// Get visitor type breakdown
+$type_breakdown = array(
+    'guests' => (int) $wpdb->get_var($wpdb->prepare(
+        "SELECT COUNT(*) FROM {$guest_visits_table} WHERE visit_date = %s",
+        $today
+    )),
+    'accommodation' => (int) $wpdb->get_var($wpdb->prepare(
+        "SELECT COUNT(*) FROM {$a_guest_visits_table} WHERE visit_date = %s",
+        $today
+    )),
+    'suppliers' => (int) $wpdb->get_var($wpdb->prepare(
+        "SELECT COUNT(*) FROM {$supplier_visits_table} WHERE visit_date = %s",
+        $today
+    )),
+    'reciprocating' => (int) $wpdb->get_var($wpdb->prepare(
+        "SELECT COUNT(*) FROM {$recip_visits_table} WHERE visit_date = %s",
+        $today
+    ))
 );
+$total_today = array_sum($type_breakdown);
 
 ?>
 
@@ -304,9 +342,156 @@ $recent_checkins = $wpdb->get_results(
                             <?php get_template_part( 'template-parts/content/content', 'metric' ); ?>
                         </div>
 
-                        <!-- Charts and Quick Actions Row -->
+                        <!-- Visitor Activity Heatmap -->
                         <div class="col-span-12 xl:col-span-8">
-                            <?php get_template_part( 'template-parts/content/content', 'chart' ); ?>
+                            <div class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03] h-full">
+                                <div class="flex items-center justify-between mb-6">
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">
+                                            <?php esc_html_e('Activity Heatmap', 'vms'); ?>
+                                        </h3>
+                                        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                                            <?php esc_html_e('Peak hours this week', 'vms'); ?>
+                                        </p>
+                                    </div>
+                                    <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                            d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                            d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z"></path>
+                                    </svg>
+                                </div>
+
+                                <!-- Heatmap Grid -->
+                                <div class="mb-6">
+                                    <div class="grid grid-cols-6 gap-2">
+                                        <?php for ($block = 0; $block < 6; $block++): ?>
+                                            <div class="text-center">
+                                                <div class="mb-2 text-xs text-gray-500 dark:text-gray-400">
+                                                    <?php echo $block_labels[$block]; ?>
+                                                </div>
+                                                <?php 
+                                                $block_visits = $hour_blocks[$block];
+                                                $intensity = ($block_visits / $max_visits) * 100;
+                                                $color_class = 'bg-gray-100 dark:bg-gray-800';
+                                                
+                                                // Apply colors based on intensity percentage
+                                                if ($intensity > 75) {
+                                                    $color_class = 'bg-red-500';
+                                                } elseif ($intensity > 50) {
+                                                    $color_class = 'bg-orange-500';
+                                                } elseif ($intensity > 25) {
+                                                    $color_class = 'bg-yellow-500';
+                                                } elseif ($intensity > 0) {
+                                                    $color_class = 'bg-green-500';
+                                                }
+                                                ?>
+                                                <div class="relative group">
+                                                    <div class="h-20 rounded-lg <?php echo $color_class; ?> transition-all duration-200 hover:scale-105 hover:shadow-lg cursor-pointer flex items-center justify-center">
+                                                        <!-- ALWAYS show the number, even for 0 visits -->
+                                                        <span class="text-sm font-semibold <?php echo $intensity > 0 ? 'text-white drop-shadow-md' : 'text-gray-500 dark:text-gray-400'; ?>">
+                                                            <?php echo $block_visits; ?>
+                                                        </span>
+                                                    </div>
+                                                    <div class="absolute z-10 hidden mb-2 transform -translate-x-1/2 bottom-full left-1/2 group-hover:block">
+                                                        <div class="px-3 py-2 text-xs text-white bg-gray-900 rounded-lg shadow-lg whitespace-nowrap">
+                                                            <div class="font-semibold"><?php echo str_replace('<br>', ' ', $block_labels[$block]); ?></div>
+                                                            <div><?php echo $block_visits; ?> visits</div>
+                                                            <div class="text-gray-300">Intensity: <?php echo round($intensity, 1); ?>%</div>
+                                                        </div>
+                                                        <div class="absolute transform -translate-x-1/2 border-4 border-transparent top-full left-1/2 border-t-gray-900"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        <?php endfor; ?>
+                                    </div>
+                                    
+                                    <!-- Legend -->
+                                    <div class="flex items-center justify-center gap-3 mt-4 text-xs text-gray-600 dark:text-gray-400">
+                                        <div class="flex items-center gap-1">
+                                            <div class="w-3 h-3 bg-gray-100 rounded dark:bg-gray-800"></div>
+                                            <span>None (0%)</span>
+                                        </div>
+                                        <div class="flex items-center gap-1">
+                                            <div class="w-3 h-3 bg-green-500 rounded"></div>
+                                            <span>Low (1-25%)</span>
+                                        </div>
+                                        <div class="flex items-center gap-1">
+                                            <div class="w-3 h-3 bg-yellow-500 rounded"></div>
+                                            <span>Medium (26-50%)</span>
+                                        </div>
+                                        <div class="flex items-center gap-1">
+                                            <div class="w-3 h-3 bg-orange-500 rounded"></div>
+                                            <span>High (51-75%)</span>
+                                        </div>
+                                        <div class="flex items-center gap-1">
+                                            <div class="w-3 h-3 bg-red-500 rounded"></div>
+                                            <span>Peak (76-100%)</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Visitor Type Breakdown -->
+                                <div class="pt-6 border-t border-gray-200 dark:border-gray-700">
+                                    <h4 class="mb-4 text-sm font-semibold text-gray-800 dark:text-white/90">
+                                        <?php esc_html_e('Today\'s Visitor Types', 'vms'); ?>
+                                    </h4>
+                                    
+                                    <div class="space-y-3">
+                                        <!-- Guests -->
+                                        <div class="flex items-center justify-between p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20">
+                                            <div class="flex items-center gap-2">
+                                                <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                                <span class="text-sm text-gray-700 dark:text-gray-300">Guests</span>
+                                            </div>
+                                            <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                                                <?php echo $type_breakdown['guests']; ?>
+                                            </span>
+                                        </div>
+
+                                        <!-- Accommodation -->
+                                        <div class="flex items-center justify-between p-3 rounded-lg bg-green-50 dark:bg-green-900/20">
+                                            <div class="flex items-center gap-2">
+                                                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                                                <span class="text-sm text-gray-700 dark:text-gray-300">Accommodation</span>
+                                            </div>
+                                            <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                                                <?php echo $type_breakdown['accommodation']; ?>
+                                            </span>
+                                        </div>
+
+                                        <!-- Suppliers -->
+                                        <div class="flex items-center justify-between p-3 rounded-lg bg-purple-50 dark:bg-purple-900/20">
+                                            <div class="flex items-center gap-2">
+                                                <div class="w-2 h-2 bg-purple-500 rounded-full"></div>
+                                                <span class="text-sm text-gray-700 dark:text-gray-300">Suppliers</span>
+                                            </div>
+                                            <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                                                <?php echo $type_breakdown['suppliers']; ?>
+                                            </span>
+                                        </div>
+
+                                        <!-- Reciprocating -->
+                                        <div class="flex items-center justify-between p-3 rounded-lg bg-orange-50 dark:bg-orange-900/20">
+                                            <div class="flex items-center gap-2">
+                                                <div class="w-2 h-2 bg-orange-500 rounded-full"></div>
+                                                <span class="text-sm text-gray-700 dark:text-gray-300">Reciprocating</span>
+                                            </div>
+                                            <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                                                <?php echo $type_breakdown['reciprocating']; ?>
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Total -->
+                                    <div class="flex items-center justify-between p-3 mt-4 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+                                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Total Today</span>
+                                        <span class="text-lg font-bold text-gray-900 dark:text-white">
+                                            <?php echo $total_today; ?>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Quick Actions Card -->
