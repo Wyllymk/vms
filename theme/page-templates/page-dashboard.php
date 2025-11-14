@@ -24,9 +24,9 @@ $last_name  = $current_user->last_name;
 $user_login = $current_user->user_login;
 
 if ( !empty($first_name) || !empty($last_name) ) {
-    $user_name = trim($first_name . ' ' . $last_name);
+    $user_name = trim(ucwords($first_name . ' ' . $last_name));
 } else {
-    $user_name = $user_login;
+    $user_name = ucwords($user_login);
 }
 
 // Set Nairobi timezone
@@ -53,8 +53,11 @@ global $wpdb;
 $today = current_time('Y-m-d');
 $guests_table = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::GUESTS_TABLE);
 $guest_visits_table = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::GUEST_VISITS_TABLE);
+$a_guests_table = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::A_GUESTS_TABLE);
 $a_guest_visits_table = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::A_GUEST_VISITS_TABLE);
+$suppliers_table = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::SUPPLIERS_TABLE);
 $supplier_visits_table = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::SUPPLIER_VISITS_TABLE);
+$recip_members_table = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::RECIP_MEMBERS_TABLE);
 $recip_visits_table = \WyllyMk\VMS\VMS_Config::get_table_name(\WyllyMk\VMS\VMS_Config::RECIP_MEMBERS_VISITS_TABLE);
 
 // Today's visits count
@@ -62,7 +65,7 @@ $today_visits = (int) $wpdb->get_var($wpdb->prepare(
     "SELECT COUNT(*) FROM (
         SELECT id FROM {$guest_visits_table} WHERE visit_date = %s
         UNION ALL
-        SELECT id FROM {$a_guest_vis_table} WHERE visit_date = %s
+        SELECT id FROM {$a_guest_visits_table} WHERE visit_date = %s
         UNION ALL
         SELECT id FROM {$supplier_visits_table} WHERE visit_date = %s
         UNION ALL
@@ -71,7 +74,7 @@ $today_visits = (int) $wpdb->get_var($wpdb->prepare(
     $today, $today, $today, $today
 ));
 
-// Currently signed in
+// Currently signed in COUNT (for the stats card) - REMOVED DUPLICATE
 $currently_signed_in = (int) $wpdb->get_var($wpdb->prepare(
     "SELECT COUNT(*) FROM (
         SELECT id FROM {$guest_visits_table} 
@@ -88,6 +91,68 @@ $currently_signed_in = (int) $wpdb->get_var($wpdb->prepare(
     ) AS signed_in",
     $today, $today, $today, $today
 ));
+
+// Get currently signed in visitors with details - LIMITED TO 4 MOST RECENT
+// FIXED: Removed prepare() since no user input and using direct date variable
+$currently_signed_in_visitors = $wpdb->get_results(
+    "SELECT * FROM (
+        SELECT 
+            g.first_name, 
+            g.last_name, 
+            gv.sign_in_time, 
+            'Guest' as type
+        FROM {$guest_visits_table} gv
+        INNER JOIN {$guests_table} g ON gv.guest_id = g.id
+        WHERE gv.visit_date = '{$today}' AND gv.sign_in_time IS NOT NULL AND gv.sign_out_time IS NULL
+        
+        UNION ALL
+        
+        SELECT 
+            ag.first_name, 
+            ag.last_name, 
+            agv.sign_in_time, 
+            'Accommodation Guest' as type
+        FROM {$a_guest_visits_table} agv
+        INNER JOIN {$a_guests_table} ag ON agv.guest_id = ag.id
+        WHERE agv.visit_date = '{$today}' AND agv.sign_in_time IS NOT NULL AND agv.sign_out_time IS NULL
+        
+        UNION ALL
+        
+        SELECT 
+            s.first_name, 
+            s.last_name, 
+            sv.sign_in_time, 
+            'Supplier' as type
+        FROM {$supplier_visits_table} sv
+        INNER JOIN {$suppliers_table} s ON sv.guest_id = s.id
+        WHERE sv.visit_date = '{$today}' AND sv.sign_in_time IS NOT NULL AND sv.sign_out_time IS NULL
+        
+        UNION ALL
+        
+        SELECT 
+            r.first_name, 
+            r.last_name, 
+            rv.sign_in_time, 
+            'Reciprocating Member' as type
+        FROM {$recip_visits_table} rv
+        INNER JOIN {$recip_members_table} r ON rv.member_id = r.id
+        WHERE rv.visit_date = '{$today}' AND rv.sign_in_time IS NOT NULL AND rv.sign_out_time IS NULL
+    ) AS all_visitors
+    ORDER BY sign_in_time DESC
+    LIMIT 4"
+);
+
+// Debug: Check what we're getting
+error_log("Total currently signed in: " . $currently_signed_in);
+error_log("Recent visitors count: " . count($currently_signed_in_visitors));
+if (!empty($currently_signed_in_visitors)) {
+    foreach ($currently_signed_in_visitors as $index => $visitor) {
+        error_log("Visitor {$index}: {$visitor->first_name} {$visitor->last_name} - {$visitor->sign_in_time} - {$visitor->type}");
+    }
+}
+
+// Get the count for the stats card
+$currently_signed_in_count = count($currently_signed_in_visitors);
 
 // This week's visits
 $week_start = date('Y-m-d', strtotime('monday this week'));
@@ -733,61 +798,61 @@ $total_today = array_sum($type_breakdown);
 
                         <!-- Recent Activity Card -->
                         <div class="col-span-12 xl:col-span-8">
-                            <div
-                                class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+                            <div class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
                                 <div class="flex items-center justify-between mb-6">
                                     <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">
-                                        <?php esc_html_e( 'Recent Check-ins Today', 'vms' ); ?>
+                                        <?php esc_html_e( 'Currently On Site', 'vms' ); ?>
                                     </h3>
-                                    <a href="<?php echo esc_url( home_url( '/guests' ) ); ?>"
-                                        class="text-sm font-medium text-brand-500 hover:text-brand-600">
-                                        <?php esc_html_e( 'View All', 'vms' ); ?> →
-                                    </a>
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                            <?php echo esc_html( $currently_signed_in ); ?> <?php esc_html_e( 'total', 'vms' ); ?>
+                                        </span>
+                                        <?php if ( $currently_signed_in > 5 ) : ?>
+                                            <span class="text-xs text-gray-400 dark:text-gray-500">
+                                                (<?php esc_html_e( 'showing 5 most recent', 'vms' ); ?>)
+                                            </span>
+                                        <?php endif; ?>
+                                    </div>
                                 </div>
 
-                                <?php if ( ! empty( $recent_checkins ) ) : ?>
-                                <div class="space-y-3">
-                                    <?php foreach ( $recent_checkins as $checkin ) : ?>
-                                    <div
-                                        class="flex items-center justify-between p-3 transition rounded-lg bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800">
-                                        <div class="flex items-center gap-3">
-                                            <div
-                                                class="flex items-center justify-center w-10 h-10 font-semibold rounded-full bg-brand-100 dark:bg-brand-900/20 text-brand-600 dark:text-brand-400">
-                                                <?php echo esc_html( strtoupper( substr( $checkin->first_name, 0, 1 ) ) ); ?>
+                                <?php if ( ! empty( $currently_signed_in_visitors ) ) : ?>
+                                    <div class="space-y-3">
+                                        <?php foreach ( $currently_signed_in_visitors as $visitor ) : ?>
+                                            <div class="flex items-center justify-between p-3 transition rounded-lg bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800">
+                                                <div class="flex items-center gap-3">
+                                                    <div class="flex items-center justify-center w-10 h-10 font-semibold rounded-full bg-brand-100 dark:bg-brand-900/20 text-brand-600 dark:text-brand-400">
+                                                        <?php echo esc_html( strtoupper( substr( $visitor->first_name, 0, 1 ) ) ); ?>
+                                                    </div>
+                                                    <div>
+                                                        <p class="text-sm font-medium text-gray-900 dark:text-white">
+                                                            <?php echo esc_html( $visitor->first_name . ' ' . $visitor->last_name ); ?>
+                                                        </p>
+                                                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                                                            <?php echo esc_html( $visitor->type ); ?>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div class="text-right">
+                                                    <p class="text-xs font-medium text-gray-900 dark:text-white">
+                                                        <?php echo esc_html( date( 'g:i A', strtotime( $visitor->sign_in_time ) ) ); ?>
+                                                    </p>
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">
+                                                        <?php esc_html_e( 'On Site', 'vms' ); ?>
+                                                    </span>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <p class="text-sm font-medium text-gray-900 dark:text-white">
-                                                    <?php echo esc_html( $checkin->first_name . ' ' . $checkin->last_name ); ?>
-                                                </p>
-                                                <p class="text-xs text-gray-500 dark:text-gray-400">
-                                                    <?php echo esc_html( $checkin->type ); ?>
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <div class="text-right">
-                                            <p class="text-xs font-medium text-gray-900 dark:text-white">
-                                                <?php echo esc_html( date( 'g:i A', strtotime( $checkin->sign_in_time ) ) ); ?>
-                                            </p>
-                                            <span
-                                                class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">
-                                                <?php esc_html_e( 'Checked In', 'vms' ); ?>
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <?php endforeach; ?>
-                                </div>
+                                        <?php endforeach; ?>
+                                    </div>                                  
+                                    
                                 <?php else : ?>
-                                <div class="py-8 text-center">
-                                    <svg class="w-16 h-16 mx-auto mb-3 text-gray-300 dark:text-gray-600" fill="none"
-                                        stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4">
-                                        </path>
-                                    </svg>
-                                    <p class="text-gray-500 dark:text-gray-400">
-                                        <?php esc_html_e( 'No check-ins yet today', 'vms' ); ?>
-                                    </p>
-                                </div>
+                                    <div class="py-8 text-center">
+                                        <svg class="w-16 h-16 mx-auto mb-3 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                        </svg>
+                                        <p class="text-gray-500 dark:text-gray-400">
+                                            <?php esc_html_e( 'No visitors currently on site', 'vms' ); ?>
+                                        </p>
+                                    </div>
                                 <?php endif; ?>
                             </div>
                         </div>
