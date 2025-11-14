@@ -265,7 +265,7 @@ $total_today = array_sum($type_breakdown);
                         <div class="flex flex-wrap items-center justify-between gap-4">
                             <div>
                                 <h1 class="mb-2 text-2xl font-bold md:text-3xl">
-                                    <?php echo esc_html( $greeting ); ?>, <?php echo esc_html( $user_name ); ?>!
+                                    <?php echo esc_html( $greeting ); ?>, <?php echo esc_html( ucwords($user_name) ); ?>!
                                     <?php echo $emoji; ?>
                                 </h1>
                                 <p class="text-sm text-white/90 md:text-base">
