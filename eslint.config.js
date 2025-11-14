@@ -22,6 +22,13 @@ export default [
 			globals: {
 				...globals.browser,
 				wp: 'readonly',
+				jQuery: 'readonly',
+				$: 'readonly',
+				// Add your WordPress localized script variables
+				vms_script_ajax: 'readonly',
+				wpApiSettings: 'readonly',
+				vmsAjax: 'readonly',
+				ajaxurl: 'readonly', // Common WordPress AJAX variable
 			},
 		},
 	},

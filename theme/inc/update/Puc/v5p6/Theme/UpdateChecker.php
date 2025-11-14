@@ -7,19 +7,19 @@ use YahnisElsts\PluginUpdateChecker\v5p6\InstalledPackage;
 use YahnisElsts\PluginUpdateChecker\v5p6\Scheduler;
 use YahnisElsts\PluginUpdateChecker\v5p6\DebugBar;
 
-if ( !class_exists(UpdateChecker::class, false) ):
+if ( ! class_exists( UpdateChecker::class, false ) ) :
 
 	class UpdateChecker extends BaseUpdateChecker {
-		protected $filterSuffix = 'theme';
+		protected $filterSuffix    = 'theme';
 		protected $updateTransient = 'update_themes';
-		protected $componentType = 'theme';
+		protected $componentType   = 'theme';
 
 		/**
 		 * @var string Theme directory name.
 		 */
 		protected $stylesheet;
 
-		public function __construct($metadataUrl, $stylesheet = null, $customSlug = null, $checkPeriod = 12, $optionName = '') {
+		public function __construct( $metadataUrl, $stylesheet = null, $customSlug = null, $checkPeriod = 12, $optionName = '' ) {
 			if ( $stylesheet === null ) {
 				$stylesheet = get_stylesheet();
 			}
@@ -49,14 +49,14 @@ if ( !class_exists(UpdateChecker::class, false) ):
 		 * @return Update|null An instance of Update, or NULL when no updates are available.
 		 */
 		public function requestUpdate() {
-			list($themeUpdate, $result) = $this->requestMetadata(Update::class, 'request_update');
+			list($themeUpdate, $result) = $this->requestMetadata( Update::class, 'request_update' );
 
 			if ( $themeUpdate !== null ) {
 				/** @var Update $themeUpdate */
 				$themeUpdate->slug = $this->slug;
 			}
 
-			$themeUpdate = $this->filterUpdateResult($themeUpdate, $result);
+			$themeUpdate = $this->filterUpdateResult( $themeUpdate, $result );
 			return $themeUpdate;
 		}
 
@@ -64,14 +64,14 @@ if ( !class_exists(UpdateChecker::class, false) ):
 			return array_merge(
 				parent::getNoUpdateItemFields(),
 				array(
-					'theme'        => $this->directoryName,
-					'requires'     => '',
+					'theme'    => $this->directoryName,
+					'requires' => '',
 				)
 			);
 		}
 
 		public function userCanInstallUpdates() {
-			return current_user_can('update_themes');
+			return current_user_can( 'update_themes' );
 		}
 
 		/**
@@ -80,8 +80,8 @@ if ( !class_exists(UpdateChecker::class, false) ):
 		 * @param int $checkPeriod
 		 * @return Scheduler
 		 */
-		protected function createScheduler($checkPeriod) {
-			return new Scheduler($this, $checkPeriod, array('load-themes.php'));
+		protected function createScheduler( $checkPeriod ) {
+			return new Scheduler( $this, $checkPeriod, array( 'load-themes.php' ) );
 		}
 
 		/**
@@ -90,12 +90,12 @@ if ( !class_exists(UpdateChecker::class, false) ):
 		 * @param \WP_Upgrader|null $upgrader The upgrader that's performing the current update.
 		 * @return bool
 		 */
-		public function isBeingUpgraded($upgrader = null) {
-			return $this->upgraderStatus->isThemeBeingUpgraded($this->stylesheet, $upgrader);
+		public function isBeingUpgraded( $upgrader = null ) {
+			return $this->upgraderStatus->isThemeBeingUpgraded( $this->stylesheet, $upgrader );
 		}
 
 		protected function createDebugBarExtension() {
-			return new DebugBar\Extension($this, DebugBar\ThemePanel::class);
+			return new DebugBar\Extension( $this, DebugBar\ThemePanel::class );
 		}
 
 		/**
@@ -107,8 +107,8 @@ if ( !class_exists(UpdateChecker::class, false) ):
 		 * @param callable $callback
 		 * @return void
 		 */
-		public function addQueryArgFilter($callback){
-			$this->addFilter('request_update_query_args', $callback);
+		public function addQueryArgFilter( $callback ) {
+			$this->addFilter( 'request_update_query_args', $callback );
 		}
 
 		/**
@@ -123,8 +123,8 @@ if ( !class_exists(UpdateChecker::class, false) ):
 		 * @param callable $callback
 		 * @return void
 		 */
-		public function addHttpRequestArgFilter($callback) {
-			$this->addFilter('request_update_options', $callback);
+		public function addHttpRequestArgFilter( $callback ) {
+			$this->addFilter( 'request_update_options', $callback );
 		}
 
 		/**
@@ -142,8 +142,8 @@ if ( !class_exists(UpdateChecker::class, false) ):
 		 * @param callable $callback
 		 * @return void
 		 */
-		public function addResultFilter($callback) {
-			$this->addFilter('request_update_result', $callback, 10, 2);
+		public function addResultFilter( $callback ) {
+			$this->addFilter( 'request_update_result', $callback, 10, 2 );
 		}
 
 		/**
@@ -152,7 +152,7 @@ if ( !class_exists(UpdateChecker::class, false) ):
 		 * @return InstalledPackage
 		 */
 		protected function createInstalledPackage() {
-			return new Package($this->stylesheet, $this);
+			return new Package( $this->stylesheet, $this );
 		}
 	}
 

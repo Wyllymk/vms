@@ -1,7 +1,7 @@
 <?php
 namespace YahnisElsts\PluginUpdateChecker\v5p6;
 
-if ( !class_exists(InstalledPackage::class, false) ):
+if ( ! class_exists( InstalledPackage::class, false ) ) :
 
 	/**
 	 * This class represents a currently installed plugin or theme.
@@ -15,7 +15,7 @@ if ( !class_exists(InstalledPackage::class, false) ):
 		 */
 		protected $updateChecker;
 
-		public function __construct($updateChecker) {
+		public function __construct( $updateChecker ) {
 			$this->updateChecker = $updateChecker;
 		}
 
@@ -39,15 +39,16 @@ if ( !class_exists(InstalledPackage::class, false) ):
 		 * @param string $relativeFileName File name relative to the package directory.
 		 * @return bool
 		 */
-		public function fileExists($relativeFileName) {
+		public function fileExists( $relativeFileName ) {
 			return is_file(
 				$this->getAbsoluteDirectoryPath()
 				. DIRECTORY_SEPARATOR
-				. ltrim($relativeFileName, '/\\')
+				. ltrim( $relativeFileName, '/\\' )
 			);
 		}
 
-		/* -------------------------------------------------------------------
+		/*
+		-------------------------------------------------------------------
 		 * File header parsing
 		 * -------------------------------------------------------------------
 		 */
@@ -61,27 +62,27 @@ if ( !class_exists(InstalledPackage::class, false) ):
 		 * @param string|null $content File contents.
 		 * @return string[]
 		 */
-		public function getFileHeader($content) {
-			$content = (string)$content;
+		public function getFileHeader( $content ) {
+			$content = (string) $content;
 
-			//WordPress only looks at the first 8 KiB of the file, so we do the same.
-			$content = substr($content, 0, 8192);
-			//Normalize line endings.
-			$content = str_replace("\r", "\n", $content);
+			// WordPress only looks at the first 8 KiB of the file, so we do the same.
+			$content = substr( $content, 0, 8192 );
+			// Normalize line endings.
+			$content = str_replace( "\r", "\n", $content );
 
 			$headers = $this->getHeaderNames();
 			$results = array();
-			foreach ($headers as $field => $name) {
-				$success = preg_match('/^[ \t\/*#@]*' . preg_quote($name, '/') . ':(.*)$/mi', $content, $matches);
+			foreach ( $headers as $field => $name ) {
+				$success = preg_match( '/^[ \t\/*#@]*' . preg_quote( $name, '/' ) . ':(.*)$/mi', $content, $matches );
 
-				if ( ($success === 1) && $matches[1] ) {
+				if ( ( $success === 1 ) && $matches[1] ) {
 					$value = $matches[1];
-					if ( function_exists('_cleanup_header_comment') ) {
-						$value = _cleanup_header_comment($value);
+					if ( function_exists( '_cleanup_header_comment' ) ) {
+						$value = _cleanup_header_comment( $value );
 					}
-					$results[$field] = $value;
+					$results[ $field ] = $value;
 				} else {
-					$results[$field] = '';
+					$results[ $field ] = '';
 				}
 			}
 
@@ -99,7 +100,6 @@ if ( !class_exists(InstalledPackage::class, false) ):
 		 * @param string $headerName
 		 * @return string Either the value of the header, or an empty string if the header doesn't exist.
 		 */
-		abstract public function getHeaderValue($headerName);
-
+		abstract public function getHeaderValue( $headerName );
 	}
 endif;

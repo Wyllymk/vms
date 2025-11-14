@@ -13,22 +13,22 @@ get_header();
 ?>
 
 <section id="primary">
-    <main id="main">
+	<main id="main">
 
-        <?php if ( have_posts() ) : ?>
+		<?php if ( have_posts() ) : ?>
 
-        <header class="page-header">
-            <?php
+		<header class="page-header">
+			<?php
 				printf(
 					/* translators: 1: search result title. 2: search term. */
 					'<h1 class="page-title">%1$s <span>%2$s</span></h1>',
 					esc_html__( 'Search results for:', 'vms' ),
 					get_search_query()
 				);
-				?>
-        </header><!-- .page-header -->
+			?>
+		</header><!-- .page-header -->
 
-        <?php
+			<?php
 			// Start the Loop.
 			while ( have_posts() ) :
 				the_post();
@@ -47,7 +47,7 @@ get_header();
 
 		endif;
 		?>
-    </main><!-- #main -->
+	</main><!-- #main -->
 </section><!-- #primary -->
 
 <?php

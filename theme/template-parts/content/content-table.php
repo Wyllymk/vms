@@ -10,108 +10,108 @@
 defined( 'ABSPATH' ) || exit;
 
 global $wpdb;
-$guests_table = $wpdb->prefix . 'vms_guests'; 
+$guests_table       = $wpdb->prefix . 'vms_guests';
 $guest_visits_table = $wpdb->prefix . 'vms_guest_visits';
 
 ?>
 
 <div
-    class="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pb-3 pt-4 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6">
-    <div class="flex flex-col gap-2 mb-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">
-                <?php esc_html_e( "Today's Guests", 'vms' ); ?>
-            </h3>
-        </div>
+	class="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pb-3 pt-4 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6">
+	<div class="flex flex-col gap-2 mb-4 sm:flex-row sm:items-center sm:justify-between">
+		<div>
+			<h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">
+				<?php esc_html_e( "Today's Guests", 'vms' ); ?>
+			</h3>
+		</div>
 
-        <div class="flex items-center gap-3">
-            <a href="<?php echo esc_url( home_url( '/guests' ) ); ?>"
-                class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-theme-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200">
-                <?php esc_html_e( 'View All Guests', 'vms' ); ?>
-            </a>
+		<div class="flex items-center gap-3">
+			<a href="<?php echo esc_url( home_url( '/guests' ) ); ?>"
+				class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-theme-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200">
+				<?php esc_html_e( 'View All Guests', 'vms' ); ?>
+			</a>
 
-        </div>
-    </div>
+		</div>
+	</div>
 
-    <div class="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
-        <div class="max-w-full overflow-x-auto" id="guests-table"
-            data-guest-details-url="<?php echo esc_url(home_url('/guest-details')); ?>">
-            <table class="min-w-full">
-                <!-- table header start -->
-                <thead>
-                    <tr class="border-b border-gray-100 dark:border-gray-800">
-                        <th class="px-5 py-3 sm:px-6">
-                            <div class="flex items-center">
-                                <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
-                                    <?php esc_html_e( '#', 'vms' ); ?>
-                                </p>
-                            </div>
-                        </th>
-                        <th class="px-5 py-3 sm:px-6">
-                            <div class="flex items-center">
-                                <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
-                                    <?php esc_html_e( 'First Name', 'vms' ); ?>
-                                </p>
-                            </div>
-                        </th>
-                        <th class="px-5 py-3 sm:px-6">
-                            <div class="flex items-center">
-                                <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
-                                    <?php esc_html_e( 'Last Name', 'vms' ); ?>
-                                </p>
-                            </div>
-                        </th>
-                        <th class="px-5 py-3 sm:px-6">
-                            <div class="flex items-center">
-                                <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
-                                    <?php esc_html_e( 'Status', 'vms' ); ?>
-                                </p>
-                            </div>
-                        </th>
-                        <th class="px-5 py-3 sm:px-6">
-                            <div class="flex items-center">
-                                <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
-                                    <?php esc_html_e( 'ID Number', 'vms' ); ?>
-                                </p>
-                            </div>
-                        </th>
-                        <th class="px-5 py-3 sm:px-6">
-                            <div class="flex items-center">
-                                <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
-                                    <?php esc_html_e( 'Host Member', 'vms' ); ?>
-                                </p>
-                            </div>
-                        </th>
-                        <th class="px-5 py-3 sm:px-6">
-                            <div class="flex items-center">
-                                <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
-                                    <?php esc_html_e( 'Visit Date', 'vms' ); ?>
-                                </p>
-                            </div>
-                        </th>
-                        <th class="px-5 py-3 sm:px-6">
-                            <div class="flex items-center">
-                                <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
-                                    <?php esc_html_e( 'Actions', 'vms' ); ?>
-                                </p>
-                            </div>
-                        </th>
-                    </tr>
-                </thead>
-                <!-- table header end -->
-                <!-- table body start -->
-                <tbody id="guests-table-body" class="divide-y divide-gray-100 dark:divide-gray-800">
-                    <?php 
-                    // Initialize counter
-                    $counter = 1;
+	<div class="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+		<div class="max-w-full overflow-x-auto" id="guests-table"
+			data-guest-details-url="<?php echo esc_url( home_url( '/guest-details' ) ); ?>">
+			<table class="min-w-full">
+				<!-- table header start -->
+				<thead>
+					<tr class="border-b border-gray-100 dark:border-gray-800">
+						<th class="px-5 py-3 sm:px-6">
+							<div class="flex items-center">
+								<p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
+									<?php esc_html_e( '#', 'vms' ); ?>
+								</p>
+							</div>
+						</th>
+						<th class="px-5 py-3 sm:px-6">
+							<div class="flex items-center">
+								<p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
+									<?php esc_html_e( 'First Name', 'vms' ); ?>
+								</p>
+							</div>
+						</th>
+						<th class="px-5 py-3 sm:px-6">
+							<div class="flex items-center">
+								<p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
+									<?php esc_html_e( 'Last Name', 'vms' ); ?>
+								</p>
+							</div>
+						</th>
+						<th class="px-5 py-3 sm:px-6">
+							<div class="flex items-center">
+								<p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
+									<?php esc_html_e( 'Status', 'vms' ); ?>
+								</p>
+							</div>
+						</th>
+						<th class="px-5 py-3 sm:px-6">
+							<div class="flex items-center">
+								<p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
+									<?php esc_html_e( 'ID Number', 'vms' ); ?>
+								</p>
+							</div>
+						</th>
+						<th class="px-5 py-3 sm:px-6">
+							<div class="flex items-center">
+								<p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
+									<?php esc_html_e( 'Host Member', 'vms' ); ?>
+								</p>
+							</div>
+						</th>
+						<th class="px-5 py-3 sm:px-6">
+							<div class="flex items-center">
+								<p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
+									<?php esc_html_e( 'Visit Date', 'vms' ); ?>
+								</p>
+							</div>
+						</th>
+						<th class="px-5 py-3 sm:px-6">
+							<div class="flex items-center">
+								<p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
+									<?php esc_html_e( 'Actions', 'vms' ); ?>
+								</p>
+							</div>
+						</th>
+					</tr>
+				</thead>
+				<!-- table header end -->
+				<!-- table body start -->
+				<tbody id="guests-table-body" class="divide-y divide-gray-100 dark:divide-gray-800">
+					<?php
+					// Initialize counter
+					$counter = 1;
 
-                    // Get today's date in WordPress timezone
-                    $today = current_time('Y-m-d');
+					// Get today's date in WordPress timezone
+					$today = current_time( 'Y-m-d' );
 
-                    // We need to join with usermeta to get first and last names
-                    // Note: host_member_id is in the guest_visits table, not the guests table
-                    // Base query - join guests with guest_visits and users tables
-                    $query = "
+					// We need to join with usermeta to get first and last names
+					// Note: host_member_id is in the guest_visits table, not the guests table
+					// Base query - join guests with guest_visits and users tables
+					$query = "
                         SELECT g.*, v.id as visit_id, v.visit_date, v.status, v.sign_in_time, v.sign_out_time, v.host_member_id,
                             u.display_name,
                             MAX(CASE WHEN um1.meta_key = 'first_name' THEN um1.meta_value END) as host_first_name,
@@ -124,181 +124,181 @@ $guest_visits_table = $wpdb->prefix . 'vms_guest_visits';
                         WHERE DATE(v.visit_date) = %s
                     ";
 
-                    // Add search filter if present
-                    if (isset($_GET['search_users']) && !empty($_GET['user_search'])) {
-                        $search_term = '%' . $wpdb->esc_like(sanitize_text_field($_GET['user_search'])) . '%';
-                        $query .= $wpdb->prepare(
-                            " AND (g.first_name LIKE %s OR g.last_name LIKE %s OR g.id_number LIKE %s OR g.email LIKE %s OR g.phone_number LIKE %s OR u.display_name LIKE %s OR um1.meta_value LIKE %s OR um2.meta_value LIKE %s)",
-                            $search_term,
-                            $search_term,
-                            $search_term,
-                            $search_term,
-                            $search_term,
-                            $search_term,
-                            $search_term,
-                            $search_term
-                        );
-                    } else {
-                        $query = $wpdb->prepare($query, $today);
-                    }
+					// Add search filter if present
+					if ( isset( $_GET['search_users'] ) && ! empty( $_GET['user_search'] ) ) {
+						$search_term = '%' . $wpdb->esc_like( sanitize_text_field( $_GET['user_search'] ) ) . '%';
+						$query      .= $wpdb->prepare(
+							' AND (g.first_name LIKE %s OR g.last_name LIKE %s OR g.id_number LIKE %s OR g.email LIKE %s OR g.phone_number LIKE %s OR u.display_name LIKE %s OR um1.meta_value LIKE %s OR um2.meta_value LIKE %s)',
+							$search_term,
+							$search_term,
+							$search_term,
+							$search_term,
+							$search_term,
+							$search_term,
+							$search_term,
+							$search_term
+						);
+					} else {
+						$query = $wpdb->prepare( $query, $today );
+					}
 
-                    // Add grouping, ordering, and limit 10
-                    $query .= " GROUP BY g.id, v.id ORDER BY v.sign_in_time ASC, v.sign_out_time ASC LIMIT 10";
+					// Add grouping, ordering, and limit 10
+					$query .= ' GROUP BY g.id, v.id ORDER BY v.sign_in_time ASC, v.sign_out_time ASC LIMIT 10';
 
-                    // Get guests from custom tables
-                    $guests = $wpdb->get_results($query);
+					// Get guests from custom tables
+					$guests = $wpdb->get_results( $query );
 
-                    $status_classes = [
-                        'approved'   => 'bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-500',
-                        'unapproved' => 'bg-warning-50 text-warning-600 dark:bg-warning-500/15 dark:text-orange-400',
-                        'suspended'  => 'bg-blue-light-50 text-blue-light-500 dark:bg-blue-light-500/15 dark:text-blue-light-500',
-                        'banned'     => 'bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500',
-                        'cancelled'  => 'bg-gray-100 text-gray-700 dark:bg-white/5 dark:text-white/80'
-                    ];
+					$status_classes = array(
+						'approved'   => 'bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-500',
+						'unapproved' => 'bg-warning-50 text-warning-600 dark:bg-warning-500/15 dark:text-orange-400',
+						'suspended'  => 'bg-blue-light-50 text-blue-light-500 dark:bg-blue-light-500/15 dark:text-blue-light-500',
+						'banned'     => 'bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500',
+						'cancelled'  => 'bg-gray-100 text-gray-700 dark:bg-white/5 dark:text-white/80',
+					);
 
-                    if (!empty($guests)) {
-                        foreach ($guests as $guest) {
-                            $visit_date = !empty($guest->visit_date) ? date('M j, Y', strtotime($guest->visit_date)) : 'N/A';
-                            $sign_in_time = !empty($guest->sign_in_time) ? date('g:i a', strtotime($guest->sign_in_time)) : null;
-                            $sign_out_time = !empty($guest->sign_out_time) ? date('g:i a', strtotime($guest->sign_out_time)) : null;
-                            $status = isset($guest->status) ? $guest->status : 'approved';
-                            
-                            // Get host name - use first and last name if available, otherwise fallback to display name
-                            $host_name = 'N/A';
-                            if (!empty($guest->host_first_name) || !empty($guest->host_last_name)) {
-                                $host_name = trim($guest->host_first_name . ' ' . $guest->host_last_name);
-                            } elseif (!empty($guest->display_name)) {
-                                $host_name = $guest->display_name;
-                            }
-                    ?>
-                    <tr data-guest-id="<?php echo esc_attr($guest->id); ?>"
-                        data-visit-id="<?php echo esc_attr($guest->visit_id); ?>">
-                        <td class="px-5 py-4 sm:px-6">
-                            <p class="text-gray-500 text-theme-sm dark:text-gray-400">
-                                <?php echo $counter++; ?>
-                            </p>
-                        </td>
-                        <td class="px-5 py-4 sm:px-6">
-                            <div class="flex items-center">
-                                <p class="text-gray-800 text-theme-sm dark:text-white/90">
-                                    <?php echo esc_html($guest->first_name); ?>
-                                </p>
-                            </div>
-                        </td>
-                        <td class="px-5 py-4 sm:px-6">
-                            <div class="flex items-center">
-                                <p class="text-gray-800 text-theme-sm dark:text-white/90">
-                                    <?php echo esc_html($guest->last_name); ?>
-                                </p>
-                            </div>
-                        </td>
-                        <td class="px-5 py-4 sm:px-6">
-                            <div class="flex items-center">
-                                <span
-                                    class="px-2 py-1 text-xs font-medium rounded-full <?php echo $status_classes[$status]; ?>">
-                                    <?php echo ucfirst($status); ?>
-                                </span>
-                            </div>
-                        </td>
-                        <td class="px-5 py-4 sm:px-6">
-                            <div class="flex items-center">
-                                <p class="text-gray-500 text-theme-sm dark:text-gray-400">
-                                    <?php echo esc_html($guest->id_number); ?>
-                                </p>
-                            </div>
-                        </td>
-                        <td class="px-5 py-4 sm:px-6">
-                            <div class="flex items-center">
-                                <p class="text-gray-500 text-theme-sm dark:text-gray-400">
-                                    <?php echo esc_html($host_name); ?>
-                                </p>
-                            </div>
-                        </td>
-                        <td class="px-5 py-4 sm:px-6">
-                            <div class="flex items-center">
-                                <p class="text-gray-500 text-theme-sm dark:text-gray-400">
-                                    <?php echo esc_html($visit_date); ?>
-                                </p>
-                            </div>
-                        </td>
-                        <td class="px-5 py-4 sm:px-6">
-                            <div class="flex items-center gap-2">
-                                <button id="edit-guest-button-<?php echo $guest->id; ?>"
-                                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 transition bg-white border border-gray-300 rounded-lg cursor-pointer whitespace-nowrap dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
-                                    data-guest-id="<?php echo $guest->id; ?>"
-                                    data-visit-id="<?php echo $guest->visit_id; ?>">
-                                    <?php esc_html_e( 'Edit', 'vms' ); ?>
-                                </button>
-                                <?php
-                            // Get current date in WordPress timezone (EAT)
-                            $current_date = current_time('Y-m-d');
-                            
-                            // Validate guest data
-                            if (!isset($guest->visit_date) || !isset($guest->status)) {
-                                error_log("Guest table error: Missing visit_date or status for guest ID {$guest->id}");
-                                $is_button_disabled = true; // Disable buttons if data is missing
-                                $is_missed = false;
-                            } else {
-                                // Normalize visit_date to YYYY-MM-DD
-                                $normalized_visit_date = substr($guest->visit_date, 0, 10); // Extract YYYY-MM-DD from YYYY-MM-DD HH:MM:SS
-                                
-                                if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $normalized_visit_date)) {
-                                    error_log("Guest table error: Invalid visit_date format for guest ID {$guest->id}: {$guest->visit_date}");
-                                    $is_button_disabled = true;
-                                    $is_missed = false;
-                                } else {
-                                    // Disable buttons if current date is before visit_date or status is not approved
-                                    $is_button_disabled = $current_date < $normalized_visit_date || $guest->status !== 'approved';
-                                    
-                                    // Check if visit was missed (no sign-in and visit date has passed)
-                                    $is_missed = empty($guest->sign_in_time) && $current_date > $normalized_visit_date;
-                                }
-                            }
-                            
-                            // Common button classes
-                            $base_button_classes = 'inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition rounded-lg whitespace-nowrap shadow-theme-xs';
-                            $disabled_classes = 'opacity-50 cursor-not-allowed';
-                            ?>
+					if ( ! empty( $guests ) ) {
+						foreach ( $guests as $guest ) {
+							$visit_date    = ! empty( $guest->visit_date ) ? date( 'M j, Y', strtotime( $guest->visit_date ) ) : 'N/A';
+							$sign_in_time  = ! empty( $guest->sign_in_time ) ? date( 'g:i a', strtotime( $guest->sign_in_time ) ) : null;
+							$sign_out_time = ! empty( $guest->sign_out_time ) ? date( 'g:i a', strtotime( $guest->sign_out_time ) ) : null;
+							$status        = isset( $guest->status ) ? $guest->status : 'approved';
 
-                                <?php if ($is_missed): ?>
-                                <!-- Missed status -->
-                                <span
-                                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-yellow-800 bg-yellow-100 rounded-lg dark:bg-yellow-900 dark:text-yellow-200">
-                                    <?php esc_html_e('Missed', 'vms'); ?>
-                                </span>
-                                <?php elseif (empty($guest->sign_in_time)): ?>
-                                <button id="sign-in-button-<?php echo esc_attr($guest->id); ?>"
-                                    class="<?php echo esc_attr($base_button_classes . ' bg-brand-500 ' . ($is_button_disabled ? $disabled_classes : 'cursor-pointer hover:bg-brand-600')); ?>"
-                                    data-visit-id="<?php echo esc_attr($guest->visit_id); ?>"
-                                    <?php echo $is_button_disabled ? 'disabled' : ''; ?>>
-                                    <?php esc_html_e('Sign In', 'vms'); ?>
-                                </button>
-                                <?php elseif (empty($guest->sign_out_time)): ?>
-                                <button id="sign-out-button-<?php echo esc_attr($guest->id); ?>"
-                                    class="<?php echo esc_attr($base_button_classes . ' bg-purple-500 ' . ($is_button_disabled ? $disabled_classes : 'cursor-pointer hover:bg-purple-600')); ?>"
-                                    data-visit-id="<?php echo esc_attr($guest->visit_id); ?>"
-                                    <?php echo $is_button_disabled ? 'disabled' : ''; ?>>
-                                    <?php esc_html_e('Sign Out', 'vms'); ?>
-                                </button>
-                                <?php else: ?>
-                                <div class="flex flex-col items-center justify-center text-xs px-4">
-                                    <span
-                                        class="text-green-600 dark:text-green-400"><?php echo esc_html($sign_in_time); ?></span>
-                                    <span
-                                        class="text-red-600 dark:text-red-400"><?php echo esc_html($sign_out_time); ?></span>
-                                </div>
-                                <?php endif; ?>
-                            </div>
-                        </td>
-                    </tr>
-                    <?php 
-                    } 
-                } else {
-                    echo '<tr id="no-guests-row"><td colspan="11" class="px-4 py-4 text-center text-gray-600 dark:text-white">No guests found.</td></tr>';
-                }
-                ?>
-                </tbody>
-            </table>
-        </div>
-    </div>
+							// Get host name - use first and last name if available, otherwise fallback to display name
+							$host_name = 'N/A';
+							if ( ! empty( $guest->host_first_name ) || ! empty( $guest->host_last_name ) ) {
+								$host_name = trim( $guest->host_first_name . ' ' . $guest->host_last_name );
+							} elseif ( ! empty( $guest->display_name ) ) {
+								$host_name = $guest->display_name;
+							}
+							?>
+					<tr data-guest-id="<?php echo esc_attr( $guest->id ); ?>"
+						data-visit-id="<?php echo esc_attr( $guest->visit_id ); ?>">
+						<td class="px-5 py-4 sm:px-6">
+							<p class="text-gray-500 text-theme-sm dark:text-gray-400">
+								<?php echo $counter++; ?>
+							</p>
+						</td>
+						<td class="px-5 py-4 sm:px-6">
+							<div class="flex items-center">
+								<p class="text-gray-800 text-theme-sm dark:text-white/90">
+									<?php echo esc_html( $guest->first_name ); ?>
+								</p>
+							</div>
+						</td>
+						<td class="px-5 py-4 sm:px-6">
+							<div class="flex items-center">
+								<p class="text-gray-800 text-theme-sm dark:text-white/90">
+									<?php echo esc_html( $guest->last_name ); ?>
+								</p>
+							</div>
+						</td>
+						<td class="px-5 py-4 sm:px-6">
+							<div class="flex items-center">
+								<span
+									class="px-2 py-1 text-xs font-medium rounded-full <?php echo $status_classes[ $status ]; ?>">
+									<?php echo ucfirst( $status ); ?>
+								</span>
+							</div>
+						</td>
+						<td class="px-5 py-4 sm:px-6">
+							<div class="flex items-center">
+								<p class="text-gray-500 text-theme-sm dark:text-gray-400">
+									<?php echo esc_html( $guest->id_number ); ?>
+								</p>
+							</div>
+						</td>
+						<td class="px-5 py-4 sm:px-6">
+							<div class="flex items-center">
+								<p class="text-gray-500 text-theme-sm dark:text-gray-400">
+									<?php echo esc_html( $host_name ); ?>
+								</p>
+							</div>
+						</td>
+						<td class="px-5 py-4 sm:px-6">
+							<div class="flex items-center">
+								<p class="text-gray-500 text-theme-sm dark:text-gray-400">
+									<?php echo esc_html( $visit_date ); ?>
+								</p>
+							</div>
+						</td>
+						<td class="px-5 py-4 sm:px-6">
+							<div class="flex items-center gap-2">
+								<button id="edit-guest-button-<?php echo $guest->id; ?>"
+									class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 transition bg-white border border-gray-300 rounded-lg cursor-pointer whitespace-nowrap dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+									data-guest-id="<?php echo $guest->id; ?>"
+									data-visit-id="<?php echo $guest->visit_id; ?>">
+									<?php esc_html_e( 'Edit', 'vms' ); ?>
+								</button>
+								<?php
+								// Get current date in WordPress timezone (EAT)
+								$current_date = current_time( 'Y-m-d' );
+
+								// Validate guest data
+								if ( ! isset( $guest->visit_date ) || ! isset( $guest->status ) ) {
+									error_log( "Guest table error: Missing visit_date or status for guest ID {$guest->id}" );
+									$is_button_disabled = true; // Disable buttons if data is missing
+									$is_missed          = false;
+								} else {
+									// Normalize visit_date to YYYY-MM-DD
+									$normalized_visit_date = substr( $guest->visit_date, 0, 10 ); // Extract YYYY-MM-DD from YYYY-MM-DD HH:MM:SS
+
+									if ( ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $normalized_visit_date ) ) {
+										error_log( "Guest table error: Invalid visit_date format for guest ID {$guest->id}: {$guest->visit_date}" );
+										$is_button_disabled = true;
+										$is_missed          = false;
+									} else {
+										// Disable buttons if current date is before visit_date or status is not approved
+										$is_button_disabled = $current_date < $normalized_visit_date || $guest->status !== 'approved';
+
+										// Check if visit was missed (no sign-in and visit date has passed)
+										$is_missed = empty( $guest->sign_in_time ) && $current_date > $normalized_visit_date;
+									}
+								}
+
+								// Common button classes
+								$base_button_classes = 'inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition rounded-lg whitespace-nowrap shadow-theme-xs';
+								$disabled_classes    = 'opacity-50 cursor-not-allowed';
+								?>
+
+								<?php if ( $is_missed ) : ?>
+								<!-- Missed status -->
+								<span
+									class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-yellow-800 bg-yellow-100 rounded-lg dark:bg-yellow-900 dark:text-yellow-200">
+									<?php esc_html_e( 'Missed', 'vms' ); ?>
+								</span>
+								<?php elseif ( empty( $guest->sign_in_time ) ) : ?>
+								<button id="sign-in-button-<?php echo esc_attr( $guest->id ); ?>"
+									class="<?php echo esc_attr( $base_button_classes . ' bg-brand-500 ' . ( $is_button_disabled ? $disabled_classes : 'cursor-pointer hover:bg-brand-600' ) ); ?>"
+									data-visit-id="<?php echo esc_attr( $guest->visit_id ); ?>"
+									<?php echo $is_button_disabled ? 'disabled' : ''; ?>>
+									<?php esc_html_e( 'Sign In', 'vms' ); ?>
+								</button>
+								<?php elseif ( empty( $guest->sign_out_time ) ) : ?>
+								<button id="sign-out-button-<?php echo esc_attr( $guest->id ); ?>"
+									class="<?php echo esc_attr( $base_button_classes . ' bg-purple-500 ' . ( $is_button_disabled ? $disabled_classes : 'cursor-pointer hover:bg-purple-600' ) ); ?>"
+									data-visit-id="<?php echo esc_attr( $guest->visit_id ); ?>"
+									<?php echo $is_button_disabled ? 'disabled' : ''; ?>>
+									<?php esc_html_e( 'Sign Out', 'vms' ); ?>
+								</button>
+								<?php else : ?>
+								<div class="flex flex-col items-center justify-center text-xs px-4">
+									<span
+										class="text-green-600 dark:text-green-400"><?php echo esc_html( $sign_in_time ); ?></span>
+									<span
+										class="text-red-600 dark:text-red-400"><?php echo esc_html( $sign_out_time ); ?></span>
+								</div>
+								<?php endif; ?>
+							</div>
+						</td>
+					</tr>
+							<?php
+						}
+					} else {
+						echo '<tr id="no-guests-row"><td colspan="11" class="px-4 py-4 text-center text-gray-600 dark:text-white">No guests found.</td></tr>';
+					}
+					?>
+				</tbody>
+			</table>
+		</div>
+	</div>
 </div>

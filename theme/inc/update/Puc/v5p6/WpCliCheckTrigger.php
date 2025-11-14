@@ -33,30 +33,30 @@ class WpCliCheckTrigger {
 	 */
 	private $wasCheckTriggered = false;
 
-	public function __construct($componentType, Scheduler $scheduler) {
-		if ( !in_array($componentType, ['plugin', 'theme']) ) {
-			throw new \InvalidArgumentException('Invalid component type. Must be "plugin" or "theme".');
+	public function __construct( $componentType, Scheduler $scheduler ) {
+		if ( ! in_array( $componentType, array( 'plugin', 'theme' ) ) ) {
+			throw new \InvalidArgumentException( 'Invalid component type. Must be "plugin" or "theme".' );
 		}
 
 		$this->componentType = $componentType;
-		$this->scheduler = $scheduler;
+		$this->scheduler     = $scheduler;
 
-		if ( !defined('WP_CLI') || !class_exists(WP_CLI::class, false) ) {
-			return; //Nothing to do if WP-CLI is not available.
+		if ( ! defined( 'WP_CLI' ) || ! class_exists( WP_CLI::class, false ) ) {
+			return; // Nothing to do if WP-CLI is not available.
 		}
 
 		/*
 		 * We can't hook directly into wp_update_plugins(), but we can hook into the WP-CLI
 		 * commands that call it. We'll use the "before_invoke:xyz" hook to trigger update checks.
 		 */
-		foreach ($this->getRelevantCommands() as $command) {
-			WP_CLI::add_hook('before_invoke:' . $command, [$this, 'triggerUpdateCheckOnce']);
+		foreach ( $this->getRelevantCommands() as $command ) {
+			WP_CLI::add_hook( 'before_invoke:' . $command, array( $this, 'triggerUpdateCheckOnce' ) );
 		}
 	}
 
 	private function getRelevantCommands() {
-		$result = [];
-		foreach (['status', 'list', 'update'] as $subcommand) {
+		$result = array();
+		foreach ( array( 'status', 'list', 'update' ) as $subcommand ) {
 			$result[] = $this->componentType . ' ' . $subcommand;
 		}
 		return $result;
@@ -69,9 +69,8 @@ class WpCliCheckTrigger {
 	 * @return mixed The input value, unchanged.
 	 * @internal This method is public so that it can be used as a WP-CLI hook callback.
 	 *           It should not be called directly.
-	 *
 	 */
-	public function triggerUpdateCheckOnce($input = null) {
+	public function triggerUpdateCheckOnce( $input = null ) {
 		if ( $this->wasCheckTriggered ) {
 			return $input;
 		}

@@ -13,15 +13,15 @@ get_header();
 ?>
 
 <section id="primary">
-    <main id="main">
+	<main id="main">
 
-        <?php if ( have_posts() ) : ?>
+		<?php if ( have_posts() ) : ?>
 
-        <header class="page-header">
-            <?php the_archive_title( '<h1 class="page-title">', '</h1>' ); ?>
-        </header><!-- .page-header -->
+		<header class="page-header">
+			<?php the_archive_title( '<h1 class="page-title">', '</h1>' ); ?>
+		</header><!-- .page-header -->
 
-        <?php
+			<?php
 			// Start the Loop.
 			while ( have_posts() ) :
 				the_post();
@@ -40,7 +40,7 @@ get_header();
 
 		endif;
 		?>
-    </main><!-- #main -->
+	</main><!-- #main -->
 </section><!-- #primary -->
 
 <?php

@@ -3,7 +3,7 @@ namespace YahnisElsts\PluginUpdateChecker\v5p6\Plugin;
 
 use YahnisElsts\PluginUpdateChecker\v5p6\Update as BaseUpdate;
 
-if ( !class_exists(Update::class, false) ):
+if ( ! class_exists( Update::class, false ) ) :
 
 	/**
 	 * A simple container class for holding information about an available update.
@@ -18,11 +18,17 @@ if ( !class_exists(Update::class, false) ):
 		public $upgrade_notice;
 		public $tested;
 		public $requires_php = false;
-		public $icons = array();
-		public $filename; //Plugin filename relative to the plugins directory.
+		public $icons        = array();
+		public $filename; // Plugin filename relative to the plugins directory.
 
 		protected static $extraFields = array(
-			'id', 'homepage', 'tested', 'requires_php', 'upgrade_notice', 'icons', 'filename',
+			'id',
+			'homepage',
+			'tested',
+			'requires_php',
+			'upgrade_notice',
+			'icons',
+			'filename',
 		);
 
 		/**
@@ -31,13 +37,13 @@ if ( !class_exists(Update::class, false) ):
 		 * @param string $json
 		 * @return self|null
 		 */
-		public static function fromJson($json){
-			//Since update-related information is simply a subset of the full plugin info,
-			//we can parse the update JSON as if it was a plugin info string, then copy over
-			//the parts that we care about.
-			$pluginInfo = PluginInfo::fromJson($json);
+		public static function fromJson( $json ) {
+			// Since update-related information is simply a subset of the full plugin info,
+			// we can parse the update JSON as if it was a plugin info string, then copy over
+			// the parts that we care about.
+			$pluginInfo = PluginInfo::fromJson( $json );
 			if ( $pluginInfo !== null ) {
-				return self::fromPluginInfo($pluginInfo);
+				return self::fromPluginInfo( $pluginInfo );
 			} else {
 				return null;
 			}
@@ -50,8 +56,8 @@ if ( !class_exists(Update::class, false) ):
 		 * @param PluginInfo $info
 		 * @return static
 		 */
-		public static function fromPluginInfo($info){
-			return static::fromObject($info);
+		public static function fromPluginInfo( $info ) {
+			return static::fromObject( $info );
 		}
 
 		/**
@@ -60,9 +66,9 @@ if ( !class_exists(Update::class, false) ):
 		 * @param \StdClass|PluginInfo|self $object The source object.
 		 * @return self The new copy.
 		 */
-		public static function fromObject($object) {
+		public static function fromObject( $object ) {
 			$update = new self();
-			$update->copyFields($object, $update);
+			$update->copyFields( $object, $update );
 			return $update;
 		}
 
@@ -70,7 +76,7 @@ if ( !class_exists(Update::class, false) ):
 		 * @return string[]
 		 */
 		protected function getFieldNames() {
-			return array_merge(parent::getFieldNames(), self::$extraFields);
+			return array_merge( parent::getFieldNames(), self::$extraFields );
 		}
 
 		/**
@@ -81,30 +87,35 @@ if ( !class_exists(Update::class, false) ):
 		public function toWpFormat() {
 			$update = parent::toWpFormat();
 
-			$update->id = $this->id;
-			$update->url = $this->homepage;
-			$update->tested = $this->tested;
+			$update->id           = $this->id;
+			$update->url          = $this->homepage;
+			$update->tested       = $this->tested;
 			$update->requires_php = $this->requires_php;
-			$update->plugin = $this->filename;
+			$update->plugin       = $this->filename;
 
-			if ( !empty($this->upgrade_notice) ) {
+			if ( ! empty( $this->upgrade_notice ) ) {
 				$update->upgrade_notice = $this->upgrade_notice;
 			}
 
-			if ( !empty($this->icons) && is_array($this->icons) ) {
-				//This should be an array with up to 4 keys: 'svg', '1x', '2x' and 'default'.
-				//Docs: https://developer.wordpress.org/plugins/wordpress-org/plugin-assets/#plugin-icons
+			if ( ! empty( $this->icons ) && is_array( $this->icons ) ) {
+				// This should be an array with up to 4 keys: 'svg', '1x', '2x' and 'default'.
+				// Docs: https://developer.wordpress.org/plugins/wordpress-org/plugin-assets/#plugin-icons
 				$icons = array_intersect_key(
 					$this->icons,
-					array('svg' => true, '1x' => true, '2x' => true, 'default' => true)
+					array(
+						'svg'     => true,
+						'1x'      => true,
+						'2x'      => true,
+						'default' => true,
+					)
 				);
-				if ( !empty($icons) ) {
+				if ( ! empty( $icons ) ) {
 					$update->icons = $icons;
 
-					//It appears that the 'default' icon isn't used anywhere in WordPress 4.9,
-					//but lets set it just in case a future release needs it.
-					if ( !isset($update->icons['default']) ) {
-						$update->icons['default'] = current($update->icons);
+					// It appears that the 'default' icon isn't used anywhere in WordPress 4.9,
+					// but lets set it just in case a future release needs it.
+					if ( ! isset( $update->icons['default'] ) ) {
+						$update->icons['default'] = current( $update->icons );
 					}
 				}
 			}

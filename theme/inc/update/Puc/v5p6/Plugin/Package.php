@@ -4,7 +4,7 @@ namespace YahnisElsts\PluginUpdateChecker\v5p6\Plugin;
 use YahnisElsts\PluginUpdateChecker\v5p6\InstalledPackage;
 use YahnisElsts\PluginUpdateChecker\v5p6\PucFactory;
 
-if ( !class_exists(Package::class, false) ):
+if ( ! class_exists( Package::class, false ) ) :
 
 	class Package extends InstalledPackage {
 		/**
@@ -27,28 +27,28 @@ if ( !class_exists(Package::class, false) ):
 		 */
 		private $cachedInstalledVersion = null;
 
-		public function __construct($pluginAbsolutePath, $updateChecker) {
+		public function __construct( $pluginAbsolutePath, $updateChecker ) {
 			$this->pluginAbsolutePath = $pluginAbsolutePath;
-			$this->pluginFile = plugin_basename($this->pluginAbsolutePath);
+			$this->pluginFile         = plugin_basename( $this->pluginAbsolutePath );
 
-			parent::__construct($updateChecker);
+			parent::__construct( $updateChecker );
 
-			//Clear the version number cache when something - anything - is upgraded or WP clears the update cache.
-			add_filter('upgrader_post_install', array($this, 'clearCachedVersion'));
-			add_action('delete_site_transient_update_plugins', array($this, 'clearCachedVersion'));
+			// Clear the version number cache when something - anything - is upgraded or WP clears the update cache.
+			add_filter( 'upgrader_post_install', array( $this, 'clearCachedVersion' ) );
+			add_action( 'delete_site_transient_update_plugins', array( $this, 'clearCachedVersion' ) );
 		}
 
 		public function getInstalledVersion() {
-			if ( isset($this->cachedInstalledVersion) ) {
+			if ( isset( $this->cachedInstalledVersion ) ) {
 				return $this->cachedInstalledVersion;
 			}
 
 			$pluginHeader = $this->getPluginHeader();
-			if ( isset($pluginHeader['Version']) ) {
+			if ( isset( $pluginHeader['Version'] ) ) {
 				$this->cachedInstalledVersion = $pluginHeader['Version'];
 				return $pluginHeader['Version'];
 			} else {
-				//This can happen if the filename points to something that is not a plugin.
+				// This can happen if the filename points to something that is not a plugin.
 				$this->updateChecker->triggerError(
 					sprintf(
 						"Cannot read the Version header for '%s'. The filename is incorrect or is not a plugin.",
@@ -67,13 +67,13 @@ if ( !class_exists(Package::class, false) ):
 		 * @param mixed $filterArgument
 		 * @return mixed
 		 */
-		public function clearCachedVersion($filterArgument = null) {
+		public function clearCachedVersion( $filterArgument = null ) {
 			$this->cachedInstalledVersion = null;
 			return $filterArgument;
 		}
 
 		public function getAbsoluteDirectoryPath() {
-			return dirname($this->pluginAbsolutePath);
+			return dirname( $this->pluginAbsolutePath );
 		}
 
 		/**
@@ -83,10 +83,10 @@ if ( !class_exists(Package::class, false) ):
 		 * @param string $defaultValue
 		 * @return string Either the value of the header, or $defaultValue if the header doesn't exist or is empty.
 		 */
-		public function getHeaderValue($headerName, $defaultValue = '') {
+		public function getHeaderValue( $headerName, $defaultValue = '' ) {
 			$headers = $this->getPluginHeader();
-			if ( isset($headers[$headerName]) && ($headers[$headerName] !== '') ) {
-				return $headers[$headerName];
+			if ( isset( $headers[ $headerName ] ) && ( $headers[ $headerName ] !== '' ) ) {
+				return $headers[ $headerName ];
 			}
 			return $defaultValue;
 		}
@@ -103,8 +103,8 @@ if ( !class_exists(Package::class, false) ):
 				'DomainPath'        => 'Domain Path',
 				'Network'           => 'Network',
 
-				//The newest WordPress version that this plugin requires or has been tested with.
-				//We support several different formats for compatibility with other libraries.
+				// The newest WordPress version that this plugin requires or has been tested with.
+				// We support several different formats for compatibility with other libraries.
 				'Tested WP'         => 'Tested WP',
 				'Requires WP'       => 'Requires WP',
 				'Tested up to'      => 'Tested up to',
@@ -118,10 +118,10 @@ if ( !class_exists(Package::class, false) ):
 		 * @return string
 		 */
 		public function getPluginTitle() {
-			$title = '';
+			$title  = '';
 			$header = $this->getPluginHeader();
-			if ( $header && !empty($header['Name']) && isset($header['TextDomain']) ) {
-				$title = translate($header['Name'], $header['TextDomain']);
+			if ( $header && ! empty( $header['Name'] ) && isset( $header['TextDomain'] ) ) {
+				$title = translate( $header['Name'], $header['TextDomain'] );
 			}
 			return $title;
 		}
@@ -132,8 +132,8 @@ if ( !class_exists(Package::class, false) ):
 		 * @return array
 		 */
 		public function getPluginHeader() {
-			if ( !is_file($this->pluginAbsolutePath) ) {
-				//This can happen if the plugin filename is wrong.
+			if ( ! is_file( $this->pluginAbsolutePath ) ) {
+				// This can happen if the plugin filename is wrong.
 				$this->updateChecker->triggerError(
 					sprintf(
 						"Can't to read the plugin header for '%s'. The file does not exist.",
@@ -144,15 +144,15 @@ if ( !class_exists(Package::class, false) ):
 				return array();
 			}
 
-			if ( !function_exists('get_plugin_data') ) {
-				require_once(ABSPATH . '/wp-admin/includes/plugin.php');
+			if ( ! function_exists( 'get_plugin_data' ) ) {
+				require_once ABSPATH . '/wp-admin/includes/plugin.php';
 			}
-			return get_plugin_data($this->pluginAbsolutePath, false, false);
+			return get_plugin_data( $this->pluginAbsolutePath, false, false );
 		}
 
 		public function removeHooks() {
-			remove_filter('upgrader_post_install', array($this, 'clearCachedVersion'));
-			remove_action('delete_site_transient_update_plugins', array($this, 'clearCachedVersion'));
+			remove_filter( 'upgrader_post_install', array( $this, 'clearCachedVersion' ) );
+			remove_action( 'delete_site_transient_update_plugins', array( $this, 'clearCachedVersion' ) );
 		}
 
 		/**
@@ -164,21 +164,21 @@ if ( !class_exists(Package::class, false) ):
 			static $cachedResult = null;
 
 			if ( $cachedResult === null ) {
-				if ( !defined('WPMU_PLUGIN_DIR') || !is_string(WPMU_PLUGIN_DIR) ) {
+				if ( ! defined( 'WPMU_PLUGIN_DIR' ) || ! is_string( WPMU_PLUGIN_DIR ) ) {
 					$cachedResult = false;
 					return $cachedResult;
 				}
 
-				//Convert both paths to the canonical form before comparison.
-				$muPluginDir = realpath(WPMU_PLUGIN_DIR);
-				$pluginPath  = realpath($this->pluginAbsolutePath);
-				//If realpath() fails, just normalize the syntax instead.
-				if (($muPluginDir === false) || ($pluginPath === false)) {
-					$muPluginDir = PucFactory::normalizePath(WPMU_PLUGIN_DIR);
-					$pluginPath  = PucFactory::normalizePath($this->pluginAbsolutePath);
+				// Convert both paths to the canonical form before comparison.
+				$muPluginDir = realpath( WPMU_PLUGIN_DIR );
+				$pluginPath  = realpath( $this->pluginAbsolutePath );
+				// If realpath() fails, just normalize the syntax instead.
+				if ( ( $muPluginDir === false ) || ( $pluginPath === false ) ) {
+					$muPluginDir = PucFactory::normalizePath( WPMU_PLUGIN_DIR );
+					$pluginPath  = PucFactory::normalizePath( $this->pluginAbsolutePath );
 				}
 
-				$cachedResult = (strpos($pluginPath, $muPluginDir) === 0);
+				$cachedResult = ( strpos( $pluginPath, $muPluginDir ) === 0 );
 			}
 
 			return $cachedResult;

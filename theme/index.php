@@ -18,17 +18,17 @@ get_header();
 ?>
 
 <section id="primary">
-    <main id="main">
+	<main id="main">
 
-        <?php
+		<?php
 		if ( have_posts() ) {
 
 			if ( is_home() && ! is_front_page() ) :
 				?>
-        <header class="entry-header">
-            <h1 class="entry-title"><?php single_post_title(); ?></h1>
-        </header><!-- .entry-header -->
-        <?php
+		<header class="entry-header">
+			<h1 class="entry-title"><?php single_post_title(); ?></h1>
+		</header><!-- .entry-header -->
+				<?php
 			endif;
 
 			// Load posts loop.
@@ -48,7 +48,7 @@ get_header();
 		}
 		?>
 
-    </main><!-- #main -->
+	</main><!-- #main -->
 </section><!-- #primary -->
 
 <?php

@@ -2,7 +2,7 @@
 
 namespace YahnisElsts\PluginUpdateChecker\v5p6\Vcs;
 
-if ( !trait_exists(VcsCheckerMethods::class, false) ) :
+if ( ! trait_exists( VcsCheckerMethods::class, false ) ) :
 
 	trait VcsCheckerMethods {
 		/**
@@ -15,7 +15,7 @@ if ( !trait_exists(VcsCheckerMethods::class, false) ) :
 		 */
 		protected $api = null;
 
-		public function setBranch($branch) {
+		public function setBranch( $branch ) {
 			$this->branch = $branch;
 			return $this;
 		}
@@ -26,8 +26,8 @@ if ( !trait_exists(VcsCheckerMethods::class, false) ) :
 		 * @param array|string $credentials
 		 * @return $this
 		 */
-		public function setAuthentication($credentials) {
-			$this->api->setAuthentication($credentials);
+		public function setAuthentication( $credentials ) {
+			$this->api->setAuthentication( $credentials );
 			return $this;
 		}
 
@@ -41,18 +41,18 @@ if ( !trait_exists(VcsCheckerMethods::class, false) ) :
 		public function getUpdate() {
 			$update = parent::getUpdate();
 
-			if ( isset($update) && !empty($update->download_url) ) {
-				$update->download_url = $this->api->signDownloadUrl($update->download_url);
+			if ( isset( $update ) && ! empty( $update->download_url ) ) {
+				$update->download_url = $this->api->signDownloadUrl( $update->download_url );
 			}
 
 			return $update;
 		}
 
-		public function onDisplayConfiguration($panel) {
-			parent::onDisplayConfiguration($panel);
-			$panel->row('Branch', $this->branch);
-			$panel->row('Authentication enabled', $this->api->isAuthenticationEnabled() ? 'Yes' : 'No');
-			$panel->row('API client', get_class($this->api));
+		public function onDisplayConfiguration( $panel ) {
+			parent::onDisplayConfiguration( $panel );
+			$panel->row( 'Branch', $this->branch );
+			$panel->row( 'Authentication enabled', $this->api->isAuthenticationEnabled() ? 'Yes' : 'No' );
+			$panel->row( 'API client', get_class( $this->api ) );
 		}
 	}
 

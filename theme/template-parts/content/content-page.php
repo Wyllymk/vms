@@ -13,20 +13,20 @@ defined( 'ABSPATH' ) || exit;
 
 <article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
 
-    <header class="entry-header">
-        <?php
+	<header class="entry-header">
+		<?php
 		if ( ! is_front_page() ) {
 			the_title( '<h1 class="entry-title">', '</h1>' );
 		} else {
 			the_title( '<h2 class="entry-title">', '</h2>' );
 		}
 		?>
-    </header><!-- .entry-header -->
+	</header><!-- .entry-header -->
 
-    <?php clubvms_post_thumbnail(); ?>
+	<?php clubvms_post_thumbnail(); ?>
 
-    <div <?php clubvms_content_class( 'entry-content' ); ?>>
-        <?php
+	<div <?php clubvms_content_class( 'entry-content' ); ?>>
+		<?php
 		the_content();
 
 		wp_link_pages(
@@ -36,11 +36,11 @@ defined( 'ABSPATH' ) || exit;
 			)
 		);
 		?>
-    </div><!-- .entry-content -->
+	</div><!-- .entry-content -->
 
-    <?php if ( get_edit_post_link() ) : ?>
-    <footer class="entry-footer">
-        <?php
+	<?php if ( get_edit_post_link() ) : ?>
+	<footer class="entry-footer">
+		<?php
 			edit_post_link(
 				sprintf(
 					wp_kses(
@@ -55,8 +55,8 @@ defined( 'ABSPATH' ) || exit;
 					get_the_title()
 				)
 			);
-			?>
-    </footer><!-- .entry-footer -->
-    <?php endif; ?>
+		?>
+	</footer><!-- .entry-footer -->
+	<?php endif; ?>
 
 </article><!-- #post-<?php the_ID(); ?> -->

@@ -24,7 +24,11 @@
 		"production": "run-p \"production:**\"",
 		"prod": "npm run production",
 		"zip": "node node_scripts/zip.js vms",
-		"bundle": "run-s production zip"
+		"bundle": "run-s production zip",
+		"format": "prettier --write '**/*.php' '**/*.html' '**/*.js'",
+		"format:check": "prettier --check '**/*.php' '**/*.html' '**/*.js'",
+		"dev:format": "run-p development format", 
+		"watch:format": "run-p watch format:check" 
 	},
 	"devDependencies": {
 		"@_tw/typography": "^0.5.18",
@@ -45,7 +49,7 @@
 		"postcss-nesting": "^13.0.1",
 		"postcss-url": "^10.1.3",
 		"prettier": "^3.5.3",
-		"prettier-plugin-tailwindcss": "^0.6.12",
+		"prettier-plugin-tailwindcss": "^0.6.14",
 		"tailwindcss": "^4.1.8"
 	},
 	"dependencies": {

@@ -2,7 +2,7 @@
 
 namespace YahnisElsts\PluginUpdateChecker\v5p6\Vcs;
 
-if ( !trait_exists(ReleaseAssetSupport::class, false) ) :
+if ( ! trait_exists( ReleaseAssetSupport::class, false ) ) :
 
 	trait ReleaseAssetSupport {
 		/**
@@ -32,12 +32,12 @@ if ( !trait_exists(ReleaseAssetSupport::class, false) ) :
 		 *
 		 * @param string|null $nameRegex Optional. Use only those assets where
 		 *                               the file name or URL matches this regex.
-		 * @param int $preference Optional. How to handle releases that don't have
-		 *                        any matching release assets.
+		 * @param int         $preference Optional. How to handle releases that don't have
+		 *                                any matching release assets.
 		 */
-		public function enableReleaseAssets($nameRegex = null, $preference = Api::PREFER_RELEASE_ASSETS) {
-			$this->releaseAssetsEnabled = true;
-			$this->assetFilterRegex = $nameRegex;
+		public function enableReleaseAssets( $nameRegex = null, $preference = Api::PREFER_RELEASE_ASSETS ) {
+			$this->releaseAssetsEnabled   = true;
+			$this->assetFilterRegex       = $nameRegex;
 			$this->releaseAssetPreference = $preference;
 		}
 
@@ -49,7 +49,7 @@ if ( !trait_exists(ReleaseAssetSupport::class, false) ) :
 		 */
 		public function disableReleaseAssets() {
 			$this->releaseAssetsEnabled = false;
-			$this->assetFilterRegex = null;
+			$this->assetFilterRegex     = null;
 		}
 
 		/**
@@ -58,17 +58,17 @@ if ( !trait_exists(ReleaseAssetSupport::class, false) ) :
 		 * @param mixed $releaseAsset Data type and structure depend on the host/API.
 		 * @return bool
 		 */
-		protected function matchesAssetFilter($releaseAsset) {
+		protected function matchesAssetFilter( $releaseAsset ) {
 			if ( $this->assetFilterRegex === null ) {
-				//The default is to accept all assets.
+				// The default is to accept all assets.
 				return true;
 			}
 
-			$name = $this->getFilterableAssetName($releaseAsset);
-			if ( !is_string($name) ) {
+			$name = $this->getFilterableAssetName( $releaseAsset );
+			if ( ! is_string( $name ) ) {
 				return false;
 			}
-			return (bool)preg_match($this->assetFilterRegex, $releaseAsset->name);
+			return (bool) preg_match( $this->assetFilterRegex, $releaseAsset->name );
 		}
 
 		/**
@@ -77,7 +77,7 @@ if ( !trait_exists(ReleaseAssetSupport::class, false) ) :
 		 * @param mixed $releaseAsset
 		 * @return string|null
 		 */
-		abstract protected function getFilterableAssetName($releaseAsset);
+		abstract protected function getFilterableAssetName( $releaseAsset );
 	}
 
 endif;

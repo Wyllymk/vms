@@ -78,7 +78,6 @@ if ( ! function_exists( 'clubvms_setup' ) ) :
 		 * @link https://developer.wordpress.org/themes/functionality/featured-images-post-thumbnails/
 		 */
 		add_theme_support( 'post-thumbnails' );
-		
 
 		/*
 		 * Switch default core markup for search form, comment form, and comments
@@ -121,34 +120,42 @@ add_action( 'after_setup_theme', 'clubvms_setup' );
  */
 function clubvms_scripts() {
 	// Load WordPress' built-in jQuery
-    wp_enqueue_script('jquery');
+	wp_enqueue_script( 'jquery' );
 	wp_enqueue_style( 'vms-style', get_stylesheet_uri(), array(), CLUBVMS_VERSION );
 	wp_enqueue_script( 'vms-script', get_template_directory_uri() . '/js/script.min.js', array(), CLUBVMS_VERSION, true );
-	wp_enqueue_script( 'vms-script-ajax', get_template_directory_uri() . '/js/main.min.js', array('jquery'), CLUBVMS_VERSION, true );
-	
+	wp_enqueue_script( 'vms-script-ajax', get_template_directory_uri() . '/js/main.min.js', array( 'jquery' ), CLUBVMS_VERSION, true );
+
 	// Localize script to make AJAX URL available
-    wp_localize_script(
-        'vms-script-ajax',
-        'vms_script_ajax',
-        array(
-            'ajaxurl' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('vms_script_ajax_nonce'),
-			'admin_url' => admin_url() ,
-			'home_url' => home_url(),
-			'assets_url' => get_template_directory_uri() . '/javascript',  
-        )
-    );
+	wp_localize_script(
+		'vms-script-ajax',
+		'vms_script_ajax',
+		array(
+			'ajaxurl'    => admin_url( 'admin-ajax.php' ),
+			'nonce'      => wp_create_nonce( 'vms_script_ajax_nonce' ),
+			'admin_url'  => admin_url(),
+			'home_url'   => home_url(),
+			'assets_url' => get_template_directory_uri() . '/javascript',
+		)
+	);
 
-	wp_localize_script('vms-script-ajax', 'wpApiSettings', [
-        'root' => esc_url_raw(rest_url()),
-        'nonce' => wp_create_nonce('wp_rest'),
-        'current_user_id' => get_current_user_id()
-    ]);
+	wp_localize_script(
+		'vms-script-ajax',
+		'wpApiSettings',
+		array(
+			'root'            => esc_url_raw( rest_url() ),
+			'nonce'           => wp_create_nonce( 'wp_rest' ),
+			'current_user_id' => get_current_user_id(),
+		)
+	);
 
-	wp_localize_script('vms-script-ajax', 'vmsAjax', [
-		'ajaxurl' => admin_url('admin-ajax.php'),
-		'nonce' => wp_create_nonce('vms_nonce'),
-	]);
+	wp_localize_script(
+		'vms-script-ajax',
+		'vmsAjax',
+		array(
+			'ajaxurl' => admin_url( 'admin-ajax.php' ),
+			'nonce'   => wp_create_nonce( 'vms_nonce' ),
+		)
+	);
 
 	if ( is_singular() && comments_open() && get_option( 'thread_comments' ) ) {
 		wp_enqueue_script( 'comment-reply' );
