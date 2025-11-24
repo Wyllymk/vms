@@ -4,6 +4,10 @@
  * https://tailwindcss.com/docs/theme
  */
 @custom-variant dark (&:is(.dark *));
+
+/* Import Flatpickr CSS */
+@import "flatpickr/dist/flatpickr.min.css";
+
 /**
  * Import Tailwind’s default theme.
  */

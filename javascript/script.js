@@ -10,10 +10,12 @@
  */
 // Import CSS files
 import 'jsvectormap/dist/jsvectormap.min.css';
+import 'flatpickr/dist/flatpickr.min.css';
 
 // Import JavaScript libraries
 import Alpine from 'alpinejs';
 import persist from '@alpinejs/persist';
+import flatpickr from 'flatpickr';
 
 // Import chart modules
 import chart02 from './charts/chart-02';
@@ -27,7 +29,55 @@ document.addEventListener('DOMContentLoaded', () => {
 	window.Alpine = Alpine;
 	Alpine.plugin(persist);
 	Alpine.start();
+
+	// Initialize Flatpickr date pickers
+	initDatePickers();
 });
+
+function initDatePickers() {
+	const datePickers = document.querySelectorAll('.datepickerTwo');
+
+	datePickers.forEach((picker) => {
+		flatpickr(picker, {
+			dateFormat: 'Y-m-d',
+			minDate: 'today',
+			defaultDate: 'today',
+			monthSelectorType: 'static',
+			clickOpens: true,
+			allowInput: false,
+			onReady: function (selectedDates, dateStr, instance) {
+				instance.calendarContainer.style.zIndex = '999999';
+			},
+			onOpen: function (selectedDates, dateStr, instance) {
+				instance.calendarContainer.style.zIndex = '999999';
+			},
+		});
+	});
+
+	const visitDatePicker = document.getElementById('visit-date-picker');
+	if (visitDatePicker) {
+		flatpickr(visitDatePicker, {
+			dateFormat: 'Y-m-d',
+			minDate: 'today',
+			defaultDate: 'today',
+			monthSelectorType: 'static',
+			clickOpens: true,
+			allowInput: false,
+			onReady: function (selectedDates, dateStr, instance) {
+				instance.calendarContainer.style.zIndex = '999999';
+			},
+			onOpen: function (selectedDates, dateStr, instance) {
+				instance.calendarContainer.style.zIndex = '999999';
+			},
+			onChange: function (selectedDates, dateStr, instance) {
+				// Calendar closes automatically after selection
+			},
+		});
+	}
+}
+
+window.initDatePickers = initDatePickers;
+window.flatpickr = flatpickr;
 
 // Document Loaded
 document.addEventListener('DOMContentLoaded', () => {

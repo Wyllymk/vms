@@ -5,12 +5,16 @@
 	"scripts": {
 		"development:tailwind:frontend": "npx postcss ./tailwind.css -o ./theme/style.css --verbose",
 		"development:tailwind:editor": "cross-env _TW_TARGET=editor npx postcss ./tailwind.css -o ./theme/style-editor.css",
-		"development:esbuild": "npx esbuild ./javascript/script.js ./javascript/main.js ./javascript/block-editor.js --target=esnext --bundle --outdir=./theme/js --out-extension:.js=.min.js",
+		"development:esbuild": "npx esbuild ./javascript/script.js --bundle --target=esnext --outfile=./theme/js/script.min.js",
+		"development:esbuild:main": "npx esbuild ./javascript/main.js --bundle --target=esnext --outfile=./theme/js/main.min.js",
+		"development:esbuild:editor": "npx esbuild ./javascript/block-editor.js --bundle --target=esnext --outfile=./theme/js/block-editor.min.js",
 		"development": "run-p \"development:**\"",
 		"dev": "npm run development",
 		"watch:tailwind:frontend": "npm run development:tailwind:frontend -- --watch",
 		"watch:tailwind:editor": "npm run development:tailwind:editor -- --watch",
 		"watch:esbuild": "npm run development:esbuild -- --watch",
+		"watch:esbuild:main": "npm run development:esbuild:main -- --watch",
+		"watch:esbuild:editor": "npm run development:esbuild:editor -- --watch",
 		"watch": "run-p \"watch:**\"",
 		"lint:eslint": "npx eslint",
 		"lint:prettier": "npx prettier --check .",
@@ -21,6 +25,8 @@
 		"production:tailwind:frontend": "cross-env _TW_ENV=production npm run development:tailwind:frontend",
 		"production:tailwind:editor": "cross-env _TW_ENV=production npm run development:tailwind:editor",
 		"production:esbuild": "npm run development:esbuild -- --minify",
+		"production:esbuild:main": "npm run development:esbuild:main -- --minify",
+		"production:esbuild:editor": "npm run development:esbuild:editor -- --minify",
 		"production": "run-p \"production:**\"",
 		"prod": "npm run production",
 		"zip": "node node_scripts/zip.js vms",
@@ -28,7 +34,7 @@
 		"format": "prettier --write '**/*.php' '**/*.html' '**/*.js'",
 		"format:check": "prettier --check '**/*.php' '**/*.html' '**/*.js'",
 		"dev:format": "run-p development format", 
-		"watch:format": "run-p watch format:check" 
+		"watch2:format": "run-p watch format:check" 
 	},
 	"devDependencies": {
 		"@_tw/typography": "^0.5.18",

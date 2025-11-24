@@ -19,7 +19,10 @@ jQuery(document).ready(function () {
 	initPassword();
 	initProfile();
 	initReciprocation();
-	initReports();
 	initSettings();
 	initSupplier();
+	// run reports only on /reports
+	if (window.location.pathname === '/reports') {
+		initReports();
+	}
 });
