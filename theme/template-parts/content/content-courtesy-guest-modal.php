@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
 <div x-show="isCourtesyGuestInfoModal"
     class="fixed inset-0 flex items-center justify-center p-5 overflow-y-auto z-99999">
     <div class="modal-close-btn fixed inset-0 h-full w-full bg-gray-400/50 backdrop-blur-[32px]"></div>
-    <div @click.outside="isCourtesyGuestInfoModal = false"
+    <div @click.stop
         class="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
         <!-- close btn -->
         <a @click="isCourtesyGuestInfoModal = false"

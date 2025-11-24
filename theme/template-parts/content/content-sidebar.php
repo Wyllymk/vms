@@ -129,7 +129,7 @@ if ( empty( $full_name ) ) {
                     <!-- Menu Item Members -->
 
                     <!-- Menu Item Employees -->
-                    <?php if ( ( current_user_can( 'administrator' ) || current_user_can( 'general_manager' ) || current_user_can( 'reception' ) || current_user_can( 'chairman' ) ) ) : ?>
+                    <?php if ( ( current_user_can( 'administrator' ) || current_user_can( 'general_manager' ) || current_user_can( 'chairman' ) ) ) : ?>
                     <li>
                         <a href="<?php echo esc_url( home_url( '/employees' ) ); ?>"
                             @click="selected = (selected === 'Employees' ? '':'Employees')"
@@ -236,8 +236,9 @@ if ( empty( $full_name ) ) {
                     </li>
                     <?php endif; ?>
                     <!-- Menu Item Reciprocating Members -->
+
                     <!-- Menu Item Clubs -->
-                    <?php if ( ( current_user_can( 'administrator' ) || current_user_can( 'general_manager' ) || current_user_can( 'chairman' ) || current_user_can( 'reception' ) || current_user_can( 'gate' ) ) ) : ?>
+                    <?php if ( ( current_user_can( 'administrator' ) || current_user_can( 'general_manager' ) || current_user_can( 'chairman' ) || current_user_can( 'reception' ) ) ) : ?>
                     <li>
                         <a href="<?php echo esc_url( home_url( '/clubs' ) ); ?>"
                             @click="selected = (selected === 'Clubs' ? '':'Clubs')"
