@@ -21,8 +21,11 @@ jQuery(document).ready(function () {
 	initReciprocation();
 	initSettings();
 	initSupplier();
-	// run reports only on /reports
-	if (window.location.pathname === '/reports') {
+	// run reports only on /reports/
+	if (
+		window.location.pathname === '/reports/' ||
+		window.location.pathname === '/reports'
+	) {
 		initReports();
 	}
 });
