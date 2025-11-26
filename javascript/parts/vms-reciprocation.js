@@ -692,18 +692,18 @@ export function initReciprocation() {
 								.join('');
 
 							clubField = `
-						<div class="mb-4">
-							<label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-								Reciprocating Club
-								<span class="text-error-500">*</span>
-							</label>
-							<select id="sign-in-club-id" required
-								class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800">
-								<option value="">Select Club</option>
-								${clubOptions}
-							</select>
-						</div>
-					`;
+								<div class="mb-4">
+									<label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+										Reciprocating Club
+										<span class="text-error-500">*</span>
+									</label>
+									<select id="sign-in-club-id" required
+										class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800">
+										<option value="">Select Club</option>
+										${clubOptions}
+									</select>
+								</div>
+							`;
 						} else {
 							console.warn(
 								'[VMS JS] No clubs found or invalid response.'
@@ -727,38 +727,52 @@ export function initReciprocation() {
 			console.log('[VMS JS] Building sign-in modal...');
 
 			const signInModal = `
-		<div class="sign-in-modal-overlay fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
-			<div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg animate-fade-in-up max-w-md w-full">
-				<div class="mb-6">
-					<h3 class="mb-2 text-xl font-semibold text-gray-900 dark:text-white">Sign In Member</h3>
-					<p class="text-sm text-gray-500 dark:text-gray-400">${memberName}</p>
+				<div class="sign-in-modal-overlay fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+					<div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg animate-fade-in-up max-w-md w-full">
+						<div class="mb-6">
+							<h3 class="mb-2 text-xl font-semibold text-gray-900 dark:text-white">Sign In Member</h3>
+							<p class="text-sm text-gray-500 dark:text-gray-400">${memberName}</p>
+						</div>
+
+						<form id="sign-in-form">
+							${clubField}
+							
+							<div class="mb-6">
+								<label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+									Member Number
+									<span class="text-error-500">*</span>
+								</label>
+								<input type="text" id="sign-in-member-number" required
+									class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+									placeholder="Enter member number" />
+							</div>
+
+							<div class="mb-4">
+								<label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+									Purpose of Visit
+									<span class="text-error-500">*</span>
+								</label>
+								<select id="sign-in-visit-purpose" required
+									class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800">
+									<option value="">Select Purpose</option>
+									<option value="golf_tournament">Golf Tournament</option>
+									<option value="casual_visit">Casual Visit</option>
+								</select>
+							</div>
+
+
+							<div class="flex gap-3">
+								<button type="button" class="cancel-sign-in-btn flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
+									Cancel
+								</button>
+								<button type="submit" class="confirm-sign-in-btn flex-1 rounded-lg bg-green-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-green-600" data-member-id="${memberId}">
+									Sign In
+								</button>
+							</div>
+						</form>
+					</div>
 				</div>
-
-				<form id="sign-in-form">
-					${clubField}
-					
-					<div class="mb-6">
-						<label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-							Member Number
-							<span class="text-error-500">*</span>
-						</label>
-						<input type="text" id="sign-in-member-number" required
-							class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-							placeholder="Enter member number" />
-					</div>
-
-					<div class="flex gap-3">
-						<button type="button" class="cancel-sign-in-btn flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
-							Cancel
-						</button>
-						<button type="submit" class="confirm-sign-in-btn flex-1 rounded-lg bg-green-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-green-600" data-member-id="${memberId}">
-							Sign In
-						</button>
-					</div>
-				</form>
-			</div>
-		</div>
-	`;
+			`;
 
 			console.log('[VMS JS] Appending modal to body...');
 			$('body').append(signInModal);
@@ -780,6 +794,7 @@ export function initReciprocation() {
 		const memberId = $('.confirm-sign-in-btn').data('member-id');
 		const memberNumber = $('#sign-in-member-number').val().trim();
 		const clubId = $('#sign-in-club-id').val();
+		const visitPurpose = $('#sign-in-visit-purpose').val();
 		const confirmBtn = $('.confirm-sign-in-btn');
 		const button = $(
 			`[id^="reciprocating-sign-in-button-"][data-member-id="${memberId}"]`
@@ -804,6 +819,7 @@ export function initReciprocation() {
 				member_id: memberId,
 				member_number: memberNumber,
 				club_id: clubId || null,
+				visit_purpose: visitPurpose,
 				nonce: vms_script_ajax.nonce,
 			},
 			dataType: 'json',
