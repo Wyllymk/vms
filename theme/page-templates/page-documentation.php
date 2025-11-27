@@ -12,7 +12,7 @@
 get_header();
 ?>
 
-<div class="min-h-screen bg-gray-50 p-12">
+<div class="min-h-screen bg-gray-50 py-12">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header Section -->
         <div class="text-center mb-12">
