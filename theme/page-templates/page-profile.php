@@ -44,7 +44,7 @@ $user_role        = ! empty( $current_user->roles ) ? $current_user->roles[0] : 
 <section x-data="{ page: 'profile', 'isProfileInfoModal': false, 'isPasswordModal': false }"
     @close-info-modal.window="isProfileInfoModal = false">
     <!-- ===== Page Wrapper Start ===== -->
-    <div class="flex h-svh overflow-hidden">
+    <div class="flex overflow-hidden h-svh">
         <!-- ===== Sidebar Start ===== -->
         <?php get_template_part( 'template-parts/content/content', 'sidebar' ); ?>
         <!-- ===== Sidebar End ===== -->
@@ -136,7 +136,7 @@ $user_role        = ! empty( $current_user->roles ) ? $current_user->roles[0] : 
                                         <div
                                             class="absolute flex items-center justify-center p-0.5 backdrop-blur-md rounded-full bottom-3 right-3">
                                             <label for="profile_picture"
-                                                class="text-white dark:text-black cursor-pointer">
+                                                class="text-white cursor-pointer dark:text-black">
                                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20"
                                                     height="20" fill="currentColor" class="text-xl">
                                                     <path
@@ -149,7 +149,7 @@ $user_role        = ! empty( $current_user->roles ) ? $current_user->roles[0] : 
                                     </div>
                                     <!-- Indicator badge -->
                                     <div id="photo-selected"
-                                        class="hidden bg-brand-500 text-white text-xs px-2 py-1 rounded-lg shadow">
+                                        class="hidden px-2 py-1 text-xs text-white rounded-lg shadow bg-brand-500">
                                         <?php esc_html_e( 'Please click edit then save to update photo', 'vms' ); ?>
                                     </div>
                                     <div class="order-3 xl:order-2">
@@ -326,11 +326,11 @@ $user_role        = ! empty( $current_user->roles ) ? $current_user->roles[0] : 
                             </div>
                         </div>
 
-                        <div class="rounded-2xl border border-gray-200 p-5 lg:p-6 dark:border-gray-800">
+                        <div class="p-5 border border-gray-200 rounded-2xl lg:p-6 dark:border-gray-800">
                             <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
                                 <div>
                                     <h4
-                                        class="text-lg text-center md:text-start font-semibold text-gray-800 dark:text-white/90">
+                                        class="text-lg font-semibold text-center text-gray-800 md:text-start dark:text-white/90">
                                         <?php esc_html_e( 'Change Password', 'vms' ); ?>
                                     </h4>
                                 </div>

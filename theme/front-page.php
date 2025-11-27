@@ -41,8 +41,8 @@ get_header();
 								<?php esc_html_e( 'A secure and streamlined platform for managing club visitors, members, suppliers, and reciprocating members — all in one place.', 'vms' ); ?>
 							</p>
 							<div class="flex gap-4">
-								<?php if ( ! is_user_logged_in() ) : ?>
-								<a href="<?php echo esc_url( site_url( '/login/' ) ); ?>"
+							<?php if ( ! is_user_logged_in() ) : ?>
+								<a href="<?php echo esc_url( site_url( '/login' ) ); ?>"
 									class="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg cursor-pointer bg-brand-500 shadow-theme-xs hover:bg-brand-600">
 									<svg class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none"
 										xmlns="http://www.w3.org/2000/svg">
@@ -52,18 +52,20 @@ get_header();
 									</svg>
 									<?php esc_html_e( 'Login', 'vms' ); ?>
 								</a>
-									<?php
-								else :
-									$current_user = wp_get_current_user();
+							<?php else :
+								$current_user = wp_get_current_user();
 
-									if ( in_array( 'member', (array) $current_user->roles, true ) ) {
-										$link_url  = site_url( '/guests/' ); // page for members
-										$link_text = __( 'Register Guest', 'vms' );
-									} else {
-										$link_url  = site_url( '/dashboard/' ); // page for others
-										$link_text = __( 'Dashboard', 'vms' );
-									}
-									?>
+								if ( in_array( 'gate', (array) $current_user->roles, true ) ) {
+									$link_url  = site_url( '/guests' ); // page for gate users
+									$link_text = __( 'View Guests', 'vms' );
+								} elseif ( in_array( 'member', (array) $current_user->roles, true ) ) {
+									$link_url  = site_url( '/guests' ); // page for members
+									$link_text = __( 'Register Guest', 'vms' );
+								} else {
+									$link_url  = site_url( '/dashboard' ); // page for others
+									$link_text = __( 'Dashboard', 'vms' );
+								}
+								?>
 								<a href="<?php echo esc_url( $link_url ); ?>"
 									class="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg cursor-pointer bg-brand-500 shadow-theme-xs hover:bg-brand-600">
 									<svg class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none"
@@ -74,8 +76,8 @@ get_header();
 									</svg>
 									<?php echo esc_html( $link_text ); ?>
 								</a>
-								<?php endif; ?>
-							</div>
+							<?php endif; ?>
+						</div>
 
 						</div>
 

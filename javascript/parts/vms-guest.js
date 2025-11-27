@@ -95,6 +95,23 @@ export function initGuest() {
 			contentType: false,
 			dataType: 'json',
 			success: function (response) {
+				// Log successful guest registration
+				if (response.success && response.data.guestData) {
+					logAuditTrail(
+						'guest_registered',
+						'New guest registered successfully',
+						{
+							entity_type: 'guest',
+							entity_id: response.data.guestData.id,
+							new_values: {
+								first_name: response.data.guestData.first_name,
+								last_name: response.data.guestData.last_name,
+								id_number: response.data.guestData.id_number,
+								host_name: response.data.guestData.host_name,
+							},
+						}
+					);
+				}
 				if (response.success && response.data.guestData) {
 					const guest = response.data.guestData;
 
@@ -1278,6 +1295,20 @@ export function initGuest() {
 					// Replace the sign in button
 					button.replaceWith(signOutBtn);
 
+					// Log audit trail for sign-in
+					logAuditTrail(
+						'guest_signed_in',
+						`Guest ${guest.first_name} ${guest.last_name} signed in`,
+						{
+							entity_type: 'visit',
+							entity_id: newVisitId,
+							new_values: {
+								sign_in_time: guest.sign_in_time,
+								id_number: guest.id_number,
+							},
+						}
+					);
+
 					// Close confirm modal
 					$('#sign-in-confirm-modal-overlay').fadeOut(
 						300,
@@ -1413,6 +1444,19 @@ export function initGuest() {
 				</div>
 				`);
 
+					// Log audit trail for sign-out
+					logAuditTrail(
+						'guest_signed_out',
+						`Guest ${guest.first_name} ${guest.last_name} signed out`,
+						{
+							entity_type: 'visit',
+							entity_id: visitId,
+							new_values: {
+								sign_out_time: guest.sign_out_time,
+							},
+						}
+					);
+
 					// Close confirm modal
 					$('#sign-out-confirm-modal-overlay').fadeOut(
 						300,
@@ -1528,5 +1572,40 @@ export function initGuest() {
 					$(this).remove();
 				});
 			});
+	}
+
+	// Audit Trail Logging Function
+	function logAuditTrail(actionType, description, data = {}) {
+		$.ajax({
+			url: vms_script_ajax.ajaxurl,
+			type: 'POST',
+			data: {
+				action: 'log_theme_action',
+				nonce: vms_script_ajax.audit_nonce,
+				action_type: actionType,
+				action_category: 'frontend',
+				entity_type: data.entity_type || '',
+				entity_id: data.entity_id || 0,
+				description: description,
+				old_values: data.old_values
+					? JSON.stringify(data.old_values)
+					: null,
+				new_values: data.new_values
+					? JSON.stringify(data.new_values)
+					: null,
+			},
+			dataType: 'json',
+			success: function (response) {
+				if (!response.success) {
+					console.warn(
+						'Audit trail logging failed:',
+						response.data?.message
+					);
+				}
+			},
+			error: function (xhr, status, error) {
+				console.warn('Audit trail logging error:', error);
+			},
+		});
 	}
 }
