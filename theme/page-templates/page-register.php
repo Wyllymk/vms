@@ -91,9 +91,10 @@ if ( isset( $_POST['signup'] ) ) {
 			$success_message = 'The account for ' . $user_login . ' has been successfully registered.';
 
 			// 1. Email Admin
-			$admin_email   = get_option( 'admin_email' );
-			$admin_subject = 'New user registration waiting for approval';
-			$admin_message = "Hello Admin,\n\n"
+			// $admin_email   = get_option( 'admin_email' );
+			$admin_email 	= 'reception@nyericlub.co.ke';
+			$admin_subject 	= 'New user registration waiting for approval';
+			$admin_message 	= "Hello Admin,\n\n"
 				. "A new user has registered and is pending approval:\n\n"
 				. "Name: {$first_name} {$last_name}\n"
 				. "Username: {$user_login}\n"
@@ -347,7 +348,7 @@ if ( isset( $_POST['signup'] ) ) {
 							<img src="<?php echo get_template_directory_uri(); ?>/assets/images/logo/logo.png"
 								alt="Logo" />
 						</a>
-						<h2 class="text-center text-2xl font-bold font-oswald text-gray-300 dark:text-gray-100 mb-2">
+						<h2 class="mb-2 text-2xl font-bold text-center text-gray-300 font-oswald dark:text-gray-100">
 							<?php esc_html_e( 'Nyeri Club Visitor Management System', 'vms' ); ?>
 						</h2>
 						<p class="text-center text-gray-500 dark:text-white/60">

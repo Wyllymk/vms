@@ -176,12 +176,31 @@ if (fileInput && preview && badge) {
 
 document.addEventListener('alpine:init', () => {
 	Alpine.store('clubModal', {
+		isClubModal: false,
 		isClubEditModal: false,
-		open() {
+		isReciprocating: false,
+
+		openCreate() {
+			this.isClubModal = true;
+			this.isReciprocating = false;
+		},
+
+		closeCreate() {
+			this.isClubModal = false;
+			this.isReciprocating = false;
+		},
+
+		openEdit() {
 			this.isClubEditModal = true;
 		},
-		close() {
+
+		closeEdit() {
 			this.isClubEditModal = false;
+			this.isReciprocating = false;
+		},
+
+		setReciprocating(value) {
+			this.isReciprocating = value;
 		},
 	});
 });

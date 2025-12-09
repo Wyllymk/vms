@@ -93,6 +93,11 @@ export function initClub() {
                             <td class="px-3 py-4 sm:px-6"><p class="text-gray-500 text-theme-sm dark:text-gray-400">${$('#clubs-table-body tr').length + 1}</p></td>
                             <td class="px-3 py-4 sm:px-6"><p class="text-gray-800 text-theme-sm dark:text-white/90">${club.club_name}</p></td>
                             <td class="px-3 py-4 sm:px-6"><span class="inline-flex items-center justify-center px-2.5 gap-1 py-0.5 text-sm font-medium capitalize rounded-full ${statusClasses[club.status] || statusClasses.active}">${club.status.charAt(0).toUpperCase() + club.status.slice(1)}</span></td>
+							<td class="px-3 py-4 sm:px-6">
+								<p class="text-gray-800 text-theme-sm dark:text-gray-400">
+									${club.is_reciprocating === 'yes' ? 'Yes' : 'No'}
+								</p>
+							</td>
                             <td class="px-3 py-4 sm:px-6"><p class="text-gray-500 text-theme-sm dark:text-gray-400">${creationformattedDate}</p></td>
                             <td class="px-3 py-4 sm:px-6"><p class="text-gray-500 text-theme-sm dark:text-gray-400">${updateformattedDate}</p></td>
                             <td class="px-3 py-4 sm:px-6">
@@ -220,7 +225,6 @@ export function initClub() {
 				if (response.success && response.data.clubData) {
 					const club = response.data.clubData;
 
-					// Populate form
 					$('#club_id').val(club.id);
 					$('#club_name').val(club.club_name);
 					$('[name="club_email"]').val(club.club_email);
@@ -230,13 +234,20 @@ export function initClub() {
 					$('#club_status').val(club.status);
 					$('[name="notes"]').val(club.notes);
 
-					// Update modal
+					const isReciprocating = club.is_reciprocating === 'yes';
+					$('#is_reciprocating').prop('checked', isReciprocating);
+
+					if (window.Alpine && window.Alpine.store('clubModal')) {
+						window.Alpine.store('clubModal').setReciprocating(
+							isReciprocating
+						);
+						window.Alpine.store('clubModal').openEdit();
+					}
+
 					$('#club-modal-title').text('Edit Club');
 					$('#club-modal-description').text(
 						'Update Club Information.'
 					);
-
-					window.Alpine.store('clubModal').open();
 				} else {
 					showErrorClubModal(
 						response.data?.messages || ['Failed to load club data']

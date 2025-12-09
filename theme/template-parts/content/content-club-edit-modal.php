@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
 	class="fixed inset-0 flex items-center justify-center p-5 overflow-y-auto z-99999">
 	<div class="modal-close-btn fixed inset-0 h-full w-full bg-gray-400/50 backdrop-blur-[32px]"></div>
 	<div @click.outside="$store.clubModal.isClubEditModal = false"
-		class="no-scrollbar relative w-full max-w-2xl overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
+		class="relative w-full max-w-2xl p-4 overflow-y-auto bg-white no-scrollbar rounded-3xl dark:bg-gray-900 lg:p-11">
 		<!-- close btn -->
 		<a @click="$store.clubModal.isClubEditModal = false"
 			class="cursor-pointer transition-color absolute right-5 top-5 z-999 flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600 dark:bg-gray-700 dark:bg-white/[0.05] dark:text-gray-400 dark:hover:bg-white/[0.07] dark:hover:text-gray-300">
@@ -34,11 +34,11 @@ defined( 'ABSPATH' ) || exit;
 			</p>
 		</div>
 
-		<form class="club-form flex flex-col" method="post" enctype="multipart/form-data">
+		<form class="flex flex-col club-form" method="post" enctype="multipart/form-data">
 			<input type="hidden" id="club_id" name="club_id" value="">
 			<input type="hidden" name="register_club" value="1">
 
-			<div class="custom-scrollbar h-lg overflow-y-auto px-2">
+			<div class="px-2 overflow-y-auto custom-scrollbar h-lg">
 				<div>
 					<h5 class="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
 						<?php esc_html_e( 'Club Information', 'vms' ); ?>
@@ -61,8 +61,7 @@ defined( 'ABSPATH' ) || exit;
 							<label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
 								<?php esc_html_e( 'Club Email', 'vms' ); ?>
 							</label>
-							<input type="email" name="club_email"
-								value="<?php echo esc_attr( $_POST['club_email'] ?? '' ); ?>"
+							<input type="email" name="club_email" value=""
 								class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
 						</div>
 
@@ -71,8 +70,7 @@ defined( 'ABSPATH' ) || exit;
 							<label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
 								<?php esc_html_e( 'Club Phone', 'vms' ); ?>
 							</label>
-							<input type="text" name="club_phone"
-								value="<?php echo esc_attr( $_POST['club_phone'] ?? '' ); ?>"
+							<input type="text" name="club_phone" value=""
 								class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
 						</div>
 
@@ -81,8 +79,7 @@ defined( 'ABSPATH' ) || exit;
 							<label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
 								<?php esc_html_e( 'Club Website', 'vms' ); ?>
 							</label>
-							<input type="text" name="club_website"
-								value="<?php echo esc_attr( $_POST['club_website'] ?? '' ); ?>"
+							<input type="text" name="club_website" value=""
 								class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
 						</div>
 
@@ -100,13 +97,40 @@ defined( 'ABSPATH' ) || exit;
 									<option value="suspended">Suspended</option>
 									<option value="banned">Banned</option>
 								</select>
-								<span
-									class="absolute top-1/2 right-3 z-30 -translate-y-1/2 text-gray-500 dark:text-gray-400">
+								<span class="absolute z-30 text-gray-500 -translate-y-1/2 top-1/2 right-3 dark:text-gray-400">
 									<svg class="stroke-current" width="16" height="16" viewBox="0 0 16 16" fill="none">
 										<path d="M3.8335 5.9165L8.00016 10.0832L12.1668 5.9165" stroke=""
 											stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"></path>
 									</svg>
 								</span>
+							</div>
+						</div>
+
+						<!-- Reciprocating Club -->
+						<div class="col-span-2 lg:col-span-1">
+							<label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+								<?php esc_html_e( 'Club Type', 'vms' ); ?>
+							</label>
+							<div class="flex items-center h-11">
+								<label for="is_reciprocating"
+									class="flex items-center gap-3 text-sm font-medium text-gray-700 cursor-pointer select-none dark:text-gray-400">
+									<div class="relative">
+										<input type="checkbox" id="is_reciprocating"
+											name="is_reciprocating" value="yes"
+											class="sr-only"
+											@change="$store.clubModal.isReciprocating = $event.target.checked"
+											:checked="$store.clubModal.isReciprocating" />
+
+										<div class="block h-6 rounded-full w-11"
+											:class="$store.clubModal.isReciprocating ? 'bg-brand-500 dark:bg-brand-500' : 'bg-gray-200 dark:bg-white/10'">
+										</div>
+
+										<div class="shadow-theme-sm absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white duration-300 ease-linear"
+											:class="$store.clubModal.isReciprocating ? 'translate-x-full' : 'translate-x-0'">
+										</div>
+									</div>
+									Reciprocating Club
+								</label>
 							</div>
 						</div>
 
@@ -116,7 +140,7 @@ defined( 'ABSPATH' ) || exit;
 								<?php esc_html_e( 'Notes', 'vms' ); ?>
 							</label>
 							<textarea name="notes"
-								class="dark:bg-dark-900 h-24 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"><?php echo esc_textarea( $_POST['notes'] ?? '' ); ?></textarea>
+								class="dark:bg-dark-900 h-24 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"></textarea>
 						</div>
 					</div>
 				</div>

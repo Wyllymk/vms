@@ -52,18 +52,18 @@ $status_classes = array(
 
     <!-- Per Page Controls -->
     <div
-        class="mb-4 flex flex-col gap-2 px-4 py-4 sm:flex-row sm:items-center sm:justify-between border-b border-gray-200 dark:border-gray-800">
+        class="flex flex-col gap-2 px-4 py-4 mb-4 border-b border-gray-200 sm:flex-row sm:items-center sm:justify-between dark:border-gray-800">
         <div class="flex items-center gap-3">
             <span class="text-gray-500 dark:text-gray-400">Show</span>
             <div class="relative z-20 bg-transparent">
                 <select x-model="perPage"
                     @change="window.location.href = updateUrlParameter(window.location.href, 'per_page', $event.target.value)"
-                    class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-9 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none py-2 pr-8 pl-3 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30">
+                    class="w-full py-2 pl-3 pr-8 text-sm text-gray-800 bg-transparent border border-gray-300 rounded-lg appearance-none shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-9 bg-none placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30">
                     <option value="25" <?php selected( $clubs_per_page, 25 ); ?>>25</option>
                     <option value="50" <?php selected( $clubs_per_page, 50 ); ?>>50</option>
                     <option value="100" <?php selected( $clubs_per_page, 100 ); ?>>100</option>
                 </select>
-                <span class="absolute top-1/2 right-2 z-30 -translate-y-1/2 text-gray-500 dark:text-gray-400">
+                <span class="absolute z-30 text-gray-500 -translate-y-1/2 top-1/2 right-2 dark:text-gray-400">
                     <svg class="stroke-current" width="16" height="16" viewBox="0 0 16 16" fill="none">
                         <path d="M3.8335 5.9165L8.00016 10.0832L12.1668 5.9165" stroke="" stroke-width="1.2"
                             stroke-linecap="round" stroke-linejoin="round"></path>
@@ -126,6 +126,13 @@ $status_classes = array(
                     <th class="px-3 py-3 sm:px-6">
                         <div class="flex items-center">
                             <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
+                                <?php esc_html_e( 'Reciprocating', 'vms' ); ?>
+                            </p>
+                        </div>
+                    </th>
+                    <th class="px-3 py-3 sm:px-6">
+                        <div class="flex items-center">
+                            <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
                                 <?php esc_html_e( 'Creation Date', 'vms' ); ?>
                             </p>
                         </div>
@@ -179,6 +186,13 @@ $status_classes = array(
                     </td>
                     <td class="px-3 py-4 sm:px-6">
                         <div class="flex items-center">
+                            <p class="text-gray-800 text-theme-sm dark:text-gray-400">
+                                <?php echo esc_html( ucwords( strtolower( $club->is_reciprocating ) ) ); ?>
+                            </p>
+                        </div>
+                    </td>
+                    <td class="px-3 py-4 sm:px-6">
+                        <div class="flex items-center">
                             <p class="text-gray-500 text-theme-sm dark:text-gray-400">
                                 <?php echo esc_html( $creation_date ); ?>
                             </p>
@@ -195,7 +209,7 @@ $status_classes = array(
                     <td class="px-3 py-4 sm:px-6">
                         <div class="flex items-center gap-2">
                             <button
-                                class="edit-club-btn inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 transition bg-white border border-gray-300 rounded-lg cursor-pointer whitespace-nowrap dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 transition bg-white border border-gray-300 rounded-lg cursor-pointer edit-club-btn whitespace-nowrap dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
                                 data-club-id="<?php echo $club->id; ?>">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -205,7 +219,7 @@ $status_classes = array(
                                 <?php esc_html_e( 'Edit', 'vms' ); ?>
                             </button>
                             <button
-                                class="delete-club-btn inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition bg-red-500 border border-red-500 rounded-lg cursor-pointer whitespace-nowrap hover:bg-red-600 dark:hover:bg-red-600"
+                                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition bg-red-500 border border-red-500 rounded-lg cursor-pointer delete-club-btn whitespace-nowrap hover:bg-red-600 dark:hover:bg-red-600"
                                 data-club-id="<?php echo $club->id; ?>">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -230,7 +244,7 @@ $status_classes = array(
     <!-- Pagination Section -->
     <?php if ( $total_pages > 1 ) : ?>
     <div
-        class="flex items-center justify-between gap-8 px-6 py-4 sm:justify-normal border-t border-gray-200 dark:border-gray-800">
+        class="flex items-center justify-between gap-8 px-6 py-4 border-t border-gray-200 sm:justify-normal dark:border-gray-800">
         <!-- Previous Button -->
         <?php if ( $current_page > 1 ) : ?>
         <a href="<?php echo esc_url( add_query_arg( 'paged', $current_page - 1 ) ); ?>"
@@ -270,27 +284,27 @@ $status_classes = array(
 
 			// Show first page if not in range
 			if ( $start_page > 1 ) {
-				echo '<li><a href="' . esc_url( add_query_arg( 'paged', 1 ) ) . '" class="flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium text-gray-700 hover:bg-brand-500 hover:text-white dark:text-gray-400 dark:hover:text-white">1</a></li>';
+				echo '<li><a href="' . esc_url( add_query_arg( 'paged', 1 ) ) . '" class="flex items-center justify-center w-10 h-10 text-sm font-medium text-gray-700 rounded-lg hover:bg-brand-500 hover:text-white dark:text-gray-400 dark:hover:text-white">1</a></li>';
 				if ( $start_page > 2 ) {
-					echo '<li><span class="flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium text-gray-700 dark:text-gray-400">...</span></li>';
+					echo '<li><span class="flex items-center justify-center w-10 h-10 text-sm font-medium text-gray-700 rounded-lg dark:text-gray-400">...</span></li>';
 				}
 			}
 
 			// Display page numbers in range
 			for ( $i = $start_page; $i <= $end_page; $i++ ) {
 				if ( $i == $current_page ) {
-					echo '<li><span class="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-500 text-sm font-medium text-white">' . $i . '</span></li>';
+					echo '<li><span class="flex items-center justify-center w-10 h-10 text-sm font-medium text-white rounded-lg bg-brand-500">' . $i . '</span></li>';
 				} else {
-					echo '<li><a href="' . esc_url( add_query_arg( 'paged', $i ) ) . '" class="flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium text-gray-700 hover:bg-brand-500 hover:text-white dark:text-gray-400 dark:hover:text-white">' . $i . '</a></li>';
+					echo '<li><a href="' . esc_url( add_query_arg( 'paged', $i ) ) . '" class="flex items-center justify-center w-10 h-10 text-sm font-medium text-gray-700 rounded-lg hover:bg-brand-500 hover:text-white dark:text-gray-400 dark:hover:text-white">' . $i . '</a></li>';
 				}
 			}
 
 			// Show last page if not in range
 			if ( $end_page < $total_pages ) {
 				if ( $end_page < $total_pages - 1 ) {
-					echo '<li><span class="flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium text-gray-700 dark:text-gray-400">...</span></li>';
+					echo '<li><span class="flex items-center justify-center w-10 h-10 text-sm font-medium text-gray-700 rounded-lg dark:text-gray-400">...</span></li>';
 				}
-				echo '<li><a href="' . esc_url( add_query_arg( 'paged', $total_pages ) ) . '" class="flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium text-gray-700 hover:bg-brand-500 hover:text-white dark:text-gray-400 dark:hover:text-white">' . $total_pages . '</a></li>';
+				echo '<li><a href="' . esc_url( add_query_arg( 'paged', $total_pages ) ) . '" class="flex items-center justify-center w-10 h-10 text-sm font-medium text-gray-700 rounded-lg hover:bg-brand-500 hover:text-white dark:text-gray-400 dark:hover:text-white">' . $total_pages . '</a></li>';
 			}
 			?>
         </ul>
