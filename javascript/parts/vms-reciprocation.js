@@ -262,7 +262,7 @@ export function initReciprocation() {
 		e.preventDefault();
 
 		// Show loading indicator
-		$('#update-member-btn')
+		$('#update-recip-btn')
 			.prop('disabled', true)
 			.html(
 				'<span class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2"></span> Updating...'
@@ -274,6 +274,11 @@ export function initReciprocation() {
 
 		// Collect form data
 		var formData = new FormData(this);
+
+		// Get the selected club ID
+		var clubId = $('#reciprocating_club_id').val();
+		formData.append('reciprocating_club_id', clubId);
+
 		formData.append('action', 'update_recip_member');
 		formData.append('nonce', vms_script_ajax.nonce);
 
@@ -293,23 +298,23 @@ export function initReciprocation() {
 
 					// Create and show success animation modal
 					const successModal = `
-                        <div id="success-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
-                            <div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
-                                <div class="check_mark mx-auto mb-4">
-                                    <div class="sa-icon sa-success animate">
-                                        <span class="sa-line sa-tip animateSuccessTip"></span>
-                                        <span class="sa-line sa-long animateSuccessLong"></span>
-                                        <div class="sa-placeholder"></div>
-                                        <div class="sa-fix"></div>
-                                    </div>
+                    <div id="success-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+                        <div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+                            <div class="check_mark mx-auto mb-4">
+                                <div class="sa-icon sa-success animate">
+                                    <span class="sa-line sa-tip animateSuccessTip"></span>
+                                    <span class="sa-line sa-long animateSuccessLong"></span>
+                                    <div class="sa-placeholder"></div>
+                                    <div class="sa-fix"></div>
                                 </div>
-                                <p class="text-lg font-medium text-gray-700 dark:text-white">${message}</p>
-                                <button id="ok-success-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 transition">
-                                    OK
-                                </button>
                             </div>
+                            <p class="text-lg font-medium text-gray-700 dark:text-white">${message}</p>
+                            <button id="ok-success-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 transition">
+                                OK
+                            </button>
                         </div>
-                    	`;
+                    </div>
+                `;
 
 					// Inject modal into body
 					$('body').append(successModal);
@@ -340,25 +345,25 @@ export function initReciprocation() {
 
 					// Create and show error animation modal
 					const errorModal = `
-                        <div id="member-error-modal-overlay"
-                            class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
-                            <div
-                                class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
-                                <div class="check_mark mx-auto mb-4">
-                                    <div class="sa-icon sa-error animate">
-                                        <span class="sa-line sa-left animateXLeft"></span>
-                                        <span class="sa-line sa-right animateXRight"></span>
-                                        <div class="sa-placeholder"></div>
-                                    </div>
+                    <div id="member-error-modal-overlay"
+                        class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+                        <div
+                            class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+                            <div class="check_mark mx-auto mb-4">
+                                <div class="sa-icon sa-error animate">
+                                    <span class="sa-line sa-left animateXLeft"></span>
+                                    <span class="sa-line sa-right animateXRight"></span>
+                                    <div class="sa-placeholder"></div>
                                 </div>
-                                ${errorMessageHtml}
-                                <button id="ok-error-btn" type="button"
-                                    class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">
-                                    OK
-                                </button>
                             </div>
+                            ${errorMessageHtml}
+                            <button id="ok-error-btn" type="button"
+                                class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">
+                                OK
+                            </button>
                         </div>
-                    	`;
+                    </div>
+                `;
 
 					// Inject modal into body
 					$('body').append(errorModal);
@@ -385,25 +390,25 @@ export function initReciprocation() {
 
 				// Create and show error animation modal
 				const errorModal = `
-                    <div id="member-error-modal-overlay"
-                        class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
-                        <div
-                            class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
-                            <div class="check_mark mx-auto mb-4">
-                                <div class="sa-icon sa-error animate">
-                                    <span class="sa-line sa-left animateXLeft"></span>
-                                    <span class="sa-line sa-right animateXRight"></span>
-                                    <div class="sa-placeholder"></div>
-                                </div>
+                <div id="member-error-modal-overlay"
+                    class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+                    <div
+                        class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+                        <div class="check_mark mx-auto mb-4">
+                            <div class="sa-icon sa-error animate">
+                                <span class="sa-line sa-left animateXLeft"></span>
+                                <span class="sa-line sa-right animateXRight"></span>
+                                <div class="sa-placeholder"></div>
                             </div>
-                            <p class="text-lg font-medium text-gray-700 dark:text-white">${errorMessage}</p>
-                            <button id="ok-error-btn" type="button"
-                                class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">
-                                OK
-                            </button>
                         </div>
+                        <p class="text-lg font-medium text-gray-700 dark:text-white">${errorMessage}</p>
+                        <button id="ok-error-btn" type="button"
+                            class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">
+                            OK
+                        </button>
                     </div>
-                	`;
+                </div>
+            `;
 
 				// Inject modal into body
 				$('body').append(errorModal);
@@ -422,8 +427,8 @@ export function initReciprocation() {
 					});
 			},
 			complete: function () {
-				// Reset button
-				$('#update-member-btn')
+				// Reset button - note: button ID is 'update-recip-btn' not 'update-member-btn'
+				$('#update-recip-btn')
 					.prop('disabled', false)
 					.text('Update Member');
 			},
@@ -639,90 +644,35 @@ export function initReciprocation() {
 			e.preventDefault();
 
 			const memberId = $(this).data('member-id');
+			const currentClubId = $(this).data('club-id') || '';
+			const currentMemberNumber = $(this).data('member-number') || ''; // Get current member number
 			const button = $(this);
 			const row = button.closest('tr');
 			const memberName =
 				row.find('td:nth-child(2)').text().trim() +
 				' ' +
 				row.find('td:nth-child(3)').text().trim();
-			const clubText = row.find('td:nth-child(5)').text().trim();
-			const hasClub = clubText !== 'Not Set';
 
 			console.log('[VMS JS] Member ID:', memberId);
 			console.log('[VMS JS] Member Name:', memberName);
-			console.log('[VMS JS] Has Club:', hasClub);
+			console.log('[VMS JS] Current Club ID:', currentClubId);
+			console.log('[VMS JS] Current Member Number:', currentMemberNumber);
 
-			// Build sign in form with conditional club field
-			let clubField = '';
+			// Always fetch clubs via AJAX for sign-in
+			console.log('[VMS JS] Fetching clubs via AJAX...');
 
-			if (!hasClub) {
-				console.log(
-					'[VMS JS] Member has NO club — fetching clubs via AJAX...'
-				);
-
-				$.ajax({
-					url: vms_script_ajax.ajaxurl,
-					type: 'POST',
-					data: {
-						action: 'get_reciprocating_clubs',
-						nonce: vms_script_ajax.nonce,
-					},
-					async: false,
-					beforeSend: function () {
-						console.log(
-							'[VMS JS] Sending AJAX request for clubs...'
-						);
-					},
-					success: function (response) {
-						console.log(
-							'[VMS JS] AJAX response received:',
-							response
-						);
-
-						if (response.success && response.data.clubs) {
-							console.log(
-								`[VMS JS] ${response.data.clubs.length} clubs found. Building dropdown...`
-							);
-
-							const clubOptions = response.data.clubs
-								.map(
-									(club) =>
-										`<option value="${club.id}">${club.club_name}</option>`
-								)
-								.join('');
-
-							clubField = `
-								<div class="mb-4">
-									<label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-										Reciprocating Club
-										<span class="text-error-500">*</span>
-									</label>
-									<select id="sign-in-club-id" required
-										class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800">
-										<option value="">Select Club</option>
-										${clubOptions}
-									</select>
-								</div>
-							`;
-						} else {
-							console.warn(
-								'[VMS JS] No clubs found or invalid response.'
-							);
-						}
-					},
-					error: function (xhr, status, error) {
-						console.error(
-							'[VMS JS] AJAX error fetching clubs:',
-							error,
-							xhr
-						);
-					},
-				});
-			} else {
-				console.log(
-					'[VMS JS] Member already has club — skipping club fetch.'
-				);
-			}
+			let clubField = `
+				<div class="mb-4">
+					<label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+						Reciprocating Club
+						<span class="text-error-500">*</span>
+					</label>
+					<select id="sign-in-club-id" required
+						class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800">
+						<option value="">Loading clubs...</option>
+					</select>
+				</div>
+        	`;
 
 			console.log('[VMS JS] Building sign-in modal...');
 
@@ -743,6 +693,7 @@ export function initReciprocation() {
 									<span class="text-error-500">*</span>
 								</label>
 								<input type="text" id="sign-in-member-number" required
+									value="${currentMemberNumber}"
 									class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
 									placeholder="Enter member number" />
 							</div>
@@ -760,12 +711,13 @@ export function initReciprocation() {
 								</select>
 							</div>
 
-
 							<div class="flex gap-3">
 								<button type="button" class="cancel-sign-in-btn flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
 									Cancel
 								</button>
-								<button type="submit" class="confirm-sign-in-btn flex-1 rounded-lg bg-green-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-green-600" data-member-id="${memberId}">
+								<button type="submit" class="confirm-sign-in-btn flex-1 rounded-lg bg-green-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-green-600" 
+									data-member-id="${memberId}"
+									data-current-member-number="${currentMemberNumber}">
 									Sign In
 								</button>
 							</div>
@@ -776,6 +728,73 @@ export function initReciprocation() {
 
 			console.log('[VMS JS] Appending modal to body...');
 			$('body').append(signInModal);
+
+			// Fetch clubs asynchronously and populate dropdown
+			$.ajax({
+				url: vms_script_ajax.ajaxurl,
+				type: 'POST',
+				data: {
+					action: 'get_reciprocating_clubs',
+					nonce: vms_script_ajax.nonce,
+				},
+				success: function (response) {
+					console.log(
+						'[VMS JS] Clubs AJAX response received:',
+						response
+					);
+
+					const clubSelect = $('#sign-in-club-id');
+
+					if (
+						response.success &&
+						response.data.clubs &&
+						response.data.clubs.length > 0
+					) {
+						console.log(
+							`[VMS JS] ${response.data.clubs.length} clubs found. Populating dropdown...`
+						);
+
+						// Clear loading option
+						clubSelect.empty();
+
+						// Add default option
+						clubSelect.append(
+							'<option value="">Select Club</option>'
+						);
+
+						// Add all clubs
+						response.data.clubs.forEach((club) => {
+							const selected =
+								club.id == currentClubId ? 'selected' : '';
+							clubSelect.append(
+								`<option value="${club.id}" ${selected}>${club.club_name}</option>`
+							);
+						});
+
+						console.log(
+							'[VMS JS] Clubs dropdown populated successfully'
+						);
+					} else {
+						console.warn(
+							'[VMS JS] No clubs found or invalid response.'
+						);
+						clubSelect.html(
+							'<option value="">No clubs available</option>'
+						);
+					}
+				},
+				error: function (xhr, status, error) {
+					console.error(
+						'[VMS JS] AJAX error fetching clubs:',
+						error,
+						xhr
+					);
+					$('#sign-in-club-id').html(
+						'<option value="">Error loading clubs</option>'
+					);
+				},
+			});
+
 			console.log('[VMS JS] Modal appended successfully.');
 		}
 	);

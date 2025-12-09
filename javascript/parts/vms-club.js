@@ -86,6 +86,14 @@ export function initClub() {
 								club.status.charAt(0).toUpperCase() +
 									club.status.slice(1)
 							);
+
+						// Update reciprocating field
+						row.find('td:nth-child(4) p').text(
+							club.is_reciprocating === 'yes' ? 'Yes' : 'No'
+						);
+
+						// Update date fields
+						row.find('td:nth-child(6) p').text(updateformattedDate);
 					} else {
 						// Build new row
 						const newRow = `
@@ -93,11 +101,11 @@ export function initClub() {
                             <td class="px-3 py-4 sm:px-6"><p class="text-gray-500 text-theme-sm dark:text-gray-400">${$('#clubs-table-body tr').length + 1}</p></td>
                             <td class="px-3 py-4 sm:px-6"><p class="text-gray-800 text-theme-sm dark:text-white/90">${club.club_name}</p></td>
                             <td class="px-3 py-4 sm:px-6"><span class="inline-flex items-center justify-center px-2.5 gap-1 py-0.5 text-sm font-medium capitalize rounded-full ${statusClasses[club.status] || statusClasses.active}">${club.status.charAt(0).toUpperCase() + club.status.slice(1)}</span></td>
-							<td class="px-3 py-4 sm:px-6">
-								<p class="text-gray-800 text-theme-sm dark:text-gray-400">
-									${club.is_reciprocating === 'yes' ? 'Yes' : 'No'}
-								</p>
-							</td>
+                            <td class="px-3 py-4 sm:px-6">
+                                <p class="text-gray-800 text-theme-sm dark:text-gray-400">
+                                    ${club.is_reciprocating === 'yes' ? 'Yes' : 'No'}
+                                </p>
+                            </td>
                             <td class="px-3 py-4 sm:px-6"><p class="text-gray-500 text-theme-sm dark:text-gray-400">${creationformattedDate}</p></td>
                             <td class="px-3 py-4 sm:px-6"><p class="text-gray-500 text-theme-sm dark:text-gray-400">${updateformattedDate}</p></td>
                             <td class="px-3 py-4 sm:px-6">

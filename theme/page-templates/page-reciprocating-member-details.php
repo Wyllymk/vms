@@ -580,13 +580,13 @@ get_header();
 														</div>
 													</div>
 
-													<!-- Club -->
+													<!-- Club Dropdown -->
 													<div class="w-full px-2.5 md:w-1/2">
-														<label for="club_name"
+														<label for="reciprocating_club_id"
 															class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
 															Club:
 														</label>
-														<div class="relative">
+														<div x-data="{ isOptionSelected: false }" class="relative z-20 bg-transparent">
 															<span
 																class="absolute top-1/2 left-0 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
 																<svg class="fill-current" width="20" height="20"
@@ -599,10 +599,55 @@ get_header();
 																		stroke-linejoin="round" />
 																</svg>
 															</span>
-															<input type="text" id="club_name" name="club_name"
-																placeholder="Club Name" readonly
-																value="<?php echo esc_attr( $member->club_name ?? '' ); ?>"
-																class="dark:bg-dark-900 shadow-theme-xs h-11 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2.5 pl-20 text-sm text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400" />
+															<select id="reciprocating_club_id" name="reciprocating_club_id"
+																class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none pl-20 pr-11 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
+																:class="isOptionSelected && 'text-gray-800 dark:text-white/90'"
+																@change="isOptionSelected = true">
+																<option value="">Select a club</option>
+																<?php
+																// Get clubs from cache or database
+																$transient_key = 'vms_reciprocating_clubs_cache';
+																$clubs = get_transient($transient_key);
+																
+																// If cache doesn't exist or is empty, fetch from DB
+																if ($clubs === false || empty($clubs)) {
+																	global $wpdb;
+																	$recip_clubs_table = VMS_Config::get_table_name(VMS_Config::RECIP_CLUBS_TABLE);
+																	$clubs = $wpdb->get_results(
+																		$wpdb->prepare(
+																			"SELECT id, club_name FROM {$recip_clubs_table} WHERE status = %s ORDER BY club_name ASC",
+																			'active'
+																		),
+																		ARRAY_A
+																	);
+																	
+																	// Cache for 6 hours
+																	if (!empty($clubs)) {
+																		set_transient($transient_key, $clubs, HOUR_IN_SECONDS * 6);
+																	}
+																}
+																
+																// Display clubs
+																if (!empty($clubs)) {
+																	foreach ($clubs as $club) {
+																		$selected = ($club['id'] == ($member->reciprocating_club_id ?? 0)) ? 'selected' : '';
+																		echo '<option value="' . esc_attr($club['id']) . '" ' . $selected . '>' 
+																			. esc_html($club['club_name']) . '</option>';
+																	}
+																}
+																?>
+															</select>
+															<span
+																class="absolute z-30 text-gray-500 -translate-y-1/2 pointer-events-none top-1/2 right-4 dark:text-gray-400">
+																<svg class="stroke-current" width="20" height="20"
+																	viewBox="0 0 20 20" fill="none"
+																	xmlns="http://www.w3.org/2000/svg">
+																	<path
+																		d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396"
+																		stroke-width="1.5" stroke-linecap="round"
+																		stroke-linejoin="round" />
+																</svg>
+															</span>
 														</div>
 													</div>
 
