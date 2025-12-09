@@ -22,7 +22,7 @@ get_header();
 <section x-data="{ page: 'employees', 'isEmployeeInfoModal': false}"
 	@close-employee-modal.window="isEmployeeInfoModal = false">
 	<!-- ===== Page Wrapper Start ===== -->
-	<div class="flex h-svh overflow-hidden">
+	<div class="flex overflow-hidden h-svh">
 		<!-- ===== Sidebar Start ===== -->
 		<?php get_template_part( 'template-parts/content/content', 'sidebar' ); ?>
 		<!-- ===== Sidebar End ===== -->
@@ -41,7 +41,7 @@ get_header();
 			<main>
 				<div class="p-4 mx-auto max-w-(--breakpoint-2xl) min-h-screen md:p-6">
 					<!-- Breadcrumb Start -->
-					<div x-data="{ pageName: `Employees`}">
+					<div x-data="{ pageName: `Staff`}">
 						<?php get_template_part( 'template-parts/content/content', 'breadcrumb' ); ?>
 					</div>
 					<!-- Breadcrumb End -->
@@ -51,15 +51,15 @@ get_header();
 							class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
 							<div class="px-5 py-4 sm:px-6 sm:py-5">
 								<h3 class="text-base font-medium text-gray-800 dark:text-white/90">
-									<?php esc_html_e( 'Employees List', 'vms' ); ?>
+									<?php esc_html_e( 'Staff List', 'vms' ); ?>
 								</h3>
 							</div>
-							<div class="flex flex-wrap w-full justify-between mb-4 px-5 sm:px-6 ">
+							<div class="flex flex-wrap justify-between w-full px-5 mb-4 sm:px-6 ">
 								<!-- Search Form -->
-								<div class="flex w-full items-center  md:w-1/2 mb-4 md:mb-0">
+								<div class="flex items-center w-full mb-4 md:w-1/2 md:mb-0">
 									<form action="" method="get">
 										<div class="relative">
-											<span class="absolute top-1/2 left-4 -translate-y-1/2">
+											<span class="absolute -translate-y-1/2 top-1/2 left-4">
 												<svg class="fill-gray-500 dark:fill-gray-400" width="20" height="20"
 													viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
 													<path fill-rule="evenodd" clip-rule="evenodd"
@@ -67,7 +67,7 @@ get_header();
 														fill="" />
 												</svg>
 											</span>
-											<input type="text" placeholder="Filter employees by username..."
+											<input type="text" placeholder="Filter staff by username..."
 												name="user_search"
 												class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pr-14 pl-12 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden xl:w-[430px] dark:border-gray-800 dark:bg-gray-900 dark:bg-white/[0.03] dark:text-white/90 dark:placeholder:text-white/30" />
 
@@ -84,7 +84,7 @@ get_header();
 								<div class="flex items-center justify-end w-full md:w-1/2">
 									<a @click="isEmployeeInfoModal = true"
 										class="inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg cursor-pointer bg-brand-500 shadow-theme-xs hover:bg-brand-600 whitespace-nowrap">
-										<?php esc_html_e( 'Register Employee', 'vms' ); ?>
+										<?php esc_html_e( 'Register Staff', 'vms' ); ?>
 									</a>
 								</div>
 							</div>
@@ -97,7 +97,7 @@ get_header();
 							<!-- Success Alert -->
 							<?php if ( ! empty( $surveyors_success ) ) : ?>
 								<?php foreach ( $surveyors_success as $surveyor_success ) : ?>
-							<div class="flex items-center justify-between bg-green-500 border-l-4 border-green-700 text-white p-4 mb-4 rounded"
+							<div class="flex items-center justify-between p-4 mb-4 text-white bg-green-500 border-l-4 border-green-700 rounded"
 								role="alert">
 								<div>
 									<strong>Success!</strong>
@@ -113,7 +113,7 @@ get_header();
 							<!-- Error Alert -->
 							<?php if ( ! empty( $surveyors_error ) ) : ?>
 								<?php foreach ( $surveyors_error as $surveyor_error ) : ?>
-							<div class="flex items-center justify-between bg-red-500 border-l-4 border-red-700 text-white p-4 mb-4 rounded"
+							<div class="flex items-center justify-between p-4 mb-4 text-white bg-red-500 border-l-4 border-red-700 rounded"
 								role="alert">
 								<div>
 									<strong>Warning!</strong>

@@ -27,16 +27,16 @@ defined( 'ABSPATH' ) || exit;
 		</a>
 		<div class="px-2 pr-14">
 			<h4 class="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
-				<?php esc_html_e( 'Register Employee', 'vms' ); ?>
+				<?php esc_html_e( 'Register Staff', 'vms' ); ?>
 			</h4>
 			<p class="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
-				<?php esc_html_e( 'Create an Employees Account.', 'vms' ); ?>
+				<?php esc_html_e( 'Create an Staff Account.', 'vms' ); ?>
 			</p>
 		</div>
 		<form id="employee-form" class="flex flex-col" method="post" enctype="multipart/form-data">
 			<input type="hidden" name="register_employee" value="1">
 
-			<div class="custom-scrollbar h-lg overflow-y-auto px-2">
+			<div class="px-2 overflow-y-auto custom-scrollbar h-lg">
 				<div class="">
 					<h5 class="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
 						<?php esc_html_e( 'Personal Information', 'vms' ); ?>
@@ -79,7 +79,7 @@ defined( 'ABSPATH' ) || exit;
 						</div>
 
 						<!-- Phone -->
-						<div class="col-span-2 lg:col-span-1 relative">
+						<div class="relative col-span-2 lg:col-span-1">
 							<label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
 								<?php esc_html_e( 'Phone', 'vms' ); ?>
 								<span class="text-error-500">*</span>
@@ -93,7 +93,7 @@ defined( 'ABSPATH' ) || exit;
 									required />
 
 								<button type="button" id="employee_pick_contact" title="Pick from contacts"
-									class="px-3 py-2 rounded-lg bg-brand-500 text-white text-sm hover:bg-brand-600 transition">
+									class="px-3 py-2 text-sm text-white transition rounded-lg bg-brand-500 hover:bg-brand-600">
 									📇
 								</button>
 							</div>
@@ -141,7 +141,7 @@ defined( 'ABSPATH' ) || exit;
 				</button>
 				<button type="submit" id="submit-employee-form"
 					class="cursor-pointer flex w-full justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 sm:w-auto">
-					<?php esc_html_e( 'Create Employee', 'vms' ); ?>
+					<?php esc_html_e( 'Create Staff', 'vms' ); ?>
 				</button>
 			</div>
 		</form>

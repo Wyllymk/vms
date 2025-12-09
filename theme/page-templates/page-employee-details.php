@@ -88,7 +88,7 @@ get_header();
 <section id="primary" x-data="{ page: 'employee-details'}">
     <main id="main">
         <!-- ===== Page Wrapper Start ===== -->
-        <div class="flex h-svh overflow-hidden">
+        <div class="flex overflow-hidden h-svh">
             <!-- ===== Sidebar Start ===== -->
             <?php get_template_part( 'template-parts/content/content', 'sidebar' ); ?>
             <!-- ===== Sidebar End ===== -->
@@ -115,11 +115,11 @@ get_header();
                                     <path d="M12.7083 5L7.5 10.2083L12.7083 15.4167" stroke="" stroke-width="1.5"
                                         stroke-linecap="round" stroke-linejoin="round" />
                                 </svg>
-                                <?php esc_html_e( 'Back to Employees', 'vms' ); ?>
+                                <?php esc_html_e( 'Back to Staff', 'vms' ); ?>
                             </a>
 
                             <h2 class="text-xl font-semibold text-gray-800 dark:text-white/90">
-                                <?php esc_html_e( 'Employee Details', 'vms' ); ?>
+                                <?php esc_html_e( 'Staff Details', 'vms' ); ?>
                             </h2>
                         </div>
                         <!-- Breadcrumb End -->
@@ -164,7 +164,7 @@ get_header();
                                                         <div
                                                             class="absolute flex items-center justify-center p-0.5 backdrop-blur-md rounded-full bottom-3 right-3">
                                                             <label for="profile_picture"
-                                                                class="text-white dark:text-black cursor-pointer">
+                                                                class="text-white cursor-pointer dark:text-black">
                                                                 <svg xmlns="http://www.w3.org/2000/svg"
                                                                     viewBox="0 0 24 24" width="20" height="20"
                                                                     fill="currentColor" class="text-xl">
@@ -178,7 +178,7 @@ get_header();
                                                     </div>
                                                     <!-- Indicator badge -->
                                                     <div id="photo-selected"
-                                                        class="hidden bg-brand-500 text-white text-xs px-2 py-1 rounded-lg shadow">
+                                                        class="hidden px-2 py-1 text-xs text-white rounded-lg shadow bg-brand-500">
                                                         <?php esc_html_e( 'Please update details to save photo', 'vms' ); ?>
                                                     </div>
                                                 </div>
@@ -195,7 +195,7 @@ get_header();
                                                             value="<?php echo esc_attr( $user_data->user_login ); ?>"
                                                             name="user_name" disabled>
                                                         <small
-                                                            class="text-sx md:text-sm text-gray-600 dark:text-gray-400">
+                                                            class="text-gray-600 text-sx md:text-sm dark:text-gray-400">
                                                             <?php esc_html_e( 'Usernames cannot be changed.', 'vms' ); ?>
                                                         </small>
                                                     </div>
@@ -211,7 +211,7 @@ get_header();
                                                             value="<?php echo esc_attr( $user_data->user_email ); ?>"
                                                             name="email" <?php echo ! $is_allowed ? 'disabled' : ''; ?>>
                                                         <small
-                                                            class="text-xs md:text-sm text-gray-600 dark:text-gray-400">
+                                                            class="text-xs text-gray-600 md:text-sm dark:text-gray-400">
                                                             <?php esc_html_e( 'If you change this, an email will be sent to confirm it.', 'vms' ); ?>
                                                         </small>
                                                     </div>
@@ -297,7 +297,7 @@ get_header();
                                                             </select>
 
                                                             <span
-                                                                class="pointer-events-none absolute top-1/2 right-4 z-30 -translate-y-1/2 text-gray-500 dark:text-gray-400">
+                                                                class="absolute z-30 text-gray-500 -translate-y-1/2 pointer-events-none top-1/2 right-4 dark:text-gray-400">
                                                                 <svg class="stroke-current" width="20" height="20"
                                                                     viewBox="0 0 20 20" fill="none"
                                                                     xmlns="http://www.w3.org/2000/svg">
@@ -354,7 +354,7 @@ get_header();
                                                             </select>
 
                                                             <span
-                                                                class="pointer-events-none absolute top-1/2 right-4 z-30 -translate-y-1/2 text-gray-500 dark:text-gray-400">
+                                                                class="absolute z-30 text-gray-500 -translate-y-1/2 pointer-events-none top-1/2 right-4 dark:text-gray-400">
                                                                 <svg class="stroke-current" width="20" height="20"
                                                                     viewBox="0 0 20 20" fill="none"
                                                                     xmlns="http://www.w3.org/2000/svg">
@@ -437,9 +437,9 @@ get_header();
                                                     </div>
                                                 </div>
                                                 <?php if ( $is_allowed ) : ?>
-                                                <div class="flex flex-col md:flex-row justify-center mt-4 gap-2">
+                                                <div class="flex flex-col justify-center gap-2 mt-4 md:flex-row">
                                                     <button type="submit" id="update-employee-btn"
-                                                        class="inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600 cursor-pointer">
+                                                        class="inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg cursor-pointer bg-brand-500 shadow-theme-xs hover:bg-brand-600">
                                                         <?php esc_html_e( 'Update Employee', 'vms' ); ?>
                                                     </button>
                                                     <?php if ( ( current_user_can( 'administrator' ) ) ) : ?>
@@ -449,7 +449,7 @@ get_header();
                                                     </button>
                                                     <button type="button" id="delete-employee-btn"
                                                         data-member-name="<?php echo esc_attr( $user_data->first_name ); ?>"
-                                                        class="px-4 py-2 text-white bg-error-500 rounded-lg hover:bg-error-600 inline-flex items-center justify-center gap-2 shadow-theme-xs transition cursor-pointer">
+                                                        class="inline-flex items-center justify-center gap-2 px-4 py-2 text-white transition rounded-lg cursor-pointer bg-error-500 hover:bg-error-600 shadow-theme-xs">
                                                         <?php esc_html_e( 'Delete Employee', 'vms' ); ?>
                                                     </button>
                                                     <?php endif; ?>

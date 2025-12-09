@@ -31,20 +31,20 @@ if ( empty( $full_name ) ) {
     <div :class="sidebarToggle ? 'justify-center' : 'justify-between'"
         class="flex items-center gap-2 pt-8 sidebar-header pb-7">
         <a href="<?php echo esc_url( home_url() ); ?>">
-            <span class="logo flex items-center justify-center gap-4" :class="sidebarToggle ? 'hidden' : ''">
+            <span class="flex items-center justify-center gap-4 logo" :class="sidebarToggle ? 'hidden' : ''">
                 <img class="h-12" loading="lazy"
                     src="<?php echo get_template_directory_uri(); ?>/assets/images/logo/logo.png" alt="Logo" />
                 <h2 class="text-2xl font-bold text-black dark:text-white font-satisfy">
                     <?php esc_html_e( 'Nyeri Club', 'vms' ); ?>
                 </h2>
             </span>
-            <img class="logo-icon h-10" :class="sidebarToggle ? 'lg:block hidden' : 'hidden'" loading="lazy"
+            <img class="h-10 logo-icon" :class="sidebarToggle ? 'lg:block hidden' : 'hidden'" loading="lazy"
                 src="<?php echo get_template_directory_uri(); ?>/assets/images/logo/logo.png" alt="Logo" />
         </a>
     </div>
     <!-- SIDEBAR HEADER -->
     <!-- SIDEBAR BODY -->
-    <div class="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar mt-5 lg:mt-0">
+    <div class="flex flex-col mt-5 overflow-y-auto duration-300 ease-linear no-scrollbar lg:mt-0">
         <!-- Sidebar Menu -->
         <nav x-data="{selected: $persist('Dashboard')}">
             <!-- Menu Group -->
@@ -63,7 +63,7 @@ if ( empty( $full_name ) ) {
                     </svg>
                 </h3>
 
-                <ul class="flex flex-col gap-2 md:gap-4 mb-6">
+                <ul class="flex flex-col gap-2 mb-6 md:gap-4">
                     <!-- Menu Item Dashboard -->
                     <?php if ( ( current_user_can( 'administrator' ) || current_user_can( 'chairman' ) || current_user_can( 'general_manager' ) || current_user_can( 'reception' ) ) ) : ?>
                     <li>
@@ -128,7 +128,7 @@ if ( empty( $full_name ) ) {
                     <?php endif; ?>
                     <!-- Menu Item Members -->
 
-                    <!-- Menu Item Employees -->
+                    <!-- Menu Item Staff -->
                     <?php if ( ( current_user_can( 'administrator' ) || current_user_can( 'general_manager' ) || current_user_can( 'chairman' ) ) ) : ?>
                     <li>
                         <a href="<?php echo esc_url( home_url( '/employees' ) ); ?>"
@@ -143,12 +143,12 @@ if ( empty( $full_name ) ) {
                             </svg>
 
                             <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                                <?php esc_html_e( 'Employees', 'vms' ); ?>
+                                <?php esc_html_e( 'Staff', 'vms' ); ?>
                             </span>
                         </a>
                     </li>
                     <?php endif; ?>
-                    <!-- Menu Item Employees -->
+                    <!-- Menu Item Staff -->
 
                     <!-- Menu Item Guests -->
                     <?php if ( ( current_user_can( 'administrator' ) || current_user_can( 'general_manager' ) || current_user_can( 'chairman' ) || current_user_can( 'reception' ) || current_user_can( 'gate' ) ) ) : ?>
@@ -274,7 +274,7 @@ if ( empty( $full_name ) ) {
                     </svg>
                 </h3>
 
-                <ul class="flex flex-col gap-2 md:gap-4 mb-6">
+                <ul class="flex flex-col gap-2 mb-6 md:gap-4">
 
                     <!-- Menu Item Reports -->
                     <li>
@@ -323,13 +323,13 @@ if ( empty( $full_name ) ) {
     </div>
     <!-- SIDEBAR BODY -->
     <!-- SIDEBAR FOOTER -->
-    <div class="w-65 flex flex-col fixed bottom-0 overflow-hidden duration-300 ease-linear no-scrollbar mt-10 lg:mt-0">
+    <div class="fixed bottom-0 flex flex-col mt-10 overflow-hidden duration-300 ease-linear w-65 no-scrollbar lg:mt-0">
 
         <!-- Gradient divider line -->
-        <div class="h-px w-full bg-gradient-to-r from-transparent via-black/30 to-transparent dark:via-white/30">
+        <div class="w-full h-px bg-gradient-to-r from-transparent via-black/30 to-transparent dark:via-white/30">
         </div>
 
-        <div class="text-center mt-2">
+        <div class="mt-2 text-center">
             <span class="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
                 <?php echo esc_html( $full_name ); ?>
             </span>
