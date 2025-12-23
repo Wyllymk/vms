@@ -440,7 +440,7 @@ get_header();
                                                 <div class="flex flex-col justify-center gap-2 mt-4 md:flex-row">
                                                     <button type="submit" id="update-employee-btn"
                                                         class="inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg cursor-pointer bg-brand-500 shadow-theme-xs hover:bg-brand-600">
-                                                        <?php esc_html_e( 'Update Employee', 'vms' ); ?>
+                                                        <?php esc_html_e( 'Update Staff', 'vms' ); ?>
                                                     </button>
                                                     <?php if ( ( current_user_can( 'administrator' ) ) ) : ?>
                                                     <button type="reset"
@@ -450,7 +450,7 @@ get_header();
                                                     <button type="button" id="delete-employee-btn"
                                                         data-member-name="<?php echo esc_attr( $user_data->first_name ); ?>"
                                                         class="inline-flex items-center justify-center gap-2 px-4 py-2 text-white transition rounded-lg cursor-pointer bg-error-500 hover:bg-error-600 shadow-theme-xs">
-                                                        <?php esc_html_e( 'Delete Employee', 'vms' ); ?>
+                                                        <?php esc_html_e( 'Delete Staff', 'vms' ); ?>
                                                     </button>
                                                     <?php endif; ?>
                                                 </div>
