@@ -59,6 +59,8 @@ $is_allowed   = in_array( 'administrator', $current_user->roles ) || in_array( '
 // Check if user has member or chairman role
 $restricted_roles    = array( 'member', 'chairman' );
 $has_restricted_role = ! empty( array_intersect( $restricted_roles, $user_roles ) );
+// Member role flag
+$is_member = in_array( 'member', $user_roles, true );
 
 // Build the WHERE clause for host filtering
 $host_filter        = '';
@@ -263,7 +265,7 @@ get_header();
     @close-guest-modal.window="isVisitInfoModal = false">
     <main id="main">
         <!-- ===== Page Wrapper Start ===== -->
-        <div class="flex h-svh overflow-hidden">
+        <div class="flex overflow-hidden h-svh">
             <!-- ===== Sidebar Start ===== -->
             <?php get_template_part( 'template-parts/content/content', 'sidebar' ); ?>
             <!-- ===== Sidebar End ===== -->
@@ -301,6 +303,7 @@ get_header();
                         <!-- Breadcrumb End -->
 
                         <!-- Export Actions Section -->
+                        <?php if ( $is_member ) : ?>
                         <div
                             class="w-full lg:w-5/6 xl:4/5 2xl:3/4 mx-auto flex flex-wrap items-center justify-between gap-3 mb-6 p-4 rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
                             <div class="flex items-center gap-2">
@@ -309,8 +312,9 @@ get_header();
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                         d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
                                 </svg>
-                                <span class="text-sm font-medium text-gray-700 dark:text-gray-400">Export Guest
-                                    Details</span>
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-400">
+                                    Export Guest Details
+                                </span>
                             </div>
 
                             <div class="flex flex-wrap gap-2">
@@ -331,6 +335,7 @@ get_header();
                                 </form>
                             </div>
                         </div>
+                        <?php endif; ?>
                         <!-- Export Actions Section End -->
 
                         <!-- Guest Details Section -->
@@ -458,7 +463,7 @@ get_header();
                                                             <input id="pnumber" name="phone_number" type="tel"
                                                                 value="<?php echo esc_attr( $guest->phone_number ?? '' ); ?>"
                                                                 placeholder="+254 703 000 000"
-                                                                class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent py-3 pr-4 pl-20 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" />
+                                                                class="w-full py-3 pl-20 pr-4 text-sm text-gray-800 bg-transparent border border-gray-300 rounded-lg dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" />
                                                         </div>
                                                     </div>
 
@@ -533,7 +538,7 @@ get_header();
 
                                                             <!-- Dropdown arrow -->
                                                             <span
-                                                                class="pointer-events-none absolute top-1/2 right-4 z-30 -translate-y-1/2 text-gray-500 dark:text-gray-400">
+                                                                class="absolute z-30 text-gray-500 -translate-y-1/2 pointer-events-none top-1/2 right-4 dark:text-gray-400">
                                                                 <svg class="stroke-current" width="20" height="20"
                                                                     viewBox="0 0 20 20" fill="none"
                                                                     xmlns="http://www.w3.org/2000/svg">
@@ -554,7 +559,7 @@ get_header();
                                                             x-data="{ switcherToggle: <?php echo ( $guest->receive_messages ?? 'no' ) === 'yes' ? 'true' : 'false'; ?> }">
 
                                                             <label for="receive_messages"
-                                                                class="flex cursor-pointer items-center gap-3 text-sm font-medium text-gray-700 select-none dark:text-gray-400">
+                                                                class="flex items-center gap-3 text-sm font-medium text-gray-700 cursor-pointer select-none dark:text-gray-400">
 
                                                                 <div class="relative">
                                                                     <input type="checkbox" id="receive_messages"
@@ -564,7 +569,7 @@ get_header();
                                                                         x-model="switcherToggle" />
 
                                                                     <!-- Track -->
-                                                                    <div class="block h-6 w-11 rounded-full"
+                                                                    <div class="block h-6 rounded-full w-11"
                                                                         :class="switcherToggle ? 'bg-brand-500 dark:bg-brand-500' : 'bg-gray-200 dark:bg-white/10'">
                                                                     </div>
 
@@ -580,7 +585,7 @@ get_header();
                                                         <div class="mb-4"
                                                             x-data="{ switcherToggle: <?php echo ( $guest->receive_emails ?? 'no' ) === 'yes' ? 'true' : 'false'; ?> }">
                                                             <label for="receive_emails"
-                                                                class="flex cursor-pointer items-center gap-3 text-sm font-medium text-gray-700 select-none dark:text-gray-400">
+                                                                class="flex items-center gap-3 text-sm font-medium text-gray-700 cursor-pointer select-none dark:text-gray-400">
 
                                                                 <div class="relative">
                                                                     <input type="checkbox" id="receive_emails"
@@ -590,7 +595,7 @@ get_header();
                                                                         x-model="switcherToggle" />
 
                                                                     <!-- Track -->
-                                                                    <div class="block h-6 w-11 rounded-full"
+                                                                    <div class="block h-6 rounded-full w-11"
                                                                         :class="switcherToggle ? 'bg-brand-500 dark:bg-brand-500' : 'bg-gray-200 dark:bg-white/10'">
                                                                     </div>
 
@@ -605,11 +610,11 @@ get_header();
                                                     </div>
                                                 </div>
                                                 <?php if ( $is_allowed ) : ?>
-                                                <div class="flex flex-col md:flex-row justify-center mt-4 gap-2">
+                                                <div class="flex flex-col justify-center gap-2 mt-4 md:flex-row">
                                                     <input type="hidden" name="guest_id"
                                                         value="<?php echo esc_attr( $guest_id ); ?>">
                                                     <button type="submit" name="update_guest" id="update-guest-btn"
-                                                        class="inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600 cursor-pointer">
+                                                        class="inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg cursor-pointer bg-brand-500 shadow-theme-xs hover:bg-brand-600">
                                                         <?php esc_html_e( 'Update Guest', 'vms' ); ?>
                                                     </button>
                                                     <?php if ( ( current_user_can( 'administrator' ) ) ) : ?>
@@ -619,7 +624,7 @@ get_header();
                                                     </button>
                                                     <button type="submit" name="delete_guest" id="delete-guest-btn"
                                                         data-guest-name="<?php echo $guest->first_name; ?>"
-                                                        class="px-4 py-2 text-white bg-error-500 rounded-lg hover:bg-error-600 inline-flex items-center justify-center gap-2 shadow-theme-xs transition cursor-pointer">
+                                                        class="inline-flex items-center justify-center gap-2 px-4 py-2 text-white transition rounded-lg cursor-pointer bg-error-500 hover:bg-error-600 shadow-theme-xs">
                                                         <?php esc_html_e( 'Delete Guest', 'vms' ); ?>
                                                     </button>
                                                     <?php endif; ?>
@@ -648,18 +653,18 @@ get_header();
                                                 </div>
                                             </div>
 
-                                            <div class="border-t border-gray-100 p-5 dark:border-gray-800 sm:p-6">
+                                            <div class="p-5 border-t border-gray-100 dark:border-gray-800 sm:p-6">
                                                 <div
                                                     class="overflow-hidden rounded-xl border border-gray-200 bg-white pt-4 dark:border-gray-800 dark:bg-white/[0.03]">
 
                                                     <!-- Controls -->
                                                     <div
-                                                        class="mb-4 flex flex-col gap-2 px-4 sm:flex-row sm:items-center sm:justify-between">
+                                                        class="flex flex-col gap-2 px-4 mb-4 sm:flex-row sm:items-center sm:justify-between">
                                                         <div class="flex items-center gap-3">
                                                             <span class="text-gray-500 dark:text-gray-400">Show</span>
                                                             <div class="relative z-20 bg-transparent">
                                                                 <select
-                                                                    class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-9 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none py-2 pr-8 pl-3 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
+                                                                    class="w-full py-2 pl-3 pr-8 text-sm text-gray-800 bg-transparent border border-gray-300 rounded-lg appearance-none shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-9 bg-none placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
                                                                     onchange="window.location.href = '<?php echo esc_js( VMS_Core::build_per_page_url() ); ?>' + this.value">
                                                                     <option value="10"
                                                                         <?php selected( $per_page, 10 ); ?>>10</option>
@@ -669,7 +674,7 @@ get_header();
                                                                         <?php selected( $per_page, 50 ); ?>>50</option>
                                                                 </select>
                                                                 <span
-                                                                    class="absolute top-1/2 right-2 z-30 -translate-y-1/2 text-gray-500 dark:text-gray-400">
+                                                                    class="absolute z-30 text-gray-500 -translate-y-1/2 top-1/2 right-2 dark:text-gray-400">
                                                                     <svg class="stroke-current" width="16" height="16"
                                                                         viewBox="0 0 16 16" fill="none"
                                                                         xmlns="http://www.w3.org/2000/svg">
@@ -704,65 +709,65 @@ get_header();
                                                                 class="grid grid-cols-12 border-t border-gray-200 dark:border-gray-800">
                                                                 <!-- # -->
                                                                 <div
-                                                                    class="col-span-1 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
+                                                                    class="flex items-center col-span-1 px-4 py-3 border-r border-gray-200 dark:border-gray-800">
                                                                     <p
-                                                                        class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
+                                                                        class="font-medium text-gray-700 text-theme-xs dark:text-gray-400">
                                                                         <?php esc_html_e( '#', 'vms' ); ?>
                                                                     </p>
                                                                 </div>
                                                                 <!-- Host Member -->
                                                                 <div
-                                                                    class="col-span-2 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
+                                                                    class="flex items-center col-span-2 px-4 py-3 border-r border-gray-200 dark:border-gray-800">
                                                                     <p
-                                                                        class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
+                                                                        class="font-medium text-gray-700 text-theme-xs dark:text-gray-400">
                                                                         <?php esc_html_e( 'Host Member', 'vms' ); ?>
                                                                     </p>
                                                                 </div>
                                                                 <!-- Visit Date -->
                                                                 <div
-                                                                    class="col-span-2 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
+                                                                    class="flex items-center col-span-2 px-4 py-3 border-r border-gray-200 dark:border-gray-800">
                                                                     <p
-                                                                        class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
+                                                                        class="font-medium text-gray-700 text-theme-xs dark:text-gray-400">
                                                                         <?php esc_html_e( 'Visit Date', 'vms' ); ?>
                                                                     </p>
                                                                 </div>
                                                                 <!-- Sign In Time -->
                                                                 <div
-                                                                    class="col-span-1 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
+                                                                    class="flex items-center col-span-1 px-4 py-3 border-r border-gray-200 dark:border-gray-800">
                                                                     <p
-                                                                        class="whitespace-nowrap text-theme-xs font-medium text-gray-700 dark:text-gray-400">
+                                                                        class="font-medium text-gray-700 whitespace-nowrap text-theme-xs dark:text-gray-400">
                                                                         <?php esc_html_e( 'Sign In Time', 'vms' ); ?>
                                                                     </p>
                                                                 </div>
                                                                 <!-- Sign Out Time -->
                                                                 <div
-                                                                    class="col-span-1 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
+                                                                    class="flex items-center col-span-1 px-4 py-3 border-r border-gray-200 dark:border-gray-800">
                                                                     <p
-                                                                        class="whitespace-nowrap text-theme-xs font-medium text-gray-700 dark:text-gray-400">
+                                                                        class="font-medium text-gray-700 whitespace-nowrap text-theme-xs dark:text-gray-400">
                                                                         <?php esc_html_e( 'Sign Out Time', 'vms' ); ?>
                                                                     </p>
                                                                 </div>
                                                                 <!-- Duration -->
                                                                 <div
-                                                                    class="col-span-1 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
+                                                                    class="flex items-center col-span-1 px-4 py-3 border-r border-gray-200 dark:border-gray-800">
                                                                     <p
-                                                                        class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
+                                                                        class="font-medium text-gray-700 text-theme-xs dark:text-gray-400">
                                                                         <?php esc_html_e( 'Duration', 'vms' ); ?>
                                                                     </p>
                                                                 </div>
                                                                 <!-- Status -->
                                                                 <div
-                                                                    class="col-span-2 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
+                                                                    class="flex items-center col-span-2 px-4 py-3 border-r border-gray-200 dark:border-gray-800">
                                                                     <p
-                                                                        class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
+                                                                        class="font-medium text-gray-700 text-theme-xs dark:text-gray-400">
                                                                         <?php esc_html_e( 'Status', 'vms' ); ?>
                                                                     </p>
                                                                 </div>
                                                                 <!-- Action -->
                                                                 <div
-                                                                    class="col-span-2 flex items-center border-r border-gray-200 px-4 py-3 dark:border-gray-800">
+                                                                    class="flex items-center col-span-2 px-4 py-3 border-r border-gray-200 dark:border-gray-800">
                                                                     <p
-                                                                        class="text-theme-xs font-medium text-gray-700 dark:text-gray-400">
+                                                                        class="font-medium text-gray-700 text-theme-xs dark:text-gray-400">
                                                                         <?php esc_html_e( 'Action', 'vms' ); ?>
                                                                     </p>
                                                                 </div>
@@ -773,19 +778,19 @@ get_header();
                                                                 <?php if ( ! empty( $visits ) ) : ?>
                                                                 <?php foreach ( $visits as $visit ) : ?>
                                                                 <div id="visit-div-<?php echo esc_attr( $visit->id ); ?>"
-                                                                    class="grid grid-cols-12 border-y border-gray-100 dark:border-gray-800">
+                                                                    class="grid grid-cols-12 border-gray-100 border-y dark:border-gray-800">
                                                                     <!-- Row Number -->
                                                                     <div
-                                                                        class="col-span-1 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
+                                                                        class="flex items-center col-span-1 px-4 py-3 border-r border-gray-100 dark:border-gray-800">
                                                                         <p
-                                                                            class="text-theme-sm text-gray-700 dark:text-gray-400">
+                                                                            class="text-gray-700 text-theme-sm dark:text-gray-400">
                                                                             <?php echo esc_html( $row_number++ ); ?>
                                                                         </p>
                                                                     </div>
 
                                                                     <!-- Host -->
                                                                     <div
-                                                                        class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
+                                                                        class="flex items-center col-span-2 px-4 py-3 border-r border-gray-100 dark:border-gray-800">
                                                                         <?php
 																			$host_display = 'N/A';
 																		if ( ! empty( $visit->host_member_id ) ) {
@@ -820,43 +825,43 @@ get_header();
 
                                                                     <!-- Visit Date -->
                                                                     <div
-                                                                        class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
+                                                                        class="flex items-center col-span-2 px-4 py-3 border-r border-gray-100 dark:border-gray-800">
                                                                         <p
-                                                                            class="text-theme-sm text-gray-700 dark:text-gray-400">
+                                                                            class="text-gray-700 text-theme-sm dark:text-gray-400">
                                                                             <?php echo esc_html( VMS_Core::format_date( $visit->visit_date ) ); ?>
                                                                         </p>
                                                                     </div>
 
                                                                     <!-- Sign In -->
                                                                     <div
-                                                                        class="col-span-1 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
+                                                                        class="flex items-center col-span-1 px-4 py-3 border-r border-gray-100 dark:border-gray-800">
                                                                         <p
-                                                                            class="text-theme-sm text-gray-700 dark:text-gray-400">
+                                                                            class="text-gray-700 text-theme-sm dark:text-gray-400">
                                                                             <?php echo esc_html( VMS_Core::format_time( $visit->sign_in_time ) ); ?>
                                                                         </p>
                                                                     </div>
 
                                                                     <!-- Sign Out -->
                                                                     <div
-                                                                        class="col-span-1 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
+                                                                        class="flex items-center col-span-1 px-4 py-3 border-r border-gray-100 dark:border-gray-800">
                                                                         <p
-                                                                            class="text-theme-sm text-gray-700 dark:text-gray-400">
+                                                                            class="text-gray-700 text-theme-sm dark:text-gray-400">
                                                                             <?php echo esc_html( VMS_Core::format_time( $visit->sign_out_time ) ); ?>
                                                                         </p>
                                                                     </div>
 
                                                                     <!-- Duration -->
                                                                     <div
-                                                                        class="col-span-1 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
+                                                                        class="flex items-center col-span-1 px-4 py-3 border-r border-gray-100 dark:border-gray-800">
                                                                         <p
-                                                                            class="text-theme-sm text-gray-700 dark:text-gray-400">
+                                                                            class="text-gray-700 text-theme-sm dark:text-gray-400">
                                                                             <?php echo esc_html( VMS_Core::calculate_duration( $visit->sign_in_time, $visit->sign_out_time ) ); ?>
                                                                         </p>
                                                                     </div>
 
                                                                     <!-- Status -->
                                                                     <div
-                                                                        class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
+                                                                        class="flex items-center col-span-2 px-4 py-3 border-r border-gray-100 dark:border-gray-800">
                                                                         <span
                                                                             class="inline-flex items-center justify-center gap-1 rounded-full px-2.5 py-0.5 text-sm font-medium capitalize <?php echo $status_classes[ $visit->status ] ?? $status_classes['approved']; ?>">
                                                                             <?php echo esc_html( $visit->status ); ?>
@@ -864,7 +869,7 @@ get_header();
                                                                     </div>
                                                                     <!-- Action -->
                                                                     <div
-                                                                        class="col-span-2 flex items-center border-r border-gray-100 px-4 py-3 dark:border-gray-800">
+                                                                        class="flex items-center col-span-2 px-4 py-3 border-r border-gray-100 dark:border-gray-800">
                                                                         <form method="post"
                                                                             onsubmit="return confirm('Are you sure you want to cancel this visit?');">
                                                                             <input type="hidden" name="visit_id"
@@ -880,7 +885,7 @@ get_header();
                                                                 <?php endforeach; ?>
                                                                 <?php else : ?>
                                                                 <div id="no-visits-div"
-                                                                    class="border-t border-gray-100 px-4 py-8 text-center dark:border-gray-800">
+                                                                    class="px-4 py-8 text-center border-t border-gray-100 dark:border-gray-800">
                                                                     <p class="text-gray-500 dark:text-gray-400">
                                                                         <?php esc_html_e( 'No visits found', 'vms' ); ?>
                                                                     </p>
@@ -938,7 +943,7 @@ get_header();
 																	?>
                                                             <li>
                                                                 <span
-                                                                    class="flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium text-gray-500 dark:text-gray-500 pointer-events-none">...</span>
+                                                                    class="flex items-center justify-center w-10 h-10 text-sm font-medium text-gray-500 rounded-lg pointer-events-none dark:text-gray-500">...</span>
                                                             </li>
                                                             <?php
 															endif;
@@ -948,12 +953,12 @@ get_header();
                                                             <li>
                                                                 <?php if ( $is_current ) : ?>
                                                                 <span
-                                                                    class="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-500 text-sm font-medium text-white hover:bg-brand-500 hover:text-white">
+                                                                    class="flex items-center justify-center w-10 h-10 text-sm font-medium text-white rounded-lg bg-brand-500 hover:bg-brand-500 hover:text-white">
                                                                     <?php echo esc_html( $page_num ); ?>
                                                                 </span>
                                                                 <?php else : ?>
                                                                 <a href="<?php echo esc_url( VMS_Core::build_pagination_url( $page_num ) ); ?>"
-                                                                    class="flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium text-gray-700 hover:bg-brand-500 hover:text-white dark:text-gray-400 dark:hover:text-white">
+                                                                    class="flex items-center justify-center w-10 h-10 text-sm font-medium text-gray-700 rounded-lg hover:bg-brand-500 hover:text-white dark:text-gray-400 dark:hover:text-white">
                                                                     <?php echo esc_html( $page_num ); ?>
                                                                 </a>
                                                                 <?php endif; ?>
@@ -992,7 +997,7 @@ get_header();
                                                     <!-- No pagination needed, but show entry count -->
                                                     <div class="px-6 py-4">
                                                         <div
-                                                            class="text-sm text-gray-500 dark:text-gray-400 text-center">
+                                                            class="text-sm text-center text-gray-500 dark:text-gray-400">
                                                             <?php if ( $total_visits > 0 ) : ?>
                                                             Showing all <?php echo esc_html( $total_visits ); ?> entries
                                                             <?php endif; ?>

@@ -135,6 +135,7 @@ function clubvms_scripts() {
 			'admin_url'  => admin_url(),
 			'home_url'   => home_url(),
 			'assets_url' => get_template_directory_uri() . '/javascript',
+			'current_user_role' => wp_get_current_user()->roles[0] ?? 'guest',
 		)
 	);
 

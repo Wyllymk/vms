@@ -39,6 +39,11 @@ $receive_messages = get_user_meta( $user_id, 'receive_messages', true );
 $receive_emails   = get_user_meta( $user_id, 'receive_emails', true );
 $user_role        = ! empty( $current_user->roles ) ? $current_user->roles[0] : 'guest';
 
+// Always treat roles as an array
+$user_roles = (array) $current_user->roles;
+
+// Member role flag
+$is_member = in_array( 'member', $user_roles, true );
 ?>
 
 <section x-data="{ page: 'profile', 'isProfileInfoModal': false, 'isPasswordModal': false }"
@@ -62,10 +67,29 @@ $user_role        = ! empty( $current_user->roles ) ? $current_user->roles[0] : 
             <!-- ===== Main Content Start ===== -->
             <main>
                 <div class="p-4 mx-auto max-w-(--breakpoint-2xl) min-h-screen md:p-6">
+                    
                     <!-- Breadcrumb Start -->
+                    <?php if ( $is_member ) : ?>
+                    <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+                        <a href="<?php echo esc_url( home_url( '/guests' ) ); ?>"
+                            class="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+                            <svg class="stroke-current" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                viewBox="0 0 20 20" fill="none">
+                                <path d="M12.7083 5L7.5 10.2083L12.7083 15.4167" stroke="" stroke-width="1.5"
+                                    stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                            <?php esc_html_e( 'Back to Guests', 'vms' ); ?>
+                        </a>
+
+                        <h2 class="text-xl font-semibold text-gray-800 dark:text-white/90">
+                            <?php esc_html_e( 'Profile', 'vms' ); ?>
+                        </h2>
+                    </div>                    
+                    <?php else : ?>                    
                     <div x-data="{ pageName: `Profile`}">
                         <?php get_template_part( 'template-parts/content/content', 'breadcrumb' ); ?>
                     </div>
+                    <?php endif; ?>
                     <!-- Breadcrumb End -->
 
                     <div
@@ -131,7 +155,7 @@ $user_role        = ! empty( $current_user->roles ) ? $current_user->roles[0] : 
                                         <img id="profile-preview"
                                             class="object-cover w-24 h-24 border-2 border-gray-200 rounded-full dark:border-gray-700"
                                             src="<?php echo esc_url( get_user_meta( $user_id, 'profile_picture', true ) ?: get_avatar_url( $user_id ) ); ?>"
-                                            alt="Profile Picture">
+                                            alt="Profile Picture">                                            
                                         <!-- File selector -->
                                         <div
                                             class="absolute flex items-center justify-center p-0.5 backdrop-blur-md rounded-full bottom-3 right-3">

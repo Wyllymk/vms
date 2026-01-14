@@ -34,7 +34,8 @@ export function initGuest() {
 				!normalizedVisitDate ||
 				!guest.status ||
 				!/^\d{4}-\d{2}-\d{2}$/.test(normalizedVisitDate) ||
-				guest.status !== 'approved';
+				guest.status !== 'approved' ||
+				vms_script_ajax.current_user_role === 'member'; // Added role check here
 
 			const isFuture = normalizedVisitDate > today;
 			const isPast = normalizedVisitDate < today;
