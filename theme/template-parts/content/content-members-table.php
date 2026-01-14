@@ -13,30 +13,6 @@ defined( 'ABSPATH' ) || exit;
 // Get all users with member or chairman role
 $users = get_users( array( 'role__in' => array( 'member', 'chairman') ) );
 
-// Search functionality
-$search_term = '';
-if ( isset( $_GET['search_users'] ) && ! empty( $_GET['user_search'] ) ) {
-    $search_term = sanitize_text_field( $_GET['user_search'] );
-    
-    // Filter users based on search term
-    $filtered_users = array();
-    foreach ( $users as $user ) {
-        $username  = $user->user_login;
-        $email     = $user->user_email;
-        $first_name = get_user_meta( $user->ID, 'first_name', true );
-        $last_name  = get_user_meta( $user->ID, 'last_name', true );
-        
-        // Check if search term matches any user field
-        if ( stripos( $username, $search_term ) !== false ||
-             stripos( $email, $search_term ) !== false ||
-             stripos( $first_name, $search_term ) !== false ||
-             stripos( $last_name, $search_term ) !== false ) {
-            $filtered_users[] = $user;
-        }
-    }
-    $users = $filtered_users;
-}
-
 $status_classes = array(
     'pending'   => 'bg-blue-light-50 text-blue-light-500 dark:bg-blue-light-500/15 dark:text-blue-light-500',
     'active'    => 'bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-500',
@@ -75,7 +51,8 @@ foreach ( $users as $user ) {
 ?>
 
 <div class="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]"
-    x-data="usersTable()" x-init="init()">
+    x-data="usersTable()" x-init="init()" @search-users-updated.window="searchTerm = $event.detail; performSearch()"
+    @clear-users-search.window="clearSearch()">
 
     <div
         class="mb-4 flex flex-col gap-2 px-4 py-4 sm:flex-row sm:items-center sm:justify-between border-b border-gray-200 dark:border-gray-800">
@@ -103,7 +80,7 @@ foreach ( $users as $user ) {
         </div>
     </div>
 
-    <div class="max-w-full overflow-x-auto" id="users-table">
+    <div x-show="filteredUsers.length > 0" class="max-w-full overflow-x-auto" id="users-table">
         <table class="min-w-full">
             <thead>
                 <tr class="border-b border-gray-100 dark:border-gray-800">
@@ -150,13 +127,6 @@ foreach ( $users as $user ) {
                 </tr>
             </thead>
             <tbody id="users-table-body" class="divide-y divide-gray-100 dark:divide-gray-800">
-                <template x-if="paginatedUsers.length === 0">
-                    <tr>
-                        <td colspan="8" class="px-4 py-4 text-center text-gray-600 dark:text-white">No employees found.
-                        </td>
-                    </tr>
-                </template>
-
                 <template x-for="(user, index) in paginatedUsers" :key="user.id">
                     <tr>
                         <td class="px-5 py-4 sm:px-6">
@@ -220,7 +190,41 @@ foreach ( $users as $user ) {
         </table>
     </div>
 
-    <div x-show="totalPages > 1"
+    <!-- Empty state message -->
+    <div x-show="filteredUsers.length === 0" class="p-8 text-center">
+        <template x-if="searchTerm">
+            <div class="py-8">
+                <svg class="w-16 h-16 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                        d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <h3 class="mt-4 text-lg font-medium text-gray-900 dark:text-white">No members found</h3>
+                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                    No members match your search for "<span x-text="searchTerm" class="font-medium"></span>".
+                </p>
+                <button @click="clearSearch()"
+                    class="inline-flex items-center px-4 py-2 mt-4 text-sm font-medium text-white bg-brand-500 rounded-lg hover:bg-brand-600">
+                    Clear Search
+                </button>
+            </div>
+        </template>
+
+        <template x-if="!searchTerm && allUsers.length === 0">
+            <div class="py-8">
+                <svg class="w-16 h-16 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <h3 class="mt-4 text-lg font-medium text-gray-900 dark:text-white">No members yet</h3>
+                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                    Get started by registering new members.
+                </p>
+            </div>
+        </template>
+    </div>
+
+    <!-- Pagination - Only show if there are results -->
+    <div x-show="filteredUsers.length > 0 && totalPages > 1"
         class="flex items-center justify-between gap-8 px-6 py-4 sm:justify-normal border-t border-gray-200 dark:border-gray-800">
 
         <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
@@ -291,9 +295,10 @@ foreach ( $users as $user ) {
 <script>
 function usersTable() {
     return {
-        allUsers: <?php echo json_encode( $users_data ); ?>,
+        allUsers: <?php echo !empty($users_data) ? json_encode($users_data) : '[]'; ?>,
         perPage: 25,
         currentPage: 1,
+        searchTerm: '',
 
         init() {
             const savedPerPage = localStorage.getItem('users_per_page');
@@ -306,19 +311,65 @@ function usersTable() {
             if (savedPage) {
                 this.currentPage = parseInt(savedPage);
             }
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchParam = urlParams.get('user_search');
+            if (searchParam) {
+                this.searchTerm = searchParam;
+                const searchInput = document.getElementById('search-users-input');
+                if (searchInput) {
+                    searchInput.value = searchParam;
+                }
+            }
+
+            if (!Array.isArray(this.allUsers)) {
+                this.allUsers = [];
+            }
+        },
+
+        get filteredUsers() {
+            if (!Array.isArray(this.allUsers)) {
+                return [];
+            }
+            if (!this.searchTerm) {
+                return this.allUsers;
+            }
+
+            const searchTerm = this.searchTerm.toLowerCase();
+            return this.allUsers.filter(user => {
+                if (!user) return false;
+
+                return (
+                    (user.username && user.username.toLowerCase().includes(searchTerm)) ||
+                    (user.first_name && user.first_name.toLowerCase().includes(searchTerm)) ||
+                    (user.last_name && user.last_name.toLowerCase().includes(searchTerm)) ||
+                    (user.email && user.email.toLowerCase().includes(searchTerm)) ||
+                    (user.phone_number && user.phone_number.includes(searchTerm)) ||
+                    (user.registration_status && user.registration_status.toLowerCase().includes(
+                        searchTerm))
+                );
+            });
         },
 
         get totalPages() {
-            return Math.ceil(this.allUsers.length / this.perPage);
+            return Math.ceil(this.filteredUsers.length / this.perPage);
         },
 
         get paginatedUsers() {
             const start = (this.currentPage - 1) * this.perPage;
             const end = start + this.perPage;
-            return this.allUsers.slice(start, end);
+            return this.filteredUsers.slice(start, end);
         },
 
         get pageRange() {
+            if (this.totalPages <= 0) return {
+                pages: [],
+                showFirst: false,
+                showFirstEllipsis: false,
+                showLast: false,
+                showLastEllipsis: false
+            };
+
             const range = 2;
             const start = Math.max(1, this.currentPage - range);
             const end = Math.min(this.totalPages, this.currentPage + range);
@@ -355,12 +406,77 @@ function usersTable() {
         },
 
         getEntriesText() {
-            const start = this.allUsers.length > 0 ? ((this.currentPage - 1) * this.perPage) + 1 : 0;
-            const end = Math.min(this.currentPage * this.perPage, this.allUsers.length);
-            const total = this.allUsers.length;
+            const total = this.filteredUsers.length;
+            if (total === 0) {
+                return 'No entries found';
+            }
 
+            const start = total > 0 ? ((this.currentPage - 1) * this.perPage) + 1 : 0;
+            const end = Math.min(this.currentPage * this.perPage, total);
+
+            if (this.searchTerm) {
+                return `Showing ${start} to ${end} of ${total} filtered entries`;
+            }
             return `Showing ${start} to ${end} of ${total} entries`;
+        },
+
+        performSearch() {
+            this.currentPage = 1;
+            localStorage.setItem('users_current_page', this.currentPage);
+
+            const url = new URL(window.location);
+            if (this.searchTerm) {
+                url.searchParams.set('user_search', this.searchTerm);
+                url.searchParams.set('search_users', 'true');
+            } else {
+                url.searchParams.delete('user_search');
+                url.searchParams.delete('search_users');
+            }
+            window.history.pushState({}, '', url);
+        },
+
+        clearSearch() {
+            this.searchTerm = '';
+            this.currentPage = 1;
+            localStorage.setItem('users_current_page', this.currentPage);
+
+            const url = new URL(window.location);
+            url.searchParams.delete('user_search');
+            url.searchParams.delete('search_users');
+            window.history.pushState({}, '', url);
+
+            // Clear the search input field
+            const searchInput = document.getElementById('search-users-input');
+            if (searchInput) {
+                searchInput.value = '';
+                // Also trigger the input event to update any x-model binding
+                searchInput.dispatchEvent(new Event('input', {
+                    bubbles: true
+                }));
+            }
         }
     }
 }
+
+// Keyboard shortcuts
+document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('keydown', function(e) {
+        if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+            e.preventDefault();
+            const searchInput = document.getElementById('search-users-input');
+            if (searchInput) {
+                searchInput.focus();
+            }
+        }
+        if (e.key === 'Escape') {
+            const searchInput = document.getElementById('search-users-input');
+            if (searchInput && searchInput.value) {
+                searchInput.value = '';
+                searchInput.dispatchEvent(new Event('input', {
+                    bubbles: true
+                }));
+            }
+        }
+    });
+});
 </script>

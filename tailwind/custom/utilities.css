@@ -89,6 +89,10 @@
 	background-color: #344054;
 }
 
+[x-cloak] {
+	display: none !important;
+}
+
 @layer base {
 	body {
 		@apply font-outfit relative z-1 bg-gray-50 text-base font-normal;

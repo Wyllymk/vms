@@ -28,22 +28,8 @@ if ( $is_gate ) {
     $role_filter = $wpdb->prepare( ' AND DATE(v.visit_date) = %s', $today );
 }
 
-// Search functionality
-$search_term  = '';
+// REMOVED PHP search functionality since we're doing client-side search
 $where_clause = '';
-
-if ( isset( $_GET['search_users'] ) && ! empty( $_GET['user_search'] ) ) {
-    $search_term  = sanitize_text_field( $_GET['user_search'] );
-    $like         = '%' . $wpdb->esc_like( $search_term ) . '%';
-    $where_clause = $wpdb->prepare(
-        ' WHERE (g.first_name LIKE %s OR g.last_name LIKE %s OR g.id_number LIKE %s OR g.email LIKE %s OR g.phone_number LIKE %s)',
-        $like,
-        $like,
-        $like,
-        $like,
-        $like
-    );
-}
 
 // Build complete WHERE clause
 $complete_where = $where_clause;
@@ -105,6 +91,8 @@ foreach ( $all_guests as $guest ) {
         'first_name'      => $guest->first_name,
         'last_name'       => $guest->last_name,
         'id_number'       => $guest->id_number ?? 'N/A',
+        'email'           => $guest->email ?? '',
+        'phone_number'    => $guest->phone_number ?? '',
         'visit_status'    => $guest->visit_status,
         'status_class'    => $status_classes[ $guest->visit_status ] ?? $status_classes['approved'],
         'visit_date'      => $visit_date,
@@ -115,8 +103,10 @@ foreach ( $all_guests as $guest ) {
 }
 ?>
 
-<div class="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]"
-    x-data="accommodationGuestTable()" x-init="init()">
+<div x-data="accommodationGuestTable()" x-init="init()"
+    @search-accommodation-guests-updated.window="searchTerm = $event.detail; performSearch()"
+    @clear-accommodation-guests-search.window="clearSearch()"
+    class="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
 
     <div
         class="mb-4 flex flex-col gap-2 px-4 py-4 sm:flex-row sm:items-center sm:justify-between border-b border-gray-200 dark:border-gray-800">
@@ -125,7 +115,8 @@ foreach ( $all_guests as $guest ) {
             <div class="relative z-20 bg-transparent">
                 <select x-model="perPage" @change="updatePerPage()"
                     class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-9 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none py-2 pr-8 pl-3 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30">
-                    <option value="25">25</option>
+                    <option value="10">10</option>
+                    <option value="20">20</option>
                     <option value="50">50</option>
                     <option value="100">100</option>
                 </select>
@@ -144,7 +135,7 @@ foreach ( $all_guests as $guest ) {
         </div>
     </div>
 
-    <div class="max-w-full overflow-x-auto" id="accommodation-guests-table"
+    <div x-show="filteredGuests.length > 0" class="max-w-full overflow-x-auto" id="accommodation-guests-table"
         data-guest-details-url="<?php echo esc_url( home_url( '/guest-details' ) ); ?>">
         <table class="min-w-full">
             <thead>
@@ -187,13 +178,6 @@ foreach ( $all_guests as $guest ) {
                 </tr>
             </thead>
             <tbody id="accommodation-guests-table-body" class="divide-y divide-gray-100 dark:divide-gray-800">
-                <template x-if="paginatedGuests.length === 0">
-                    <tr>
-                        <td colspan="8" class="px-4 py-4 text-center text-gray-600 dark:text-white">No guests found.
-                        </td>
-                    </tr>
-                </template>
-
                 <template x-for="(guest, index) in paginatedGuests" :key="guest.visit_id">
                     <tr :data-guest-id="guest.id" :data-visit-id="guest.visit_id">
                         <td class="px-3 py-4 sm:px-6">
@@ -316,7 +300,43 @@ foreach ( $all_guests as $guest ) {
         </table>
     </div>
 
-    <div x-show="totalPages > 1"
+    <!-- Empty state message -->
+    <div x-show="filteredGuests.length === 0" class="p-8 text-center">
+        <template x-if="searchTerm">
+            <div class="py-8">
+                <svg class="w-16 h-16 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                        d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <h3 class="mt-4 text-lg font-medium text-gray-900 dark:text-white">No accommodation guests found</h3>
+                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                    No accommodation guests match your search for "<span x-text="searchTerm"
+                        class="font-medium"></span>".
+                </p>
+                <button @click="clearSearch()"
+                    class="inline-flex items-center px-4 py-2 mt-4 text-sm font-medium text-white bg-brand-500 rounded-lg hover:bg-brand-600">
+                    Clear Search
+                </button>
+            </div>
+        </template>
+
+        <template x-if="!searchTerm && allGuests.length === 0">
+            <div class="py-8">
+                <svg class="w-16 h-16 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                <h3 class="mt-4 text-lg font-medium text-gray-900 dark:text-white">No accommodation guest visits yet
+                </h3>
+                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                    Get started by registering a new accommodation guest visit.
+                </p>
+            </div>
+        </template>
+    </div>
+
+    <!-- Pagination - Only show if there are results -->
+    <div x-show="filteredGuests.length > 0 && totalPages > 1"
         class="flex items-center justify-between gap-8 px-6 py-4 sm:justify-normal border-t border-gray-200 dark:border-gray-800">
 
         <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
@@ -387,9 +407,10 @@ foreach ( $all_guests as $guest ) {
 <script>
 function accommodationGuestTable() {
     return {
-        allGuests: <?php echo json_encode( $guests_data ); ?>,
-        perPage: 25,
+        allGuests: <?php echo !empty($guests_data) ? json_encode($guests_data) : '[]'; ?>,
+        perPage: 20,
         currentPage: 1,
+        searchTerm: '',
         isMemberOrChairman: <?php 
             $current_user = wp_get_current_user();
             $user_roles = $current_user->roles;
@@ -408,19 +429,65 @@ function accommodationGuestTable() {
             if (savedPage) {
                 this.currentPage = parseInt(savedPage);
             }
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchParam = urlParams.get('user_search');
+            if (searchParam) {
+                this.searchTerm = searchParam;
+                const searchInput = document.getElementById('search-accommodation-guests-input');
+                if (searchInput) {
+                    searchInput.value = searchParam;
+                }
+            }
+
+            if (!Array.isArray(this.allGuests)) {
+                this.allGuests = [];
+            }
+        },
+
+        get filteredGuests() {
+            if (!Array.isArray(this.allGuests)) {
+                return [];
+            }
+            if (!this.searchTerm) {
+                return this.allGuests;
+            }
+
+            const searchTerm = this.searchTerm.toLowerCase();
+            return this.allGuests.filter(guest => {
+                if (!guest) return false;
+
+                return (
+                    (guest.first_name && guest.first_name.toLowerCase().includes(searchTerm)) ||
+                    (guest.last_name && guest.last_name.toLowerCase().includes(searchTerm)) ||
+                    (guest.id_number && guest.id_number.toLowerCase().includes(searchTerm)) ||
+                    (guest.email && guest.email.toLowerCase().includes(searchTerm)) ||
+                    (guest.phone_number && guest.phone_number.includes(searchTerm)) ||
+                    (guest.visit_status && guest.visit_status.toLowerCase().includes(searchTerm)) ||
+                    (guest.computed_status && guest.computed_status.toLowerCase().includes(searchTerm))
+                );
+            });
         },
 
         get totalPages() {
-            return Math.ceil(this.allGuests.length / this.perPage);
+            return Math.ceil(this.filteredGuests.length / this.perPage);
         },
 
         get paginatedGuests() {
             const start = (this.currentPage - 1) * this.perPage;
             const end = start + this.perPage;
-            return this.allGuests.slice(start, end);
+            return this.filteredGuests.slice(start, end);
         },
 
         get pageRange() {
+            if (this.totalPages <= 0) return {
+                pages: [],
+                showFirst: false,
+                showFirstEllipsis: false,
+                showLast: false,
+                showLastEllipsis: false
+            };
+
             const range = 2;
             const start = Math.max(1, this.currentPage - range);
             const end = Math.min(this.totalPages, this.currentPage + range);
@@ -457,12 +524,73 @@ function accommodationGuestTable() {
         },
 
         getEntriesText() {
-            const start = this.allGuests.length > 0 ? ((this.currentPage - 1) * this.perPage) + 1 : 0;
-            const end = Math.min(this.currentPage * this.perPage, this.allGuests.length);
-            const total = this.allGuests.length;
+            const total = this.filteredGuests.length;
+            if (total === 0) {
+                return 'No entries found';
+            }
 
+            const start = total > 0 ? ((this.currentPage - 1) * this.perPage) + 1 : 0;
+            const end = Math.min(this.currentPage * this.perPage, total);
+
+            if (this.searchTerm) {
+                return `Showing ${start} to ${end} of ${total} filtered entries`;
+            }
             return `Showing ${start} to ${end} of ${total} entries`;
+        },
+
+        performSearch() {
+            this.currentPage = 1;
+            localStorage.setItem('accommodation_guests_current_page', this.currentPage);
+
+            const url = new URL(window.location);
+            if (this.searchTerm) {
+                url.searchParams.set('user_search', this.searchTerm);
+                url.searchParams.set('search_users', 'true');
+            } else {
+                url.searchParams.delete('user_search');
+                url.searchParams.delete('search_users');
+            }
+            window.history.pushState({}, '', url);
+        },
+
+        clearSearch() {
+            this.searchTerm = '';
+            this.currentPage = 1;
+            localStorage.setItem('accommodation_guests_current_page', this.currentPage);
+
+            const url = new URL(window.location);
+            url.searchParams.delete('user_search');
+            url.searchParams.delete('search_users');
+            window.history.pushState({}, '', url);
+
+            // Add this part to clear the search input field
+            const searchInput = document.getElementById('search-accommodation-guests-input');
+            if (searchInput) {
+                searchInput.value = '';
+                // Also trigger the input event to update any x-model binding
+                searchInput.dispatchEvent(new Event('input'));
+            }
         }
     }
+
 }
+// Keyboard shortcuts
+document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('keydown', function(e) {
+        if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+            e.preventDefault();
+            const searchInput = document.getElementById('search-accommodation-guests-input');
+            if (searchInput) {
+                searchInput.focus();
+            }
+        }
+        if (e.key === 'Escape') {
+            const searchInput = document.getElementById('search-accommodation-guests-input');
+            if (searchInput && searchInput.value) {
+                searchInput.value = '';
+                searchInput.dispatchEvent(new Event('input'));
+            }
+        }
+    });
+});
 </script>

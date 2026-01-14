@@ -27,32 +27,10 @@ if ( $is_gate ) {
     $role_filter = $wpdb->prepare( ' AND DATE(v.visit_date) = %s', $today );
 }
 
-// Search functionality
-$search_term  = '';
-$where_clause = '';
-
-if ( isset( $_GET['search_users'] ) && ! empty( $_GET['user_search'] ) ) {
-    $search_term  = sanitize_text_field( $_GET['user_search'] );
-    $like         = '%' . $wpdb->esc_like( $search_term ) . '%';
-    $where_clause = $wpdb->prepare(
-        ' WHERE (m.first_name LIKE %s OR m.last_name LIKE %s OR m.id_number LIKE %s OR m.email LIKE %s OR m.phone_number LIKE %s OR m.reciprocating_member_number LIKE %s)',
-        $like,
-        $like,
-        $like,
-        $like,
-        $like,
-        $like
-    );
-}
-
-// Build complete WHERE clause
-$complete_where = $where_clause;
+// Build WHERE clause - REMOVED search from PHP since we'll do it client-side
+$complete_where = '';
 if ( ! empty( $role_filter ) ) {
-    if ( ! empty( $complete_where ) ) {
-        $complete_where .= $role_filter;
-    } else {
-        $complete_where = ' WHERE 1=1' . $role_filter;
-    }
+    $complete_where = ' WHERE 1=1' . $role_filter;
 }
 
 // Fetch ALL member visits
@@ -104,6 +82,9 @@ foreach ( $all_members as $member ) {
         'visit_id'            => $member->visit_id,
         'first_name'          => $member->first_name,
         'last_name'           => $member->last_name,
+        'id_number'           => $member->id_number ?? '',
+        'email'               => $member->email ?? '',
+        'phone_number'        => $member->phone_number ?? '',
         'reciprocating_member_number' => $member->reciprocating_member_number ?? 'Not Set',
         'club_name'           => $member->club_name ?? 'Not Set',
         'visit_status'        => $member->visit_status,
@@ -117,8 +98,8 @@ foreach ( $all_members as $member ) {
 ?>
 
 <div class="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]"
-    x-data="memberTable()" x-init="init()">
-
+    x-data="memberTable()" x-init="init()" @search-updated.window="searchTerm = $event.detail; performSearch()"
+    @clear-reciprocating-search.window="clearSearch()">
     <div
         class="mb-4 flex flex-col gap-2 px-4 py-4 sm:flex-row sm:items-center sm:justify-between border-b border-gray-200 dark:border-gray-800">
         <div class="flex items-center gap-3">
@@ -126,7 +107,8 @@ foreach ( $all_members as $member ) {
             <div class="relative z-20 bg-transparent">
                 <select x-model="perPage" @change="updatePerPage()"
                     class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-9 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none py-2 pr-8 pl-3 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30">
-                    <option value="25">25</option>
+                    <option value="10">10</option>
+                    <option value="20">20</option>
                     <option value="50">50</option>
                     <option value="100">100</option>
                 </select>
@@ -145,7 +127,7 @@ foreach ( $all_members as $member ) {
         </div>
     </div>
 
-    <div class="max-w-full overflow-x-auto" id="recip-members-table"
+    <div x-show="filteredMembers.length > 0" class="max-w-full overflow-x-auto" id="recip-members-table"
         data-member-details-url="<?php echo esc_url( home_url( '/member-details' ) ); ?>">
         <table class="min-w-full">
             <thead>
@@ -193,17 +175,11 @@ foreach ( $all_members as $member ) {
                 </tr>
             </thead>
             <tbody id="reciprocating-members-table-body" class="divide-y divide-gray-100 dark:divide-gray-800">
-                <template x-if="paginatedMembers.length === 0">
-                    <tr>
-                        <td colspan="8" class="px-4 py-4 text-center text-gray-600 dark:text-white">No members found.
-                        </td>
-                    </tr>
-                </template>
-
                 <template x-for="(member, index) in paginatedMembers" :key="member.visit_id">
                     <tr :data-member-id="member.id" :data-visit-id="member.visit_id">
                         <td class="px-3 py-4 sm:px-6">
-                            <p class="text-gray-500 text-theme-sm dark:text-gray-400" x-text="getRowNumber(index)"></p>
+                            <p class="text-gray-500 text-theme-sm dark:text-gray-400" x-text="getRowNumber(index)">
+                            </p>
                         </td>
                         <td class="px-3 py-4 sm:px-6">
                             <div class="flex items-center">
@@ -213,7 +189,8 @@ foreach ( $all_members as $member ) {
                         </td>
                         <td class="px-3 py-4 sm:px-6">
                             <div class="flex items-center">
-                                <p class="text-gray-800 text-theme-sm dark:text-white/90" x-text="member.last_name"></p>
+                                <p class="text-gray-800 text-theme-sm dark:text-white/90" x-text="member.last_name">
+                                </p>
                             </div>
                         </td>
                         <td class="px-3 py-4 sm:px-6">
@@ -225,7 +202,8 @@ foreach ( $all_members as $member ) {
                         </td>
                         <td class="px-3 py-4 sm:px-6">
                             <div class="flex items-center">
-                                <p class="text-gray-500 text-theme-sm dark:text-gray-400" x-text="member.club_name"></p>
+                                <p class="text-gray-500 text-theme-sm dark:text-gray-400" x-text="member.club_name">
+                                </p>
                             </div>
                         </td>
                         <td class="px-3 py-4 sm:px-6">
@@ -327,7 +305,41 @@ foreach ( $all_members as $member ) {
         </table>
     </div>
 
-    <div x-show="totalPages > 1"
+    <!-- Empty state message -->
+    <div x-show="filteredMembers.length === 0" class="p-8 text-center">
+        <template x-if="searchTerm">
+            <div class="py-8">
+                <svg class="w-16 h-16 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                        d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <h3 class="mt-4 text-lg font-medium text-gray-900 dark:text-white">No members found</h3>
+                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                    No members match your search for "<span x-text="searchTerm" class="font-medium"></span>".
+                </p>
+                <button @click="clearSearch()"
+                    class="inline-flex items-center px-4 py-2 mt-4 text-sm font-medium text-white bg-brand-500 rounded-lg hover:bg-brand-600">
+                    Clear Search
+                </button>
+            </div>
+        </template>
+
+        <template x-if="!searchTerm && allMembers.length === 0">
+            <div class="py-8">
+                <svg class="w-16 h-16 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                <h3 class="mt-4 text-lg font-medium text-gray-900 dark:text-white">No member visits yet</h3>
+                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                    Get started by registering a new member visit.
+                </p>
+            </div>
+        </template>
+    </div>
+
+    <!-- Pagination - Only show if there are results -->
+    <div x-show="filteredMembers.length > 0 && totalPages > 1"
         class="flex items-center justify-between gap-8 px-6 py-4 sm:justify-normal border-t border-gray-200 dark:border-gray-800">
 
         <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
@@ -398,9 +410,16 @@ foreach ( $all_members as $member ) {
 <script>
 function memberTable() {
     return {
-        allMembers: <?php echo json_encode( $members_data ); ?>,
-        perPage: 25,
+        allMembers: <?php echo !empty($members_data) ? json_encode($members_data) : '[]'; ?>,
+        perPage: 20,
         currentPage: 1,
+        searchTerm: '',
+        isMemberOrChairman: <?php 
+            $current_user = wp_get_current_user();
+            $user_roles = $current_user->roles;
+            $is_member_or_chairman = in_array( 'member', $user_roles ) || in_array( 'chairman', $user_roles ) || in_array( 'general_manager', $user_roles );
+            echo $is_member_or_chairman ? 'true' : 'false'; 
+        ?>,
 
         init() {
             const savedPerPage = localStorage.getItem('members_per_page');
@@ -413,19 +432,69 @@ function memberTable() {
             if (savedPage) {
                 this.currentPage = parseInt(savedPage);
             }
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchParam = urlParams.get('user_search');
+            if (searchParam) {
+                this.searchTerm = searchParam;
+                const searchInput = document.getElementById('search-reciprocating-input');
+                if (searchInput) {
+                    searchInput.value = searchParam;
+                }
+            }
+
+            if (!Array.isArray(this.allMembers)) {
+                this.allMembers = [];
+            }
+        },
+
+        get filteredMembers() {
+            if (!Array.isArray(this.allMembers)) {
+                return [];
+            }
+            if (!this.searchTerm) {
+                return this.allMembers;
+            }
+
+            const searchTerm = this.searchTerm.toLowerCase();
+            return this.allMembers.filter(member => {
+                if (!member) return false;
+
+                return (
+                    (member.first_name && member.first_name.toLowerCase().includes(searchTerm)) ||
+                    (member.last_name && member.last_name.toLowerCase().includes(searchTerm)) ||
+                    (member.id_number && member.id_number.toLowerCase().includes(searchTerm)) ||
+                    (member.email && member.email.toLowerCase().includes(searchTerm)) ||
+                    (member.phone_number && member.phone_number.includes(searchTerm)) ||
+                    (member.reciprocating_member_number && member.reciprocating_member_number
+                        .toLowerCase().includes(searchTerm)) ||
+                    (member.club_name && member.club_name.toLowerCase().includes(searchTerm)) ||
+                    (member.visit_status && member.visit_status.toLowerCase().includes(searchTerm)) ||
+                    (member.computed_status && member.computed_status.toLowerCase().includes(
+                        searchTerm))
+                );
+            });
         },
 
         get totalPages() {
-            return Math.ceil(this.allMembers.length / this.perPage);
+            return Math.ceil(this.filteredMembers.length / this.perPage);
         },
 
         get paginatedMembers() {
             const start = (this.currentPage - 1) * this.perPage;
             const end = start + this.perPage;
-            return this.allMembers.slice(start, end);
+            return this.filteredMembers.slice(start, end);
         },
 
         get pageRange() {
+            if (this.totalPages <= 0) return {
+                pages: [],
+                showFirst: false,
+                showFirstEllipsis: false,
+                showLast: false,
+                showLastEllipsis: false
+            };
+
             const range = 2;
             const start = Math.max(1, this.currentPage - range);
             const end = Math.min(this.totalPages, this.currentPage + range);
@@ -462,12 +531,70 @@ function memberTable() {
         },
 
         getEntriesText() {
-            const start = this.allMembers.length > 0 ? ((this.currentPage - 1) * this.perPage) + 1 : 0;
-            const end = Math.min(this.currentPage * this.perPage, this.allMembers.length);
-            const total = this.allMembers.length;
+            const total = this.filteredMembers.length;
+            if (total === 0) {
+                return 'No entries found';
+            }
 
+            const start = total > 0 ? ((this.currentPage - 1) * this.perPage) + 1 : 0;
+            const end = Math.min(this.currentPage * this.perPage, total);
+
+            if (this.searchTerm) {
+                return `Showing ${start} to ${end} of ${total} filtered entries`;
+            }
             return `Showing ${start} to ${end} of ${total} entries`;
+        },
+
+        performSearch() {
+            this.currentPage = 1;
+            localStorage.setItem('members_current_page', this.currentPage);
+
+            const url = new URL(window.location);
+            if (this.searchTerm) {
+                url.searchParams.set('user_search', this.searchTerm);
+                url.searchParams.set('search_users', 'true');
+            } else {
+                url.searchParams.delete('user_search');
+                url.searchParams.delete('search_users');
+            }
+            window.history.pushState({}, '', url);
+        },
+
+        clearSearch() {
+            this.searchTerm = '';
+            this.currentPage = 1;
+            localStorage.setItem('members_current_page', this.currentPage);
+
+            const url = new URL(window.location);
+            url.searchParams.delete('user_search');
+            url.searchParams.delete('search_users');
+            window.history.pushState({}, '', url);
+
+            // Clear the search input field if it exists
+            const searchInput = document.getElementById('search-reciprocating-input');
+            if (searchInput) {
+                searchInput.value = '';
+            }
         }
     }
 }
+// Keyboard shortcuts
+document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('keydown', function(e) {
+        if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+            e.preventDefault();
+            const searchInput = document.getElementById('search-reciprocating-input');
+            if (searchInput) {
+                searchInput.focus();
+            }
+        }
+        if (e.key === 'Escape') {
+            const searchInput = document.getElementById('search-reciprocating-input');
+            if (searchInput && searchInput.value) {
+                searchInput.value = '';
+                searchInput.dispatchEvent(new Event('input'));
+            }
+        }
+    });
+});
 </script>
