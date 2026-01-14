@@ -54,8 +54,9 @@ foreach ( $all_clubs as $club ) {
                 <select x-model="perPage" @change="updatePerPage()"
                     class="w-full py-2 pl-3 pr-8 text-sm text-gray-800 bg-transparent border border-gray-300 rounded-lg appearance-none shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-9 bg-none placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30">
                     <option value="10">10</option>
-                    <option value="25">25</option>
+                    <option value="20">20</option>
                     <option value="50">50</option>
+                    <option value="100">100</option>
                 </select>
                 <span class="absolute z-30 text-gray-500 -translate-y-1/2 top-1/2 right-2 dark:text-gray-400">
                     <svg class="stroke-current" width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -281,7 +282,7 @@ foreach ( $all_clubs as $club ) {
 function clubsTable() {
     return {
         allClubs: <?php echo !empty($clubs_data) ? json_encode($clubs_data) : '[]'; ?>,
-        perPage: 10,
+        perPage: 20,
         currentPage: 1,
         searchTerm: '',
 

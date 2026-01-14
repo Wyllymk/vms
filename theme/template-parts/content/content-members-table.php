@@ -61,7 +61,8 @@ foreach ( $users as $user ) {
             <div class="relative z-20 bg-transparent">
                 <select x-model="perPage" @change="updatePerPage()"
                     class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-9 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none py-2 pr-8 pl-3 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30">
-                    <option value="25">25</option>
+                    <option value="10">10</option>
+                    <option value="20">20</option>
                     <option value="50">50</option>
                     <option value="100">100</option>
                 </select>
@@ -296,7 +297,7 @@ foreach ( $users as $user ) {
 function usersTable() {
     return {
         allUsers: <?php echo !empty($users_data) ? json_encode($users_data) : '[]'; ?>,
-        perPage: 25,
+        perPage: 20,
         currentPage: 1,
         searchTerm: '',
 
