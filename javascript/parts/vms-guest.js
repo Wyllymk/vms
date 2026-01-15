@@ -5,89 +5,19 @@ export function initGuest() {
 	$('#guest-form').on('submit', function (e) {
 		e.preventDefault();
 
-		// Show loading indicator
 		$('#submit-guest-form')
 			.prop('disabled', true)
 			.html(
 				'<span class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2"></span> Registering...'
 			);
 
-		// Clear previous messages and modals
 		$('.alert-message').remove();
 		$('#success-modal-overlay, #guest-error-modal-overlay').remove();
 
-		// Collect form data
 		var formData = new FormData(this);
 		formData.append('action', 'guest_registration');
 		formData.append('nonce', vms_script_ajax.nonce);
 
-		// Action buttons generator
-		const actionButtons = (guest) => {
-			if (!guest) return '';
-
-			const today = new Date().toISOString().split('T')[0];
-			const normalizedVisitDate = guest.visit_date
-				? guest.visit_date.substring(0, 10)
-				: null;
-
-			const isButtonDisabled =
-				!normalizedVisitDate ||
-				!guest.status ||
-				!/^\d{4}-\d{2}-\d{2}$/.test(normalizedVisitDate) ||
-				guest.status !== 'approved' ||
-				vms_script_ajax.current_user_role === 'member'; // Added role check here
-
-			const isFuture = normalizedVisitDate > today;
-			const isPast = normalizedVisitDate < today;
-			const isToday = normalizedVisitDate === today;
-
-			const isMissed = isPast && !guest.sign_in_time;
-			const isScheduled = isFuture;
-			const isCompleted = guest.sign_in_time && guest.sign_out_time;
-
-			const baseButtonClasses =
-				'inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition rounded-lg whitespace-nowrap shadow-theme-xs';
-			const disabledClasses =
-				'bg-brand-500 opacity-50 cursor-not-allowed';
-			const signInEnabledClasses =
-				'bg-brand-500 cursor-pointer hover:bg-brand-600';
-			const signOutEnabledClasses =
-				'bg-purple-500 cursor-pointer hover:bg-purple-600';
-
-			if (isMissed) {
-				return `<span class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-warning-600 bg-warning-50 rounded-lg dark:bg-warning-500/15 dark:text-orange-500">Missed</span>`;
-			}
-
-			if (isScheduled) {
-				return `<span class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-light-500 bg-blue-light-50 rounded-lg dark:bg-blue-light-500/15 dark:text-blue-light-500">Scheduled</span>`;
-			}
-
-			if (isToday) {
-				if (isCompleted) {
-					const signInTime = new Date(
-						guest.sign_in_time
-					).toLocaleTimeString([], {
-						hour: 'numeric',
-						minute: '2-digit',
-					});
-					const signOutTime = new Date(
-						guest.sign_out_time
-					).toLocaleTimeString([], {
-						hour: 'numeric',
-						minute: '2-digit',
-					});
-					return `<div class="flex flex-col items-center justify-center text-xs px-4"><span class="text-green-600 dark:text-green-400">${signInTime}</span><span class="text-red-600 dark:text-red-400">${signOutTime}</span></div>`;
-				} else if (!guest.sign_in_time) {
-					return `<button id="sign-in-button-${guest.id}" class="${baseButtonClasses} ${isButtonDisabled ? disabledClasses : signInEnabledClasses}" data-visit-id="${guest.visit_id}" ${isButtonDisabled ? 'disabled' : ''}>Sign In</button>`;
-				} else if (!guest.sign_out_time) {
-					return `<button id="sign-out-button-${guest.id}" class="${baseButtonClasses} ${isButtonDisabled ? disabledClasses : signOutEnabledClasses}" data-visit-id="${guest.visit_id}" ${isButtonDisabled ? 'disabled' : ''}>Sign Out</button>`;
-				}
-			}
-
-			return '';
-		};
-
-		// AJAX request
 		$.ajax({
 			url: vms_script_ajax.ajaxurl,
 			type: 'POST',
@@ -96,7 +26,6 @@ export function initGuest() {
 			contentType: false,
 			dataType: 'json',
 			success: function (response) {
-				// Log successful guest registration
 				if (response.success && response.data.guestData) {
 					logAuditTrail(
 						'guest_registered',
@@ -112,8 +41,7 @@ export function initGuest() {
 							},
 						}
 					);
-				}
-				if (response.success && response.data.guestData) {
+
 					const guest = response.data.guestData;
 
 					// Format visit date
@@ -135,7 +63,6 @@ export function initGuest() {
 					// Host name
 					let hostName = guest.host_name || 'N/A';
 					if (guest.host_name) {
-						// Split display_name "wilson.mbuthia" → "Wilson Mbuthia"
 						hostName = guest.host_name
 							.split('.')
 							.map(
@@ -158,44 +85,73 @@ export function initGuest() {
 							'bg-gray-100 text-gray-700 dark:bg-white/5 dark:text-white/80',
 					};
 
-					// Build row
-					const newRow = `
-                    <tr>
-                        <td class="px-3 py-4 sm:px-6"><p class="text-gray-500 text-theme-sm dark:text-gray-400">${$('tbody tr').length + 1}</p></td>
-                        <td class="px-3 py-4 sm:px-6"><p class="text-gray-800 text-theme-sm dark:text-white/90">${guest.first_name || 'N/A'}</p></td>
-                        <td class="px-3 py-4 sm:px-6"><p class="text-gray-800 text-theme-sm dark:text-white/90">${guest.last_name || 'N/A'}</p></td>
-                        <td class="px-3 py-4 sm:px-6"><span class="inline-flex items-center justify-center px-2.5 gap-1 py-0.5 text-sm font-medium capitalize rounded-full ${statusClasses[guest.status] || ''}">${guest.status ? guest.status.charAt(0).toUpperCase() + guest.status.slice(1) : 'N/A'}</span></td>
-                        <td class="px-3 py-4 sm:px-6"><p class="text-gray-500 text-theme-sm dark:text-gray-400">${guest.id_number || 'N/A'}</p></td>
-                        <td class="px-3 py-4 sm:px-6"><p class="text-gray-500 text-theme-sm dark:text-gray-400">${hostName}</p></td>
-                        <td class="px-3 py-4 sm:px-6"><p class="text-gray-500 text-theme-sm dark:text-gray-400">${formattedDate}</p></td>
-                        <td class="px-3 py-4 sm:px-6">
-                            <div class="flex items-center gap-2">
-                                <button id="edit-guest-button-${guest.id}" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 transition bg-white border border-gray-300 rounded-lg cursor-pointer whitespace-nowrap dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
-								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
-                                    </path>
-                                </svg>
-								Edit
-								</button>
-                                ${actionButtons(guest)}
-                            </div>
-                        </td>
-                    </tr>
-                	`;
+					// Calculate computed status
+					const today = new Date().toISOString().split('T')[0];
+					const normalizedVisitDate = guest.visit_date
+						? guest.visit_date.substring(0, 10)
+						: null;
+					let computedStatus = 'scheduled';
 
-					// Remove "no guests" row
-					$('#no-guests-row').remove();
+					if (normalizedVisitDate) {
+						if (normalizedVisitDate > today) {
+							computedStatus = 'scheduled';
+						} else if (normalizedVisitDate === today) {
+							computedStatus = !guest.sign_in_time
+								? 'signin'
+								: !guest.sign_out_time
+									? 'signout'
+									: 'completed';
+						} else {
+							computedStatus = !guest.sign_in_time
+								? 'missed'
+								: !guest.sign_out_time
+									? 'signout'
+									: 'completed';
+						}
+					}
 
-					// Prepend row
-					$('tbody').prepend(newRow);
+					// Add to Alpine.js data
+					const tableComponent = Alpine.$data(
+						document.querySelector('[x-data*="guestTable"]')
+					);
+					if (tableComponent) {
+						const newGuest = {
+							id: guest.id,
+							visit_id: guest.visit_id,
+							first_name: guest.first_name || 'N/A',
+							last_name: guest.last_name || 'N/A',
+							id_number: guest.id_number || 'N/A',
+							email: guest.email || '',
+							phone_number: guest.phone_number || '',
+							visit_status: guest.status || 'approved',
+							status_class:
+								statusClasses[guest.status] ||
+								statusClasses['approved'],
+							host_name: hostName,
+							is_courtesy: false,
+							visit_date: formattedDate,
+							computed_status: computedStatus,
+							sign_in_time: guest.sign_in_time
+								? new Date(
+										guest.sign_in_time
+									).toLocaleTimeString([], {
+										hour: 'numeric',
+										minute: '2-digit',
+									})
+								: null,
+							sign_out_time: guest.sign_out_time
+								? new Date(
+										guest.sign_out_time
+									).toLocaleTimeString([], {
+										hour: 'numeric',
+										minute: '2-digit',
+									})
+								: null,
+						};
 
-					// Re-number rows
-					$('tbody tr').each(function (index) {
-						$(this)
-							.find('td:first p')
-							.text(index + 1);
-					});
+						tableComponent.allGuests.unshift(newGuest);
+						tableComponent.currentPage = 1;
+					}
 
 					// Show success modal
 					const message =
@@ -231,83 +187,22 @@ export function initGuest() {
 										new Event('close-guest-modal')
 									);
 									$('#guest-form')[0].reset();
-
-									// Reload same URL
-									// window.location.reload();
 								}
 							);
 						});
 				} else {
-					// Show error modal
-					const errorMessages = response.data?.messages || [
-						'An error occurred during guest registration',
-					];
-					const errorMessageHtml = errorMessages
-						.map(
-							(msg) =>
-								`<p class="text-lg font-medium text-gray-700 dark:text-white">${msg}</p>`
-						)
-						.join('');
-					const errorModal = `
-                    <div id="guest-error-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
-                        <div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
-                            <div class="check_mark mx-auto mb-4">
-                                <div class="sa-icon sa-error animate">
-                                    <span class="sa-line sa-left animateXLeft"></span>
-                                    <span class="sa-line sa-right animateXRight"></span>
-                                    <div class="sa-placeholder"></div>
-                                </div>
-                            </div>
-                            ${errorMessageHtml}
-                            <button id="ok-error-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">OK</button>
-                        </div>
-                    </div>
-                `;
-					$('body').append(errorModal);
-					$(document)
-						.off('click', '#ok-error-btn')
-						.on('click', '#ok-error-btn', function (e) {
-							e.preventDefault();
-							$('#guest-error-modal-overlay').fadeOut(
-								300,
-								function () {
-									$(this).remove();
-								}
-							);
-						});
+					showErrorModal(
+						response.data?.messages || [
+							'An error occurred during guest registration',
+						]
+					);
 				}
 			},
 			error: function (xhr, status, error) {
 				const errorMessage =
 					xhr.responseJSON?.data?.messages?.join('<br>') ||
 					'An error occurred: ' + error;
-				const errorModal = `
-                <div id="guest-error-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
-                    <div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
-                        <div class="check_mark mx-auto mb-4">
-                            <div class="sa-icon sa-error animate">
-                                <span class="sa-line sa-left animateXLeft"></span>
-                                <span class="sa-line sa-right animateXRight"></span>
-                                <div class="sa-placeholder"></div>
-                            </div>
-                        </div>
-                        <p class="text-lg font-medium text-gray-700 dark:text-white">${errorMessage}</p>
-                        <button id="ok-error-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">OK</button>
-                    </div>
-                </div>
-            `;
-				$('body').append(errorModal);
-				$(document)
-					.off('click', '#ok-error-btn')
-					.on('click', '#ok-error-btn', function (e) {
-						e.preventDefault();
-						$('#guest-error-modal-overlay').fadeOut(
-							300,
-							function () {
-								$(this).remove();
-							}
-						);
-					});
+				showErrorModal([errorMessage]);
 			},
 			complete: function () {
 				$('#submit-guest-form')
@@ -317,92 +212,23 @@ export function initGuest() {
 		});
 	});
 
-	// Guest FORM
+	// Courtesy Guest FORM
 	$('#courtesy-guest-form').on('submit', function (e) {
 		e.preventDefault();
 
-		// Show loading indicator
 		$('#submit-courtesy-guest-form')
 			.prop('disabled', true)
 			.html(
 				'<span class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2"></span> Registering...'
 			);
 
-		// Clear previous messages and modals
 		$('.alert-message').remove();
 		$('#success-modal-overlay, #guest-error-modal-overlay').remove();
 
-		// Collect form data
 		var formData = new FormData(this);
 		formData.append('action', 'courtesy_guest_registration');
 		formData.append('nonce', vms_script_ajax.nonce);
 
-		// Action buttons generator
-		const actionButtons = (guest) => {
-			if (!guest) return '';
-
-			const today = new Date().toISOString().split('T')[0];
-			const normalizedVisitDate = guest.visit_date
-				? guest.visit_date.substring(0, 10)
-				: null;
-
-			const isButtonDisabled =
-				!normalizedVisitDate ||
-				!guest.status ||
-				!/^\d{4}-\d{2}-\d{2}$/.test(normalizedVisitDate) ||
-				guest.status !== 'approved';
-
-			const isFuture = normalizedVisitDate > today;
-			const isPast = normalizedVisitDate < today;
-			const isToday = normalizedVisitDate === today;
-
-			const isMissed = isPast && !guest.sign_in_time;
-			const isScheduled = isFuture;
-			const isCompleted = guest.sign_in_time && guest.sign_out_time;
-
-			const baseButtonClasses =
-				'inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition rounded-lg whitespace-nowrap shadow-theme-xs';
-			const disabledClasses =
-				'bg-brand-500 opacity-50 cursor-not-allowed';
-			const signInEnabledClasses =
-				'bg-brand-500 cursor-pointer hover:bg-brand-600';
-			const signOutEnabledClasses =
-				'bg-purple-500 cursor-pointer hover:bg-purple-600';
-
-			if (isMissed) {
-				return `<span class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-warning-600 bg-warning-50 rounded-lg dark:bg-warning-500/15 dark:text-orange-500">Missed</span>`;
-			}
-
-			if (isScheduled) {
-				return `<span class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-light-500 bg-blue-light-50 rounded-lg dark:bg-blue-light-500/15 dark:text-blue-light-500">Scheduled</span>`;
-			}
-
-			if (isToday) {
-				if (isCompleted) {
-					const signInTime = new Date(
-						guest.sign_in_time
-					).toLocaleTimeString([], {
-						hour: 'numeric',
-						minute: '2-digit',
-					});
-					const signOutTime = new Date(
-						guest.sign_out_time
-					).toLocaleTimeString([], {
-						hour: 'numeric',
-						minute: '2-digit',
-					});
-					return `<div class="flex flex-col items-center justify-center text-xs px-4"><span class="text-green-600 dark:text-green-400">${signInTime}</span><span class="text-red-600 dark:text-red-400">${signOutTime}</span></div>`;
-				} else if (!guest.sign_in_time) {
-					return `<button id="sign-in-button-${guest.id}" class="${baseButtonClasses} ${isButtonDisabled ? disabledClasses : signInEnabledClasses}" data-visit-id="${guest.visit_id}" ${isButtonDisabled ? 'disabled' : ''}>Sign In</button>`;
-				} else if (!guest.sign_out_time) {
-					return `<button id="sign-out-button-${guest.id}" class="${baseButtonClasses} ${isButtonDisabled ? disabledClasses : signOutEnabledClasses}" data-visit-id="${guest.visit_id}" ${isButtonDisabled ? 'disabled' : ''}>Sign Out</button>`;
-				}
-			}
-
-			return '';
-		};
-
-		// AJAX request
 		$.ajax({
 			url: vms_script_ajax.ajaxurl,
 			type: 'POST',
@@ -413,8 +239,6 @@ export function initGuest() {
 			success: function (response) {
 				if (response.success && response.data.guestData) {
 					const guest = response.data.guestData;
-
-					console.log(guest);
 
 					// Format visit date
 					let formattedDate = 'N/A';
@@ -445,44 +269,73 @@ export function initGuest() {
 							'bg-gray-100 text-gray-700 dark:bg-white/5 dark:text-white/80',
 					};
 
-					// Build row
-					const newRow = `
-                    <tr>
-                        <td class="px-3 py-4 sm:px-6"><p class="text-gray-500 text-theme-sm dark:text-gray-400">${$('tbody tr').length + 1}</p></td>
-                        <td class="px-3 py-4 sm:px-6"><p class="text-gray-800 text-theme-sm dark:text-white/90">${guest.first_name || 'N/A'}</p></td>
-                        <td class="px-3 py-4 sm:px-6"><p class="text-gray-800 text-theme-sm dark:text-white/90">${guest.last_name || 'N/A'}</p></td>
-                        <td class="px-3 py-4 sm:px-6"><span class="inline-flex items-center justify-center px-2.5 gap-1 py-0.5 text-sm font-medium capitalize rounded-full ${statusClasses[guest.status] || ''}">${guest.status ? guest.status.charAt(0).toUpperCase() + guest.status.slice(1) : 'N/A'}</span></td>
-                        <td class="px-3 py-4 sm:px-6"><p class="text-gray-500 text-theme-sm dark:text-gray-400">${guest.id_number || 'N/A'}</p></td>
-                        <td class="px-3 py-4 sm:px-6"><span class="inline-flex items-center justify-center px-2.5 gap-1 py-0.5 text-sm font-medium capitalize rounded-full bg-blue-light-50 text-blue-light-500 dark:bg-blue-light-500/15 dark:text-blue-light-500">${guest.courtesy}</span></td>
-                        <td class="px-3 py-4 sm:px-6"><p class="text-gray-500 text-theme-sm dark:text-gray-400">${formattedDate}</p></td>
-                        <td class="px-3 py-4 sm:px-6">
-                            <div class="flex items-center gap-2">
-                                <button id="edit-guest-button-${guest.id}" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 transition bg-white border border-gray-300 rounded-lg cursor-pointer whitespace-nowrap dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
-								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
-                                    </path>
-                                </svg>
-								Edit
-								</button>
-                                ${actionButtons(guest)}
-                            </div>
-                        </td>
-                    </tr>
-                	`;
+					// Calculate computed status
+					const today = new Date().toISOString().split('T')[0];
+					const normalizedVisitDate = guest.visit_date
+						? guest.visit_date.substring(0, 10)
+						: null;
+					let computedStatus = 'scheduled';
 
-					// Remove "no guests" row
-					$('#no-guests-row').remove();
+					if (normalizedVisitDate) {
+						if (normalizedVisitDate > today) {
+							computedStatus = 'scheduled';
+						} else if (normalizedVisitDate === today) {
+							computedStatus = !guest.sign_in_time
+								? 'signin'
+								: !guest.sign_out_time
+									? 'signout'
+									: 'completed';
+						} else {
+							computedStatus = !guest.sign_in_time
+								? 'missed'
+								: !guest.sign_out_time
+									? 'signout'
+									: 'completed';
+						}
+					}
 
-					// Prepend row
-					$('tbody').prepend(newRow);
+					// Add to Alpine.js data
+					const tableComponent = Alpine.$data(
+						document.querySelector('[x-data*="guestTable"]')
+					);
+					if (tableComponent) {
+						const newGuest = {
+							id: guest.id,
+							visit_id: guest.visit_id,
+							first_name: guest.first_name || 'N/A',
+							last_name: guest.last_name || 'N/A',
+							id_number: guest.id_number || 'N/A',
+							email: guest.email || '',
+							phone_number: guest.phone_number || '',
+							visit_status: guest.status || 'approved',
+							status_class:
+								statusClasses[guest.status] ||
+								statusClasses['approved'],
+							host_name: 'Courtesy',
+							is_courtesy: true,
+							visit_date: formattedDate,
+							computed_status: computedStatus,
+							sign_in_time: guest.sign_in_time
+								? new Date(
+										guest.sign_in_time
+									).toLocaleTimeString([], {
+										hour: 'numeric',
+										minute: '2-digit',
+									})
+								: null,
+							sign_out_time: guest.sign_out_time
+								? new Date(
+										guest.sign_out_time
+									).toLocaleTimeString([], {
+										hour: 'numeric',
+										minute: '2-digit',
+									})
+								: null,
+						};
 
-					// Re-number rows
-					$('tbody tr').each(function (index) {
-						$(this)
-							.find('td:first p')
-							.text(index + 1);
-					});
+						tableComponent.allGuests.unshift(newGuest);
+						tableComponent.currentPage = 1;
+					}
 
 					// Show success modal
 					const message =
@@ -503,7 +356,7 @@ export function initGuest() {
                             <button id="ok-success-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 transition">OK</button>
                         </div>
                     </div>
-                	`;
+                `;
 					$('body').append(successModal);
 
 					$(document)
@@ -517,83 +370,23 @@ export function initGuest() {
 									window.dispatchEvent(
 										new Event('close-courtesy-guest-modal')
 									);
-									$('#guest-form')[0].reset();
-
-									// window.location.reload();
+									$('#courtesy-guest-form')[0].reset();
 								}
 							);
 						});
 				} else {
-					// Show error modal
-					const errorMessages = response.data?.messages || [
-						'An error occurred during guest registration',
-					];
-					const errorMessageHtml = errorMessages
-						.map(
-							(msg) =>
-								`<p class="text-lg font-medium text-gray-700 dark:text-white">${msg}</p>`
-						)
-						.join('');
-					const errorModal = `
-                    <div id="guest-error-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
-                        <div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
-                            <div class="check_mark mx-auto mb-4">
-                                <div class="sa-icon sa-error animate">
-                                    <span class="sa-line sa-left animateXLeft"></span>
-                                    <span class="sa-line sa-right animateXRight"></span>
-                                    <div class="sa-placeholder"></div>
-                                </div>
-                            </div>
-                            ${errorMessageHtml}
-                            <button id="ok-error-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">OK</button>
-                        </div>
-                    </div>
-                `;
-					$('body').append(errorModal);
-					$(document)
-						.off('click', '#ok-error-btn')
-						.on('click', '#ok-error-btn', function (e) {
-							e.preventDefault();
-							$('#guest-error-modal-overlay').fadeOut(
-								300,
-								function () {
-									$(this).remove();
-								}
-							);
-						});
+					showErrorModal(
+						response.data?.messages || [
+							'An error occurred during guest registration',
+						]
+					);
 				}
 			},
 			error: function (xhr, status, error) {
 				const errorMessage =
 					xhr.responseJSON?.data?.messages?.join('<br>') ||
 					'An error occurred: ' + error;
-				const errorModal = `
-                <div id="guest-error-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
-                    <div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
-                        <div class="check_mark mx-auto mb-4">
-                            <div class="sa-icon sa-error animate">
-                                <span class="sa-line sa-left animateXLeft"></span>
-                                <span class="sa-line sa-right animateXRight"></span>
-                                <div class="sa-placeholder"></div>
-                            </div>
-                        </div>
-                        <p class="text-lg font-medium text-gray-700 dark:text-white">${errorMessage}</p>
-                        <button id="ok-error-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">OK</button>
-                    </div>
-                </div>
-            `;
-				$('body').append(errorModal);
-				$(document)
-					.off('click', '#ok-error-btn')
-					.on('click', '#ok-error-btn', function (e) {
-						e.preventDefault();
-						$('#guest-error-modal-overlay').fadeOut(
-							300,
-							function () {
-								$(this).remove();
-							}
-						);
-					});
+				showErrorModal([errorMessage]);
 			},
 			complete: function () {
 				$('#submit-courtesy-guest-form')
@@ -602,6 +395,40 @@ export function initGuest() {
 			},
 		});
 	});
+
+	// Error modal helper function
+	// function showErrorModal(messages) {
+	// 	const errorMessageHtml = messages
+	// 		.map(
+	// 			(msg) =>
+	// 				`<p class="text-lg font-medium text-gray-700 dark:text-white">${msg}</p>`
+	// 		)
+	// 		.join('');
+	// 	const errorModal = `
+	//     <div id="guest-error-modal-overlay" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+	//         <div class="bg-white dark:bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-lg text-center animate-fade-in-up max-w-sm w-full">
+	//             <div class="check_mark mx-auto mb-4">
+	//                 <div class="sa-icon sa-error animate">
+	//                     <span class="sa-line sa-left animateXLeft"></span>
+	//                     <span class="sa-line sa-right animateXRight"></span>
+	//                     <div class="sa-placeholder"></div>
+	//                 </div>
+	//             </div>
+	//             ${errorMessageHtml}
+	//             <button id="ok-error-btn" type="button" class="mt-6 inline-block w-1/2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition">OK</button>
+	//         </div>
+	//     </div>
+	// `;
+	// 	$('body').append(errorModal);
+	// 	$(document)
+	// 		.off('click', '#ok-error-btn')
+	// 		.on('click', '#ok-error-btn', function (e) {
+	// 			e.preventDefault();
+	// 			$('#guest-error-modal-overlay').fadeOut(300, function () {
+	// 				$(this).remove();
+	// 			});
+	// 		});
+	// }
 
 	// Guest Update FORM
 	$('#guest-update-form').on('submit', function (e) {

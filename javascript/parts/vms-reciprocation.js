@@ -527,7 +527,8 @@ export function initReciprocation() {
 							'#ok-success-btn',
 							function (e) {
 								e.preventDefault();
-								window.location.href = '/members/'; // Adjust URL as needed
+								window.location.href =
+									'/reciprocating-members/';
 							}
 						);
 					} else {
